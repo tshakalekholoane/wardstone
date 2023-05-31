@@ -1,0 +1,22 @@
+# See the following for reference https://rust-lang.github.io/rustfmt/.
+comment_width = 72
+condense_wildcard_suffixes = true
+edition = "2021"
+fn_single_line = true
+force_multiline_blocks = true
+format_code_in_doc_comments = true
+format_macro_matchers = true
+format_strings = true
+group_imports = "StdExternalCrate"
+hex_literal_case = "Lower"
+imports_granularity = "Module"
+imports_layout = "HorizontalVertical"
+match_block_trailing_comma = true
+normalize_doc_attributes = true
+reorder_impl_items = true
+tab_spaces = 2
+trailing_semicolon = false
+unstable_features = true
+use_field_init_shorthand = true
+version = "Two"
+wrap_comments = true
