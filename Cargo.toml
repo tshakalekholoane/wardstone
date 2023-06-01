@@ -9,3 +9,6 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+
+[build-dependencies]
+cbindgen = "0.24.0"

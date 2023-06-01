@@ -2,14 +2,11 @@
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Symmetric(pub u16);
 
-macro_rules! symmetric {
-  ($name:ident, $len:expr) => {
-    #[no_mangle]
-    pub static $name: Symmetric = Symmetric($len);
-  };
-}
-
-symmetric!(AES128, 128);
-symmetric!(AES192, 192);
-symmetric!(AES256, 256);
-symmetric!(TDEA, 112);
+#[no_mangle]
+pub static AES128: Symmetric = Symmetric(128);
+#[no_mangle]
+pub static AES192: Symmetric = Symmetric(192);
+#[no_mangle]
+pub static AES256: Symmetric = Symmetric(256);
+#[no_mangle]
+pub static TDEA: Symmetric = Symmetric(112);

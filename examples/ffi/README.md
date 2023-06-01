@@ -13,7 +13,7 @@ cargo build --release
 And then compile the example binary and run it.
 
 ```bash
-cc ./main.c -L../../target/release/ -lwardstone 
+cc ./main.c -L../../target/release/ -I../../ -lwardstone 
 ./a.out
 ```
 
