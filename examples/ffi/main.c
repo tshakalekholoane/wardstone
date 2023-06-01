@@ -1,4 +1,4 @@
-#include "include/wardstone.h"
+#include "wardstone_bindings.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
