@@ -1,3 +1,4 @@
+/// cbindgen:field-names=[digest_len]
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Hash(pub u16);

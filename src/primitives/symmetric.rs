@@ -1,3 +1,4 @@
+/// cbindgen:field-names=[security]
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Symmetric(pub u16);
