@@ -16,7 +16,7 @@ const BASE_SECURITY_LEVEL: u16 = 56;
 
 fn calculate_year(security_level: u16) -> Result<u16> {
   if security_level < BASE_SECURITY_LEVEL {
-    return Err(ValidationError::SecurityLevelTooLow)
+    return Err(ValidationError::SecurityLevelTooLow);
   }
   Ok(BASE_YEAR + (((security_level + (security_level << 1)) - 168) >> 1))
 }
