@@ -2,17 +2,13 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <time.h>
-
-int get_current_year() {
-  time_t now = time(NULL);
-  struct tm* local_time = localtime(&now);
-  return local_time->tm_year + 1900;
-}
+#include <string.h>
 
 int main(void) {
-  uint16_t current_year = get_current_year();
-  assert(lenstra_validate_hash(&SHA1, current_year) == false);
-  assert(lenstra_validate_hash(&SHA256, current_year) == true);
-  assert(lenstra_validate_hash(NULL, current_year) == -1);
+  struct ws_hash want = SHA256;
+  struct ws_hash got;
+  assert(ws_nist_validate_hash(&SHA1, &got) == false);
+  assert(strncmp(got.name, want.name, strlen(want.name)) == 0);
+  assert(ws_nist_validate_hash(&SHA256, NULL) == true);
+  assert(ws_nist_validate_hash(NULL, NULL) == -1);
 }
