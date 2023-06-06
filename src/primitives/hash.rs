@@ -25,13 +25,6 @@ pub static BLAKE2b_512: Hash = Hash {
 
 #[no_mangle]
 pub static BLAKE2s_256: Hash = Hash {
-  name: "BLAKE2s_256",
-  digest_len: 256,
-};
-
-#[no_mangle]
-pub static BLAKE3_256: Hash = Hash {
-  name: "BLAKE3_256",
   digest_len: 256,
 };
 
