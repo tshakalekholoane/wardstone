@@ -1,101 +1,102 @@
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct Hash {
-  pub name: &'static str,
+  pub id: u16,
   pub digest_len: u16,
 }
 
 #[no_mangle]
 pub static BLAKE2b_256: Hash = Hash {
-  name: "BLAKE2b_256",
+  id: 1,
   digest_len: 256,
 };
 
 #[no_mangle]
 pub static BLAKE2b_384: Hash = Hash {
-  name: "BLAKE2b_384",
+  id: 2,
   digest_len: 384,
 };
 
 #[no_mangle]
 pub static BLAKE2b_512: Hash = Hash {
-  name: "BLAKE2b_512",
+  id: 3,
   digest_len: 512,
 };
 
 #[no_mangle]
 pub static BLAKE2s_256: Hash = Hash {
+  id: 4,
   digest_len: 256,
 };
 
 #[no_mangle]
 pub static MD4: Hash = Hash {
-  name: "MD4",
+  id: 5,
   digest_len: 128,
 };
 
 #[no_mangle]
 pub static MD5: Hash = Hash {
-  name: "MD5",
+  id: 6,
   digest_len: 128,
 };
 
 #[no_mangle]
 pub static RIPEMD160: Hash = Hash {
-  name: "RIPEMD160",
+  id: 7,
   digest_len: 160,
 };
 
 #[no_mangle]
 pub static SHA1: Hash = Hash {
-  name: "SHA1",
+  id: 8,
   digest_len: 160,
 };
 
 #[no_mangle]
 pub static SHA256: Hash = Hash {
-  name: "SHA256",
+  id: 10,
   digest_len: 256,
 };
 
 #[no_mangle]
 pub static SHA3_224: Hash = Hash {
-  name: "SHA3_224",
+  id: 12,
   digest_len: 224,
 };
 
 #[no_mangle]
 pub static SHA3_256: Hash = Hash {
-  name: "SHA3_256",
+  id: 13,
   digest_len: 256,
 };
 
 #[no_mangle]
 pub static SHA3_384: Hash = Hash {
-  name: "SHA3_384",
+  id: 14,
   digest_len: 384,
 };
 
 #[no_mangle]
 pub static SHA3_512: Hash = Hash {
-  name: "SHA3_512",
+  id: 15,
   digest_len: 512,
 };
 
 #[no_mangle]
 pub static SHA3_512_224: Hash = Hash {
-  name: "SHA3_512_224",
+  id: 16,
   digest_len: 224,
 };
 
 #[no_mangle]
 pub static SHA3_512_256: Hash = Hash {
-  name: "SHA3_512_256",
+  id: 17,
   digest_len: 256,
 };
 
 #[no_mangle]
 pub static SHA512: Hash = Hash {
-  name: "SHA512",
+  id: 18,
   digest_len: 512,
 };
