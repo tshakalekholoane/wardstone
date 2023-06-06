@@ -1,30 +1,30 @@
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct Symmetric {
-  pub name: &'static str,
+  pub id: u16,
   pub security: u16,
 }
 
 #[no_mangle]
 pub static AES128: Symmetric = Symmetric {
-  name: "AES128",
+  id: 1,
   security: 128,
 };
 
 #[no_mangle]
 pub static AES192: Symmetric = Symmetric {
-  name: "AES192",
+  id: 2,
   security: 192,
 };
 
 #[no_mangle]
 pub static AES256: Symmetric = Symmetric {
-  name: "AES256",
+  id: 3,
   security: 256,
 };
 
 #[no_mangle]
 pub static TDEA: Symmetric = Symmetric {
-  name: "TDEA",
+  id: 4,
   security: 112,
 };
