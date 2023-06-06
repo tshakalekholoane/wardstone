@@ -27,6 +27,14 @@ jobs:
           components: clippy
       - run: cargo clippy -- --deny warnings
 
+  docs:
+    name: docs 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo doc --no-deps 
+
   rustfmt:
     name: rustfmt
     runs-on: ubuntu-latest
