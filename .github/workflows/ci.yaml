@@ -10,7 +10,7 @@ env:
 
 jobs:
   check:
-    name: check
+    name: Run cargo-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -18,7 +18,7 @@ jobs:
       - run: cargo check
 
   clippy:
-    name: clippy
+    name: Run Clippy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -28,15 +28,15 @@ jobs:
       - run: cargo clippy -- --deny warnings
 
   docs:
-    name: docs 
+    name: Build package documentation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo doc --no-deps 
+      - run: cargo doc --no-deps
 
   rustfmt:
-    name: rustfmt
+    name: Check formatting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -46,7 +46,7 @@ jobs:
       - run: cargo fmt --all --check
 
   test:
-    name: test
+    name: Run tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -54,22 +54,21 @@ jobs:
       - run: cargo test --all-features
 
   ffi:
-    name: ffi
+    name: Check FFI build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install latest rust toolchain
+      - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Build header files
+      - name: Generate header and build dynamic library
         run: cargo build --release --all-features
 
-      - name: Build FFI-example
+      - name: Build FFI example
         working-directory: ./examples/ffi/
-        run: gcc ./main.c -L../../target/release/ -I../../target/ -lwardstone -o ../../target/release/ffi_examples
+        run: cc ./main.c -L../../target/release/ -I../../target/ -lwardstone -o ../../target/release/ffi_example
 
-      - name: Run FFI-example
-        run: LD_LIBRARY_PATH=./target/release/ ./target/release/ffi_examples
-    
+      - name: Run FFI example
+        run: LD_LIBRARY_PATH=./target/release/ ./target/release/ffi_example
