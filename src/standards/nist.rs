@@ -44,7 +44,7 @@ const CUTOFF_YEAR: u16 = 2023;
 /// assert_eq!(validate_hash(&MD5), Err(SHA256));
 /// ```
 pub fn validate_hash(hash: &Hash) -> Result<bool, Hash> {
-  let security = hash.digest_len >> 1;
+  let security = hash.n >> 1;
   match security {
     ..=111 => Err(SHA256),
     112.. => Ok(true),
