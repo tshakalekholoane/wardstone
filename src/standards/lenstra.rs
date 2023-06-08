@@ -38,7 +38,7 @@ fn calculate_year(security: u16) -> Result<u16> {
 
 /// Validates a hash function according to page 14 of the paper.
 pub fn validate_hash(hash: &Hash, expiry: u16) -> Result<bool> {
-  let security = hash.digest_len >> 1;
+  let security = hash.n >> 1;
   calculate_year(security).map(|year| year >= expiry)
 }
 
