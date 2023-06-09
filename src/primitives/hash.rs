@@ -111,44 +111,32 @@ pub static SHA3_384: Hash = Hash { id: 14, n: 384 };
 #[no_mangle]
 pub static SHA3_512: Hash = Hash { id: 15, n: 512 };
 
-/// The SHA3-512/224 hash function as defined in [FIPS 202].
-///
-/// [FIPS]: https://doi.org/10.6028/NIST.FIPS.202
-#[no_mangle]
-pub static SHA3_512_224: Hash = Hash { id: 16, n: 224 };
-
-/// The SHA3-512/256 hash function as defined in [FIPS 202].
-///
-/// [FIPS]: https://doi.org/10.6028/NIST.FIPS.202
-#[no_mangle]
-pub static SHA3_512_256: Hash = Hash { id: 17, n: 256 };
-
 /// The SHA512 hash function as defined in [FIPS 180-4].
 ///
 /// [FIPS 180-4]: https://doi.org/10.6028/NIST.FIPS.180-4
 #[no_mangle]
-pub static SHA512: Hash = Hash { id: 18, n: 512 };
+pub static SHA512: Hash = Hash { id: 16, n: 512 };
 
 /// The SHA512/224 hash function as defined in [FIPS 180-4].
 ///
 /// [FIPS 180-4]: https://doi.org/10.6028/NIST.FIPS.180-4
 #[no_mangle]
-pub static SHA512_224: Hash = Hash { id: 19, n: 224 };
+pub static SHA512_224: Hash = Hash { id: 17, n: 224 };
 
 /// The SHA512/256 hash function as defined in [FIPS 180-4].
 ///
 /// [FIPS 180-4]: https://doi.org/10.6028/NIST.FIPS.180-4
 #[no_mangle]
-pub static SHA512_256: Hash = Hash { id: 20, n: 256 };
+pub static SHA512_256: Hash = Hash { id: 18, n: 256 };
 
 /// The SHAKE128 extendable-output function as defined in [FIPS 202].
 ///
 /// [FIPS]: https://doi.org/10.6028/NIST.FIPS.202
 #[no_mangle]
-pub static SHAKE128: Hash = Hash { id: 21, n: 128 };
+pub static SHAKE128: Hash = Hash { id: 19, n: 128 };
 
 /// The SHAKE256 extendable-output function as defined in [FIPS 202].
 ///
 /// [FIPS]: https://doi.org/10.6028/NIST.FIPS.202
 #[no_mangle]
-pub static SHAKE256: Hash = Hash { id: 21, n: 256 };
+pub static SHAKE256: Hash = Hash { id: 20, n: 256 };
