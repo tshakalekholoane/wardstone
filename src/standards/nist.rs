@@ -59,21 +59,22 @@ pub fn validate_hash(hash: &Hash) -> Result<bool, Hash> {
 ///
 /// # Example
 ///
-/// The following illustrates a call to validate a `3TDEA` key which is
-/// deprecated through the year 2023.
+/// The following illustrates a call to validate a three-key Triple DES
+/// key which is deprecated through the year 2023.
 ///
 /// ```
-/// use crate::primitives::symmetric::{AES128, TDEA};
+/// use crate::primitives::symmetric::{AES128, TDEA3};
 ///
-/// assert_eq!(validate_symmetric(&TDEA, 2023), Ok(true));
-/// assert_eq!(validate_symmetric(&TDEA, 2024), Err(AES128));
+/// const CUTOFF_YEAR: u16 = 2023;
+///
+/// assert_eq!(validate_symmetric(&TDEA3, CUTOFF_YEAR), Ok(()));
+/// assert_eq!(validate_symmetric(&TDEA3, CUTOFF_YEAR + 1), Err(AES128));
 /// ```
-pub fn validate_symmetric(symmetric: &Symmetric, expiry: u16) -> Result<bool, Symmetric> {
-  match symmetric.security {
-    ..=80 => Err(AES128),
-    112 if expiry <= CUTOFF_YEAR => Ok(true),
-    128.. => Ok(true),
-    _ => Err(AES128),
+pub fn validate_symmetric(key: &Symmetric, expiry: u16) -> Result<(), Symmetric> {
+  match key.security {
+    112 if expiry <= CUTOFF_YEAR => Ok(()),
+    ..=127 => Err(AES128),
+    128.. => Ok(()),
   }
 }
 
@@ -115,7 +116,7 @@ pub unsafe extern "C" fn ws_nist_validate_hash(hash: *const Hash, alt: *mut Hash
 /// Validates a symmetric key primitive according to pages 54-55 of the
 /// standard.
 ///
-/// If the key is not compliant then `struct ws_hash* alt`
+/// If the key is not compliant then `struct ws_hash* alternative`
 /// will contain the recommended primitive that one should use instead.
 ///
 /// The function returns 1 if the key is compliant, 0 if it is not, and
@@ -127,44 +128,43 @@ pub unsafe extern "C" fn ws_nist_validate_hash(hash: *const Hash, alt: *mut Hash
 /// safety.
 #[no_mangle]
 pub unsafe extern "C" fn ws_nist_validate_symmetric(
-  symmetric: *const Symmetric,
+  key: *const Symmetric,
   expiry: u16,
-  alt: *mut Symmetric,
+  alternative: *mut Symmetric,
 ) -> c_int {
   unsafe {
-    symmetric
+    key
       .as_ref()
-      .map(|symmetric_ref| {
-        validate_symmetric(symmetric_ref, expiry)
-          .map(|is_compliant| is_compliant as c_int)
-          .unwrap_or_else(|rec| {
-            if !alt.is_null() {
-              *alt = rec;
-            }
-            false as c_int
-          })
+      .map_or(-1, |key_ref| match validate_symmetric(key_ref, expiry) {
+        Ok(_) => 1,
+        Err(recommendation) => {
+          if !alternative.is_null() {
+            *alternative = recommendation;
+          }
+          0
+        },
       })
-      .unwrap_or(-1)
   }
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::primitives::symmetric::*;
 
-  #[test]
-  fn hash_validation() {
-    use crate::primitives::hash::{MD5, SHA256};
-
-    assert_eq!(validate_hash(&SHA256), Ok(true));
-    assert_eq!(validate_hash(&MD5), Err(SHA256));
+  macro_rules! test_symmetric {
+    ($name:ident, $input_a:expr, $input_b:expr, $want:expr) => {
+      #[test]
+      fn $name() {
+        assert_eq!(validate_symmetric($input_a, $input_b), $want);
+      }
+    };
   }
 
-  #[test]
-  fn symmetric_validation() {
-    use crate::primitives::symmetric::{AES128, TDEA};
-
-    assert_eq!(validate_symmetric(&TDEA, 2023), Ok(true));
-    assert_eq!(validate_symmetric(&TDEA, 2024), Err(AES128));
-  }
+  test_symmetric!(two_key_tdea, &TDEA2, CUTOFF_YEAR, Err(AES128));
+  test_symmetric!(three_key_tdea_pre, &TDEA3, CUTOFF_YEAR, Ok(()));
+  test_symmetric!(three_key_tdea_post, &TDEA3, CUTOFF_YEAR + 1, Err(AES128));
+  test_symmetric!(aes128, &AES128, CUTOFF_YEAR, Ok(()));
+  test_symmetric!(aes192, &AES192, CUTOFF_YEAR, Ok(()));
+  test_symmetric!(aes256, &AES256, CUTOFF_YEAR, Ok(()));
 }
