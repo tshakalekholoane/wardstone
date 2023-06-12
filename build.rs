@@ -7,6 +7,7 @@ fn main() {
   let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
   let header = Path::new("target").join("wardstone.h");
   cbindgen::Builder::new()
+    .rename_item("Context", "ws_context")
     .rename_item("Ecc", "ws_ecc")
     .rename_item("Ffc", "ws_ffc")
     .rename_item("Hash", "ws_hash")
