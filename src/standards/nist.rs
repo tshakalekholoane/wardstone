@@ -21,20 +21,14 @@ use lazy_static::lazy_static;
 
 use crate::primitives::hash::{
   Hash, SHA1, SHA224, SHA256, SHA384, SHA3_224, SHA3_256, SHA3_384, SHA3_512, SHA512, SHA512_224,
-  SHA512_256, SHAKE128, SHAKE256,
+  SHA512_256,
 };
 use crate::primitives::symmetric::{Symmetric, AES128};
 
 const CUTOFF_YEAR: u16 = 2023;
 
 lazy_static! {
-  static ref CUSTOM_HASH_FUNCTIONS: HashSet<u16> = {
-    let mut s = HashSet::new();
-    s.insert(SHAKE128.id);
-    s.insert(SHAKE256.id);
-    s
-  };
-  static ref SPECIFIED_HASH_FUNCTIONS: HashSet<u16> = {
+  static ref HASH: HashSet<u16> = {
     let mut s = HashSet::new();
     s.insert(SHA1.id);
     s.insert(SHA224.id);
@@ -47,8 +41,6 @@ lazy_static! {
     s.insert(SHA512.id);
     s.insert(SHA512_224.id);
     s.insert(SHA512_256.id);
-    s.insert(SHAKE128.id);
-    s.insert(SHAKE256.id);
     s
   };
 }
@@ -76,12 +68,8 @@ lazy_static! {
 /// assert_eq!(validate_hash(&SHA1), Err(SHA256));
 /// ```
 pub fn validate_hash(hash: &Hash) -> Result<(), Hash> {
-  if SPECIFIED_HASH_FUNCTIONS.contains(&hash.id) {
-    let security = if CUSTOM_HASH_FUNCTIONS.contains(&hash.id) {
-      hash.n
-    } else {
-      hash.n >> 1
-    };
+  if HASH.contains(&hash.id) {
+    let security = hash.n >> 1;
     match security {
       ..=111 => Err(SHA256),
       112.. => Ok(()),
@@ -228,8 +216,8 @@ mod tests {
   test_hash!(sha512, &SHA512, Ok(()));
   test_hash!(sha512_224, &SHA512_224, Ok(()));
   test_hash!(sha512_256, &SHA512_256, Ok(()));
-  test_hash!(shake128, &SHAKE128, Ok(()));
-  test_hash!(shake256, &SHAKE256, Ok(()));
+  test_hash!(shake128, &SHAKE128, Err(SHA256));
+  test_hash!(shake256, &SHAKE256, Err(SHA256));
 
   test_symmetric!(two_key_tdea, &TDEA2, CUTOFF_YEAR, Err(AES128));
   test_symmetric!(three_key_tdea_pre, &TDEA3, CUTOFF_YEAR, Ok(()));
