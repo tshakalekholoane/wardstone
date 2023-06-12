@@ -7,7 +7,10 @@ fn main() {
   let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
   let header = Path::new("target").join("wardstone.h");
   cbindgen::Builder::new()
+    .rename_item("Ecc", "ws_ecc")
+    .rename_item("Ffc", "ws_ffc")
     .rename_item("Hash", "ws_hash")
+    .rename_item("Ifc", "ws_ifc")
     .rename_item("Symmetric", "ws_symmetric")
     .with_cpp_compat(true)
     .with_crate(crate_dir)
