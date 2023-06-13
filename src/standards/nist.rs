@@ -19,16 +19,17 @@ use std::ffi::c_int;
 
 use lazy_static::lazy_static;
 
+use crate::context::Context;
 use crate::primitives::hash::{
   Hash, SHA1, SHA224, SHA256, SHA384, SHA3_224, SHA3_256, SHA3_384, SHA3_512, SHA512, SHA512_224,
   SHA512_256,
 };
 use crate::primitives::symmetric::{Symmetric, AES128};
 
-const CUTOFF_YEAR: u16 = 2023;
+const CUTOFF_YEAR: u16 = 2031;
 
 lazy_static! {
-  static ref HASH: HashSet<u16> = {
+  static ref SPECIFIED_HASH_FN: HashSet<u16> = {
     let mut s = HashSet::new();
     s.insert(SHA1.id);
     s.insert(SHA224.id);
@@ -52,10 +53,10 @@ lazy_static! {
 /// If the hash function is not compliant then `Err` will contain the
 /// recommended primitive that one should use instead.
 ///
-/// **Caution:** The default recommendation is SHA256. While this is
-/// safe for most use cases, it is generally not recommended for hashing
-/// secrets given its lack of resistance against length extension
-/// attacks.
+/// **Caution:** The default recommendation is from the SHA2 family.
+/// While this is safe for most use cases, it is generally not
+/// recommended for hashing secrets given its lack of resistance against
+/// length extension attacks.
 ///
 /// # Example
 ///
@@ -63,16 +64,33 @@ lazy_static! {
 /// function.
 ///
 /// ```
-/// use crate::primitives::hash::{SHA1, SHA256};
+/// use crate::context::Context;
+/// use crate::primitives::hash::{SHA1, SHA224};
 ///
-/// assert_eq!(validate_hash(&SHA1), Err(SHA256));
+/// let ctx = Context::default();
+/// assert_eq!(validate_hash(&ctx, &SHA1), Err(SHA256));
 /// ```
-pub fn validate_hash(hash: &Hash) -> Result<(), Hash> {
-  if HASH.contains(&hash.id) {
-    let security = hash.n >> 1;
+pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
+  if SPECIFIED_HASH_FN.contains(&hash.id) {
+    let security = ctx.security().max(hash.n >> 1);
     match security {
-      ..=111 => Err(SHA256),
-      112.. => Ok(()),
+      ..=111 => {
+        if ctx.year() > CUTOFF_YEAR {
+          Err(SHA256)
+        } else {
+          Err(SHA224)
+        }
+      },
+      112 => {
+        if ctx.year() > CUTOFF_YEAR {
+          Err(SHA256)
+        } else {
+          Ok(SHA224)
+        }
+      },
+      113..=128 => Ok(SHA256),
+      129..=192 => Ok(SHA384),
+      193.. => Ok(SHA512),
     }
   } else {
     Err(SHA256)
@@ -114,29 +132,33 @@ pub fn validate_symmetric(key: &Symmetric, expiry: u16) -> Result<(), Symmetric>
 /// `struct ws_hash* alternative` will contain the recommended primitive
 /// that one should use instead.
 ///
-/// **Caution:** The default recommendation is SHA256. While this is
-/// safe for most use cases, it is generally not recommended for hashing
-/// secrets given its lack of resistance against length extension
-/// attacks.
+/// **Caution:** The default recommendation is from the SHA2 family.
+/// While this is safe for most use cases, it is generally not
+/// recommended for hashing secrets given its lack of resistance against
+/// length extension attacks.
 ///
 /// # Safety
 ///
 /// See [module documentation](crate::standards::nist) for comment on
 /// safety.
 #[no_mangle]
-pub unsafe extern "C" fn ws_nist_validate_hash(hash: *const Hash, alternative: *mut Hash) -> c_int {
-  unsafe {
-    hash
-      .as_ref()
-      .map_or(-1, |hash_ref| match validate_hash(hash_ref) {
-        Ok(_) => 1,
-        Err(recommendation) => {
-          if !alternative.is_null() {
-            *alternative = recommendation;
-          }
-          0
-        },
-      })
+pub unsafe extern "C" fn ws_nist_validate_hash(
+  ctx: *const Context,
+  hash: *const Hash,
+  alternative: *mut Hash,
+) -> c_int {
+  if ctx.is_null() || hash.is_null() {
+    return -1;
+  }
+
+  match validate_hash(ctx.as_ref().unwrap(), hash.as_ref().unwrap()) {
+    Ok(..) => 1,
+    Err(recommendation) => {
+      if !alternative.is_null() {
+        *alternative = recommendation;
+      }
+      0
+    },
   }
 }
 
@@ -184,7 +206,7 @@ mod tests {
     ($name:ident, $input:expr, $want:expr) => {
       #[test]
       fn $name() {
-        assert_eq!(validate_hash($input), $want);
+        assert_eq!(validate_hash(&Context::default(), $input), $want);
       }
     };
   }
@@ -205,17 +227,17 @@ mod tests {
   test_hash!(md4, &MD4, Err(SHA256));
   test_hash!(md5, &MD5, Err(SHA256));
   test_hash!(ripemd160, &RIPEMD160, Err(SHA256));
-  test_hash!(sha1, &SHA1, Err(SHA256));
-  test_hash!(sha224, &SHA224, Ok(()));
-  test_hash!(sha256, &SHA256, Ok(()));
-  test_hash!(sha384, &SHA384, Ok(()));
-  test_hash!(sha3_224, &SHA3_224, Ok(()));
-  test_hash!(sha3_256, &SHA3_256, Ok(()));
-  test_hash!(sha3_384, &SHA3_384, Ok(()));
-  test_hash!(sha3_512, &SHA3_512, Ok(()));
-  test_hash!(sha512, &SHA512, Ok(()));
-  test_hash!(sha512_224, &SHA512_224, Ok(()));
-  test_hash!(sha512_256, &SHA512_256, Ok(()));
+  test_hash!(sha1, &SHA1, Err(SHA224));
+  test_hash!(sha224, &SHA224, Ok(SHA224));
+  test_hash!(sha256, &SHA256, Ok(SHA256));
+  test_hash!(sha384, &SHA384, Ok(SHA384));
+  test_hash!(sha3_224, &SHA3_224, Ok(SHA224));
+  test_hash!(sha3_256, &SHA3_256, Ok(SHA256));
+  test_hash!(sha3_384, &SHA3_384, Ok(SHA384));
+  test_hash!(sha3_512, &SHA3_512, Ok(SHA512));
+  test_hash!(sha512, &SHA512, Ok(SHA512));
+  test_hash!(sha512_224, &SHA512_224, Ok(SHA224));
+  test_hash!(sha512_256, &SHA512_256, Ok(SHA256));
   test_hash!(shake128, &SHAKE128, Err(SHA256));
   test_hash!(shake256, &SHAKE256, Err(SHA256));
 
