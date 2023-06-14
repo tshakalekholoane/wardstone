@@ -9,25 +9,25 @@ pub struct Hash {
   pub n: u16,
 }
 
-/// The BLAKE2b hash function as defined by [RFC 7693].
+/// The BLAKE2b hash function as defined in [RFC 7693].
 ///
 /// [RFC 7693]: https://www.rfc-editor.org/rfc/rfc7693.html
 #[no_mangle]
 pub static BLAKE2b_256: Hash = Hash { id: 1, n: 256 };
 
-/// The BLAKE2b hash function as defined by [RFC 7693].
+/// The BLAKE2b hash function as defined in [RFC 7693].
 ///
 /// [RFC 7693]: https://www.rfc-editor.org/rfc/rfc7693.html
 #[no_mangle]
 pub static BLAKE2b_384: Hash = Hash { id: 2, n: 384 };
 
-/// The BLAKE2b hash function as defined by [RFC 7693].
+/// The BLAKE2b hash function as defined in [RFC 7693].
 ///
 /// [RFC 7693]: https://www.rfc-editor.org/rfc/rfc7693.html
 #[no_mangle]
 pub static BLAKE2b_512: Hash = Hash { id: 3, n: 512 };
 
-/// The BLAKE2s hash function as defined by [RFC 7693].
+/// The BLAKE2s hash function as defined in [RFC 7693].
 ///
 /// [RFC 7693]: https://www.rfc-editor.org/rfc/rfc7693.html
 #[no_mangle]
@@ -65,7 +65,7 @@ pub static RIPEMD160: Hash = Hash { id: 7, n: 160 };
 /// **Warning:** This algorithm has been shown to lack collision
 /// resistance and should generally not be used for secure applications.
 ///
-/// [RFC 1321]: https://www.rfc-editor.org/rfc/rfc3174.html
+/// [RFC 3174]: https://www.rfc-editor.org/rfc/rfc3174.html
 #[no_mangle]
 pub static SHA1: Hash = Hash { id: 8, n: 160 };
 
@@ -89,25 +89,25 @@ pub static SHA384: Hash = Hash { id: 11, n: 384 };
 
 /// The SHA3-224 hash function as defined in [FIPS 202].
 ///
-/// [FIPS]: https://doi.org/10.6028/NIST.FIPS.202
+/// [FIPS 202]: https://doi.org/10.6028/NIST.FIPS.202
 #[no_mangle]
 pub static SHA3_224: Hash = Hash { id: 12, n: 224 };
 
 /// The SHA3-256 hash function as defined in [FIPS 202].
 ///
-/// [FIPS]: https://doi.org/10.6028/NIST.FIPS.202
+/// [FIPS 202]: https://doi.org/10.6028/NIST.FIPS.202
 #[no_mangle]
 pub static SHA3_256: Hash = Hash { id: 13, n: 256 };
 
 /// The SHA3-384 hash function as defined in [FIPS 202].
 ///
-/// [FIPS]: https://doi.org/10.6028/NIST.FIPS.202
+/// [FIPS 202]: https://doi.org/10.6028/NIST.FIPS.202
 #[no_mangle]
 pub static SHA3_384: Hash = Hash { id: 14, n: 384 };
 
 /// The SHA3-512 hash function as defined in [FIPS 202].
 ///
-/// [FIPS]: https://doi.org/10.6028/NIST.FIPS.202
+/// [FIPS 202]: https://doi.org/10.6028/NIST.FIPS.202
 #[no_mangle]
 pub static SHA3_512: Hash = Hash { id: 15, n: 512 };
 
@@ -131,12 +131,12 @@ pub static SHA512_256: Hash = Hash { id: 18, n: 256 };
 
 /// The SHAKE128 extendable-output function as defined in [FIPS 202].
 ///
-/// [FIPS]: https://doi.org/10.6028/NIST.FIPS.202
+/// [FIPS 202]: https://doi.org/10.6028/NIST.FIPS.202
 #[no_mangle]
 pub static SHAKE128: Hash = Hash { id: 19, n: 128 };
 
 /// The SHAKE256 extendable-output function as defined in [FIPS 202].
 ///
-/// [FIPS]: https://doi.org/10.6028/NIST.FIPS.202
+/// [FIPS 202]: https://doi.org/10.6028/NIST.FIPS.202
 #[no_mangle]
 pub static SHAKE256: Hash = Hash { id: 20, n: 256 };
