@@ -65,9 +65,13 @@ pub static RIPEMD160: Hash = Hash { id: 7, n: 160 };
 /// **Warning:** This algorithm has been shown to lack collision
 /// resistance and should generally not be used for secure applications.
 ///
+/// While this algorithm produced a digest length of 160 bits, it's
+/// security is believed to be lower. Here it is recorded to be 105 per
+/// page 8 of NIST SP 800-107.
+///
 /// [RFC 3174]: https://www.rfc-editor.org/rfc/rfc3174.html
 #[no_mangle]
-pub static SHA1: Hash = Hash { id: 8, n: 160 };
+pub static SHA1: Hash = Hash { id: 8, n: 105 };
 
 /// The SHA224 hash function as defined in [FIPS 180-4].
 ///
