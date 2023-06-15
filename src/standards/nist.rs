@@ -455,101 +455,72 @@ pub unsafe extern "C" fn ws_nist_validate_symmetric(
 }
 
 #[cfg(test)]
+#[rustfmt::skip]
 mod tests {
   use super::*;
-  use crate::primitives::{ffc::FFC_1024_160, hash::*};
+  use crate::primitives::{ffc::*, hash::*};
 
-  macro_rules! test_ffc {
-    ($name:ident, $input:expr, $want:expr) => {
+  macro_rules! test_case {
+    ($name:ident, $func:ident, $input:expr, $want:expr) => {
       #[test]
       fn $name() {
         let ctx = Context::default();
-        assert_eq!(validate_ffc(&ctx, $input), $want);
+        assert_eq!($func(&ctx, $input), $want);
       }
     };
   }
 
-  macro_rules! test_hash {
-    ($name:ident, $input:expr, $want:expr) => {
-      #[test]
-      fn $name() {
-        let ctx = Context::default();
-        assert_eq!(validate_hash(&ctx, $input), $want);
-      }
-    };
-  }
+  test_case!(ffc_1024_160, validate_ffc, &FFC_1024_160, Err(FFC_2048_224));
+  test_case!(ffc_2048_224, validate_ffc, &FFC_2048_224, Ok(FFC_2048_224));
+  test_case!(ffc_3072_256, validate_ffc, &FFC_3072_256, Ok(FFC_3072_256));
+  test_case!(ffc_7680_384, validate_ffc, &FFC_7680_384, Ok(FFC_7680_384));
+  test_case!(ffc_15360_512, validate_ffc, &FFC_15360_512, Ok(FFC_15360_512));
 
-  macro_rules! test_hash_based {
-    ($name:ident, $input:expr, $want:expr) => {
-      #[test]
-      fn $name() {
-        let ctx = Context::default();
-        assert_eq!(validate_hash_based(&ctx, $input), $want);
-      }
-    };
-  }
+  test_case!(blake2b_256_collision_resistance, validate_hash, &BLAKE2b_256, Err(SHA256));
+  test_case!(blake2b_384_collision_resistance, validate_hash, &BLAKE2b_384, Err(SHA256));
+  test_case!(blake2b_512_collision_resistance, validate_hash, &BLAKE2b_512, Err(SHA256));
+  test_case!(blake2s_256_collision_resistance, validate_hash, &BLAKE2s_256, Err(SHA256));
+  test_case!(md4_collision_resistance, validate_hash, &MD4, Err(SHA256));
+  test_case!(md5_collision_resistance, validate_hash, &MD5, Err(SHA256));
+  test_case!(ripemd160_collision_resistance, validate_hash, &RIPEMD160, Err(SHA256));
+  test_case!(sha1_collision_resistance, validate_hash, &SHA1, Err(SHA224));
+  test_case!(sha224_collision_resistance, validate_hash, &SHA224, Ok(SHA224));
+  test_case!(sha256_collision_resistance, validate_hash, &SHA256, Ok(SHA256));
+  test_case!(sha384_collision_resistance, validate_hash, &SHA384, Ok(SHA384));
+  test_case!(sha3_224_collision_resistance, validate_hash, &SHA3_224, Ok(SHA224));
+  test_case!(sha3_256_collision_resistance, validate_hash, &SHA3_256, Ok(SHA256));
+  test_case!(sha3_384_collision_resistance, validate_hash, &SHA3_384, Ok(SHA384));
+  test_case!(sha3_512_collision_resistance, validate_hash, &SHA3_512, Ok(SHA512));
+  test_case!(sha512_collision_resistance, validate_hash, &SHA512, Ok(SHA512));
+  test_case!(sha512_224_collision_resistance, validate_hash, &SHA512_224, Ok(SHA224));
+  test_case!(sha512_256_collision_resistance, validate_hash, &SHA512_256, Ok(SHA256));
+  test_case!(shake128_collision_resistance, validate_hash, &SHAKE128, Err(SHA256));
+  test_case!(shake256_collision_resistance, validate_hash, &SHAKE256, Err(SHA256));
 
-  macro_rules! test_symmetric {
-    ($name:ident, $input_a:expr, $want:expr) => {
-      #[test]
-      fn $name() {
-        let ctx = Context::default();
-        assert_eq!(validate_symmetric(&ctx, $input_a), $want);
-      }
-    };
-  }
+  test_case!(blake2b_256_pre_image_resistance, validate_hash_based, &BLAKE2b_256, Err(SHA224));
+  test_case!(blake2b_384_pre_image_resistance, validate_hash_based, &BLAKE2b_384, Err(SHA224));
+  test_case!(blake2b_512_pre_image_resistance, validate_hash_based, &BLAKE2b_512, Err(SHA224));
+  test_case!(blake2s_256_pre_image_resistance, validate_hash_based, &BLAKE2s_256, Err(SHA224));
+  test_case!(md4_pre_image_resistance, validate_hash_based, &MD4, Err(SHA224));
+  test_case!(md5_pre_image_resistance, validate_hash_based, &MD5, Err(SHA224));
+  test_case!(ripemd160_pre_image_resistance, validate_hash_based, &RIPEMD160, Err(SHA224));
+  test_case!(sha1_pre_image_resistance, validate_hash_based, &SHA1, Err(SHA224));
+  test_case!(sha224_pre_image_resistance, validate_hash_based, &SHA224, Ok(SHA224));
+  test_case!(sha256_pre_image_resistance, validate_hash_based, &SHA256, Ok(SHA256));
+  test_case!(sha384_pre_image_resistance, validate_hash_based, &SHA384, Ok(SHA384));
+  test_case!(sha3_224_pre_image_resistance, validate_hash_based, &SHA3_224, Ok(SHA224));
+  test_case!(sha3_256_pre_image_resistance, validate_hash_based, &SHA3_256, Ok(SHA256));
+  test_case!(sha3_384_pre_image_resistance, validate_hash_based, &SHA3_384, Ok(SHA384));
+  test_case!(sha3_512_pre_image_resistance, validate_hash_based, &SHA3_512, Ok(SHA512));
+  test_case!(sha512_pre_image_resistance, validate_hash_based, &SHA512, Ok(SHA512));
+  test_case!(sha512_224_pre_image_resistance, validate_hash_based, &SHA512_224, Ok(SHA224));
+  test_case!(sha512_256_pre_image_resistance, validate_hash_based, &SHA512_256, Ok(SHA256));
+  test_case!(shake128_pre_image_resistance, validate_hash_based, &SHAKE128, Err(SHA224));
+  test_case!(shake256_pre_image_resistance, validate_hash_based, &SHAKE256, Err(SHA224));
 
-  test_ffc!(ffc_1024_160, &FFC_1024_160, Err(FFC_2048_224));
-  test_ffc!(ffc_2048_224, &FFC_2048_224, Ok(FFC_2048_224));
-  test_ffc!(ffc_3072_256, &FFC_3072_256, Ok(FFC_3072_256));
-  test_ffc!(ffc_7680_384, &FFC_7680_384, Ok(FFC_7680_384));
-  test_ffc!(ffc_15360_512, &FFC_15360_512, Ok(FFC_15360_512));
-
-  test_hash!(blake2b_256_collision_resistance, &BLAKE2b_256, Err(SHA256));
-  test_hash!(blake2b_384_collision_resistance, &BLAKE2b_384, Err(SHA256));
-  test_hash!(blake2b_512_collision_resistance, &BLAKE2b_512, Err(SHA256));
-  test_hash!(blake2s_256_collision_resistance, &BLAKE2s_256, Err(SHA256));
-  test_hash!(md4_collision_resistance, &MD4, Err(SHA256));
-  test_hash!(md5_collision_resistance, &MD5, Err(SHA256));
-  test_hash!(ripemd160_collision_resistance, &RIPEMD160, Err(SHA256));
-  test_hash!(sha1_collision_resistance, &SHA1, Err(SHA224));
-  test_hash!(sha224_collision_resistance, &SHA224, Ok(SHA224));
-  test_hash!(sha256_collision_resistance, &SHA256, Ok(SHA256));
-  test_hash!(sha384_collision_resistance, &SHA384, Ok(SHA384));
-  test_hash!(sha3_224_collision_resistance, &SHA3_224, Ok(SHA224));
-  test_hash!(sha3_256_collision_resistance, &SHA3_256, Ok(SHA256));
-  test_hash!(sha3_384_collision_resistance, &SHA3_384, Ok(SHA384));
-  test_hash!(sha3_512_collision_resistance, &SHA3_512, Ok(SHA512));
-  test_hash!(sha512_collision_resistance, &SHA512, Ok(SHA512));
-  test_hash!(sha512_224_collision_resistance, &SHA512_224, Ok(SHA224));
-  test_hash!(sha512_256_collision_resistance, &SHA512_256, Ok(SHA256));
-  test_hash!(shake128_collision_resistance, &SHAKE128, Err(SHA256));
-  test_hash!(shake256_collision_resistance, &SHAKE256, Err(SHA256));
-
-  test_hash_based!(blake2b_256_pre_image_resistance, &BLAKE2b_256, Err(SHA224));
-  test_hash_based!(blake2b_384_pre_image_resistance, &BLAKE2b_384, Err(SHA224));
-  test_hash_based!(blake2b_512_pre_image_resistance, &BLAKE2b_512, Err(SHA224));
-  test_hash_based!(blake2s_256_pre_image_resistance, &BLAKE2s_256, Err(SHA224));
-  test_hash_based!(md4_pre_image_resistance, &MD4, Err(SHA224));
-  test_hash_based!(md5_pre_image_resistance, &MD5, Err(SHA224));
-  test_hash_based!(ripemd160_pre_image_resistance, &RIPEMD160, Err(SHA224));
-  test_hash_based!(sha1_pre_image_resistance, &SHA1, Err(SHA224));
-  test_hash_based!(sha224_pre_image_resistance, &SHA224, Ok(SHA224));
-  test_hash_based!(sha256_pre_image_resistance, &SHA256, Ok(SHA256));
-  test_hash_based!(sha384_pre_image_resistance, &SHA384, Ok(SHA384));
-  test_hash_based!(sha3_224_pre_image_resistance, &SHA3_224, Ok(SHA224));
-  test_hash_based!(sha3_256_pre_image_resistance, &SHA3_256, Ok(SHA256));
-  test_hash_based!(sha3_384_pre_image_resistance, &SHA3_384, Ok(SHA384));
-  test_hash_based!(sha3_512_pre_image_resistance, &SHA3_512, Ok(SHA512));
-  test_hash_based!(sha512_pre_image_resistance, &SHA512, Ok(SHA512));
-  test_hash_based!(sha512_224_pre_image_resistance, &SHA512_224, Ok(SHA224));
-  test_hash_based!(sha512_256_pre_image_resistance, &SHA512_256, Ok(SHA256));
-  test_hash_based!(shake128_pre_image_resistance, &SHAKE128, Err(SHA224));
-  test_hash_based!(shake256_pre_image_resistance, &SHAKE256, Err(SHA224));
-
-  test_symmetric!(two_key_tdea, &TDEA2, Err(AES128));
-  test_symmetric!(three_key_tdea, &TDEA3, Ok(AES128));
-  test_symmetric!(aes128, &AES128, Ok(AES128));
-  test_symmetric!(aes192, &AES192, Ok(AES192));
-  test_symmetric!(aes256, &AES256, Ok(AES256));
+  test_case!(two_key_tdea, validate_symmetric, &TDEA2, Err(AES128));
+  test_case!(three_key_tdea, validate_symmetric, &TDEA3, Ok(AES128));
+  test_case!(aes128, validate_symmetric, &AES128, Ok(AES128));
+  test_case!(aes192, validate_symmetric, &AES192, Ok(AES192));
+  test_case!(aes256, validate_symmetric, &AES256, Ok(AES256));
 }
