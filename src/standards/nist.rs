@@ -24,9 +24,10 @@ use crate::primitives::hash::{
   Hash, SHA1, SHA224, SHA256, SHA384, SHA3_224, SHA3_256, SHA3_384, SHA3_512, SHA512, SHA512_224,
   SHA512_256,
 };
-use crate::primitives::symmetric::{Symmetric, AES128};
+use crate::primitives::symmetric::{Symmetric, AES128, AES192, AES256, TDEA2, TDEA3};
 
 const CUTOFF_YEAR: u16 = 2031;
+const CUTOFF_YEAR_3TDEA: u16 = 2023;
 
 lazy_static! {
   static ref SPECIFIED_HASH: HashSet<u16> = {
@@ -44,6 +45,15 @@ lazy_static! {
     s.insert(SHA512_256.id);
     s
   };
+  static ref SPECIFIED_SYMMETRIC: HashSet<u16> = {
+    let mut s = HashSet::new();
+    s.insert(TDEA2.id);
+    s.insert(TDEA3.id);
+    s.insert(AES128.id);
+    s.insert(AES192.id);
+    s.insert(AES256.id);
+    s
+  };
 }
 
 /// Validates a hash function according to page 56 of the standard. The
@@ -52,7 +62,9 @@ lazy_static! {
 ///
 /// For applications that primarily require pre-image resistance such as
 /// message authentication codes (MACs), key derivation functions
-/// (KDFs), and random bit generation use [`validate_hash_based`](crate::standards::nist::validate_hash_based).
+/// (KDFs), and random bit generation use
+/// [`validate_hash_based`](crate::standards::nist::validate_hash_based).
+///
 ///
 /// If the hash function is not compliant then `Err` will contain the
 /// recommended primitive that one should use instead.
@@ -117,7 +129,8 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// (MACs), key derivation functions (KDFs), and random bit generation.
 ///
 /// For applications that require collision resistance such digital
-/// signatures use [`validate_hash`](crate::standards::nist::validate_hash).
+/// signatures use
+/// [`validate_hash`](crate::standards::nist::validate_hash).
 ///
 /// If the hash function is not compliant then `Err` will contain the
 /// recommended primitive that one should use instead.
@@ -177,24 +190,45 @@ pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// If the key is not compliant then `Err` will contain the recommended
 /// primitive that one should use instead.
 ///
+/// If the hash function is compliant but the context specifies a higher
+/// security level, `Ok` will also hold the recommended primitive with
+/// the desired security level.
+///
 /// # Example
 ///
 /// The following illustrates a call to validate a three-key Triple DES
-/// key which is deprecated through the year 2023.
+/// key (which is deprecated through the year 2023).
 ///
 /// ```
+/// use crate::context::Context;
 /// use crate::primitives::symmetric::{AES128, TDEA3};
 ///
-/// const CUTOFF_YEAR: u16 = 2023;
-///
-/// assert_eq!(validate_symmetric(&TDEA3, CUTOFF_YEAR), Ok(()));
-/// assert_eq!(validate_symmetric(&TDEA3, CUTOFF_YEAR + 1), Err(AES128));
+/// let ctx = Context::default();
+/// assert_eq!(validate_symmetric(&ctx, &TDEA3), Ok(AES128));
 /// ```
-pub fn validate_symmetric(key: &Symmetric, expiry: u16) -> Result<(), Symmetric> {
-  match key.security {
-    112 if expiry <= CUTOFF_YEAR => Ok(()),
-    ..=127 => Err(AES128),
-    128.. => Ok(()),
+pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
+  if SPECIFIED_SYMMETRIC.contains(&key.id) {
+    match key.security {
+      ..=111 => Err(AES128),
+      112 => {
+        // See SP 800-131Ar2 p. 7.
+        let cutoff = if key.id == TDEA3.id {
+          CUTOFF_YEAR_3TDEA
+        } else {
+          CUTOFF_YEAR
+        };
+        if ctx.year() > cutoff {
+          Err(AES128)
+        } else {
+          Ok(AES128)
+        }
+      },
+      113..=128 => Ok(AES128),
+      129..=192 => Ok(AES192),
+      193.. => Ok(AES256),
+    }
+  } else {
+    Err(AES128)
   }
 }
 
@@ -203,14 +237,14 @@ pub fn validate_symmetric(key: &Symmetric, expiry: u16) -> Result<(), Symmetric>
 unsafe fn c_call<T>(
   f: fn(&Context, &T) -> Result<T, T>,
   ctx: *const Context,
-  hash: *const T,
+  primitive: *const T,
   alternative: *mut T,
 ) -> c_int {
-  if ctx.is_null() || hash.is_null() {
+  if ctx.is_null() || primitive.is_null() {
     return -1;
   }
 
-  let (recommendation, ok) = match f(ctx.as_ref().unwrap(), hash.as_ref().unwrap()) {
+  let (recommendation, is_compliant) = match f(ctx.as_ref().unwrap(), primitive.as_ref().unwrap()) {
     Ok(recommendation) => (recommendation, true),
     Err(recommendation) => (recommendation, false),
   };
@@ -219,7 +253,7 @@ unsafe fn c_call<T>(
     *alternative = recommendation;
   }
 
-  ok as c_int
+  is_compliant as c_int
 }
 
 /// Validates a hash function according to page 56 of the standard. The
@@ -230,8 +264,9 @@ unsafe fn c_call<T>(
 /// message authentication codes (MACs), key derivation functions
 /// (KDFs), and random bit generation use `ws_validate_hash_based`.
 ///
-/// If the hash function is not compliant then `struct ws_hash* alternative`
-/// will contain the recommended primitive that one should use instead.
+/// If the hash function is not compliant then `struct ws_hash*
+/// alternative` will contain the recommended primitive that one should
+/// use instead.
 ///
 /// If the hash function is compliant but the context specifies a higher
 /// security level, `struct ws_hash*` will also hold the recommended
@@ -307,6 +342,10 @@ pub unsafe extern "C" fn ws_nist_validate_hash_based(
 /// If the key is not compliant then `struct ws_symmetric* alternative`
 /// will contain the recommended primitive that one should use instead.
 ///
+/// If the symmetric key is compliant but the context specifies a higher
+/// security level, `struct ws_symmetric*` will also hold the
+/// recommended primitive with the desired security level.
+///
 /// The function returns 1 if the key is compliant, 0 if it is not, and
 /// -1 if an error occurs as a result of a missing or invalid argument.
 ///
@@ -315,36 +354,24 @@ pub unsafe extern "C" fn ws_nist_validate_hash_based(
 /// See module documentation for comment on safety.
 #[no_mangle]
 pub unsafe extern "C" fn ws_nist_validate_symmetric(
+  ctx: *const Context,
   key: *const Symmetric,
-  expiry: u16,
   alternative: *mut Symmetric,
 ) -> c_int {
-  unsafe {
-    key
-      .as_ref()
-      .map_or(-1, |key_ref| match validate_symmetric(key_ref, expiry) {
-        Ok(_) => 1,
-        Err(recommendation) => {
-          if !alternative.is_null() {
-            *alternative = recommendation;
-          }
-          0
-        },
-      })
-  }
+  c_call(validate_symmetric, ctx, key, alternative)
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
   use crate::primitives::hash::*;
-  use crate::primitives::symmetric::*;
 
   macro_rules! test_hash {
     ($name:ident, $input:expr, $want:expr) => {
       #[test]
       fn $name() {
-        assert_eq!(validate_hash(&Context::default(), $input), $want);
+        let ctx = Context::default();
+        assert_eq!(validate_hash(&ctx, $input), $want);
       }
     };
   }
@@ -353,16 +380,18 @@ mod tests {
     ($name:ident, $input:expr, $want:expr) => {
       #[test]
       fn $name() {
-        assert_eq!(validate_hash_based(&Context::default(), $input), $want);
+        let ctx = Context::default();
+        assert_eq!(validate_hash_based(&ctx, $input), $want);
       }
     };
   }
 
   macro_rules! test_symmetric {
-    ($name:ident, $input_a:expr, $input_b:expr, $want:expr) => {
+    ($name:ident, $input_a:expr, $want:expr) => {
       #[test]
       fn $name() {
-        assert_eq!(validate_symmetric($input_a, $input_b), $want);
+        let ctx = Context::default();
+        assert_eq!(validate_symmetric(&ctx, $input_a), $want);
       }
     };
   }
@@ -387,6 +416,7 @@ mod tests {
   test_hash!(sha512_256_collision_resistance, &SHA512_256, Ok(SHA256));
   test_hash!(shake128_collision_resistance, &SHAKE128, Err(SHA256));
   test_hash!(shake256_collision_resistance, &SHAKE256, Err(SHA256));
+
   test_hash_based!(blake2b_256_pre_image_resistance, &BLAKE2b_256, Err(SHA224));
   test_hash_based!(blake2b_384_pre_image_resistance, &BLAKE2b_384, Err(SHA224));
   test_hash_based!(blake2b_512_pre_image_resistance, &BLAKE2b_512, Err(SHA224));
@@ -407,10 +437,10 @@ mod tests {
   test_hash_based!(sha512_256_pre_image_resistance, &SHA512_256, Ok(SHA256));
   test_hash_based!(shake128_pre_image_resistance, &SHAKE128, Err(SHA224));
   test_hash_based!(shake256_pre_image_resistance, &SHAKE256, Err(SHA224));
-  test_symmetric!(two_key_tdea, &TDEA2, CUTOFF_YEAR, Err(AES128));
-  test_symmetric!(three_key_tdea_pre, &TDEA3, CUTOFF_YEAR, Ok(()));
-  test_symmetric!(three_key_tdea_post, &TDEA3, CUTOFF_YEAR + 1, Err(AES128));
-  test_symmetric!(aes128, &AES128, CUTOFF_YEAR, Ok(()));
-  test_symmetric!(aes192, &AES192, CUTOFF_YEAR, Ok(()));
-  test_symmetric!(aes256, &AES256, CUTOFF_YEAR, Ok(()));
+
+  test_symmetric!(two_key_tdea, &TDEA2, Err(AES128));
+  test_symmetric!(three_key_tdea, &TDEA3, Ok(AES128));
+  test_symmetric!(aes128, &AES128, Ok(AES128));
+  test_symmetric!(aes192, &AES192, Ok(AES192));
+  test_symmetric!(aes256, &AES256, Ok(AES256));
 }
