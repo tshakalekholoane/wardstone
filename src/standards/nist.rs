@@ -20,6 +20,7 @@ use std::ffi::c_int;
 use lazy_static::lazy_static;
 
 use crate::context::Context;
+use crate::primitives::ffc::{Ffc, FFC_15360_512, FFC_2048_224, FFC_3072_256, FFC_7680_384};
 use crate::primitives::hash::{
   Hash, SHA1, SHA224, SHA256, SHA384, SHA3_224, SHA3_256, SHA3_384, SHA3_512, SHA512, SHA512_224,
   SHA512_256,
@@ -54,6 +55,60 @@ lazy_static! {
     s.insert(AES256.id);
     s
   };
+}
+
+/// Validates a finite field cryptography primitive function examples
+/// which include DSA and key establishment algorithms such as
+/// Diffie-Hellman and MQV according to page 54-55 of the standard.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended primitive with the
+/// desired security level.
+///
+/// **Note:** Unlike other functions in this module, this will return a
+/// generic structure that specifies minimum private and public key
+/// sizes.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a compliant key.
+///
+/// ```
+/// use crate::context::Context;
+/// use crate::primitives::ffc::FFC_2048_224;
+///
+/// let ctx = Context::default();
+/// assert_eq!(validate_ffc(&ctx, &FFC_2048_224), Ok(FFC_2048_224));
+pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
+  match key {
+    Ffc {
+      l: ..=2047,
+      n: ..=223,
+    } => Err(FFC_2048_224),
+    Ffc { l: 2048, n: 224 } => {
+      if ctx.year() > CUTOFF_YEAR {
+        Err(FFC_3072_256)
+      } else {
+        Ok(FFC_2048_224)
+      }
+    },
+    Ffc {
+      l: 2049..=3072,
+      n: 225..=256,
+    } => Ok(FFC_3072_256),
+    Ffc {
+      l: 3073..=7680,
+      n: 257..=384,
+    } => Ok(FFC_7680_384),
+    Ffc {
+      l: 7681..,
+      n: 385..,
+    } => Ok(FFC_15360_512),
+    _ => Err(FFC_2048_224),
+  }
 }
 
 /// Validates a hash function according to page 56 of the standard. The
@@ -256,6 +311,36 @@ unsafe fn c_call<T>(
   is_compliant as c_int
 }
 
+/// Validates a finite field cryptography primitive function examples
+/// which include DSA and key establishment algorithms such as
+/// Diffie-Hellman and MQV according to page 54-55 of the standard.
+///
+/// If the key is not compliant then `struct ws_ffc*` will point to the
+/// recommended primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `struct ws_ffc` will also point to the recommended primitive
+/// with the desired security level.
+///
+/// The function returns 1 if the key is compliant, 0 if it is not, and
+/// -1 if an error occurs as a result of a missing or invalid argument.
+///
+/// **Note:** Unlike other functions in this module, this will return a
+/// generic structure that specifies minimum private and public key
+/// sizes.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_nist_validate_ffc(
+  ctx: *const Context,
+  key: *const Ffc,
+  alternative: *mut Ffc,
+) -> c_int {
+  c_call(validate_ffc, ctx, key, alternative)
+}
+
 /// Validates a hash function according to page 56 of the standard. The
 /// reference is made with regards to applications that require
 /// collision resistance such as digital signatures.
@@ -265,12 +350,16 @@ unsafe fn c_call<T>(
 /// (KDFs), and random bit generation use `ws_validate_hash_based`.
 ///
 /// If the hash function is not compliant then `struct ws_hash*
-/// alternative` will contain the recommended primitive that one should
+/// alternative` will point to the recommended primitive that one should
 /// use instead.
 ///
 /// If the hash function is compliant but the context specifies a higher
-/// security level, `struct ws_hash*` will also hold the recommended
+/// security level, `struct ws_hash*` will also point to the recommended
 /// primitive with the desired security level.
+///
+/// The function returns 1 if the hash function is compliant, 0 if it is
+/// not, and -1 if an error occurs as a result of a missing or invalid
+/// argument.
 ///
 /// **Note:** that this means an alternative might be suggested for a
 /// compliant hash functions with a similar security level in which a
@@ -305,12 +394,16 @@ pub unsafe extern "C" fn ws_nist_validate_hash(
 /// signatures use `ws_nist_validate_hash`.
 ///
 /// If the hash function is not compliant then
-/// `struct ws_hash* alternative` will contain the recommended primitive
-/// that one should use instead.
+/// `struct ws_hash* alternative` will point to the recommended
+/// primitive that one should use instead.
 ///
 /// If the hash function is compliant but the context specifies a higher
-/// security level, `struct ws_hash*` will also hold the recommended
+/// security level, `struct ws_hash*` will also point to the recommended
 /// primitive with the desired security level.
+///
+/// The function returns 1 if the hash function is compliant, 0 if it is
+/// not, and -1 if an error occurs as a result of a missing or invalid
+/// argument.
 ///
 /// **Note:** that this means an alternative might be suggested for a
 /// compliant hash functions with a similar security level in which a
@@ -340,10 +433,10 @@ pub unsafe extern "C" fn ws_nist_validate_hash_based(
 /// standard.
 ///
 /// If the key is not compliant then `struct ws_symmetric* alternative`
-/// will contain the recommended primitive that one should use instead.
+/// will point to the recommended primitive that one should use instead.
 ///
 /// If the symmetric key is compliant but the context specifies a higher
-/// security level, `struct ws_symmetric*` will also hold the
+/// security level, `struct ws_symmetric*` will also point to the
 /// recommended primitive with the desired security level.
 ///
 /// The function returns 1 if the key is compliant, 0 if it is not, and
@@ -364,7 +457,17 @@ pub unsafe extern "C" fn ws_nist_validate_symmetric(
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::primitives::hash::*;
+  use crate::primitives::{ffc::FFC_1024_160, hash::*};
+
+  macro_rules! test_ffc {
+    ($name:ident, $input:expr, $want:expr) => {
+      #[test]
+      fn $name() {
+        let ctx = Context::default();
+        assert_eq!(validate_ffc(&ctx, $input), $want);
+      }
+    };
+  }
 
   macro_rules! test_hash {
     ($name:ident, $input:expr, $want:expr) => {
@@ -395,6 +498,12 @@ mod tests {
       }
     };
   }
+
+  test_ffc!(ffc_1024_160, &FFC_1024_160, Err(FFC_2048_224));
+  test_ffc!(ffc_2048_224, &FFC_2048_224, Ok(FFC_2048_224));
+  test_ffc!(ffc_3072_256, &FFC_3072_256, Ok(FFC_3072_256));
+  test_ffc!(ffc_7680_384, &FFC_7680_384, Ok(FFC_7680_384));
+  test_ffc!(ffc_15360_512, &FFC_15360_512, Ok(FFC_15360_512));
 
   test_hash!(blake2b_256_collision_resistance, &BLAKE2b_256, Err(SHA256));
   test_hash!(blake2b_384_collision_resistance, &BLAKE2b_384, Err(SHA256));
