@@ -20,13 +20,10 @@ use std::ffi::c_int;
 use lazy_static::lazy_static;
 
 use crate::context::Context;
-use crate::primitives::ffc::{Ffc, FFC_15360_512, FFC_2048_224, FFC_3072_256, FFC_7680_384};
-use crate::primitives::hash::{
-  Hash, SHA1, SHA224, SHA256, SHA384, SHA3_224, SHA3_256, SHA3_384, SHA3_512, SHA512, SHA512_224,
-  SHA512_256,
-};
-use crate::primitives::ifc::{Ifc, IFC_15360, IFC_2048, IFC_3072, IFC_7680};
-use crate::primitives::symmetric::{Symmetric, AES128, AES192, AES256, TDEA2, TDEA3};
+use crate::primitives::ffc::*;
+use crate::primitives::hash::*;
+use crate::primitives::ifc::*;
+use crate::primitives::symmetric::*;
 
 const CUTOFF_YEAR: u16 = 2031;
 const CUTOFF_YEAR_3TDEA: u16 = 2023;
@@ -547,7 +544,6 @@ pub unsafe extern "C" fn ws_nist_validate_symmetric(
 #[rustfmt::skip]
 mod tests {
   use super::*;
-  use crate::primitives::{ffc::*, hash::*, ifc::*};
 
   macro_rules! test_case {
     ($name:ident, $func:ident, $input:expr, $want:expr) => {
