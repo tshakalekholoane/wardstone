@@ -45,13 +45,21 @@ jobs:
           components: rustfmt
       - run: cargo fmt --all --check
 
-  test:
+  unit tests:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo test --all-features
+
+  documentation tests:
+    name: Run documentation tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --doc --all-features
 
   ffi:
     name: Check FFI build
