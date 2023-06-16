@@ -319,7 +319,8 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
 /// ```
 pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
   if SPECIFIED_SYMMETRIC.contains(&key.id) {
-    match key.security {
+    let security = ctx.security().max(key.security);
+    match security {
       ..=111 => Err(AES128),
       112 => {
         // See SP 800-131Ar2 p. 7.
