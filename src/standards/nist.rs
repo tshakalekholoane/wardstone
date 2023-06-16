@@ -77,11 +77,12 @@ lazy_static! {
 /// The following illustrates a call to validate a compliant key.
 ///
 /// ```
-/// use crate::context::Context;
-/// use crate::primitives::ffc::FFC_2048_224;
+/// use wardstone::context::Context;
+/// use wardstone::primitives::ffc::FFC_2048_224;
+/// use wardstone::standards::nist;
 ///
 /// let ctx = Context::default();
-/// assert_eq!(validate_ffc(&ctx, &FFC_2048_224), Ok(FFC_2048_224));
+/// assert_eq!(nist::validate_ffc(&ctx, &FFC_2048_224), Ok(FFC_2048_224));
 pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
   match key {
     Ffc {
@@ -146,11 +147,12 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
 /// function.
 ///
 /// ```
-/// use crate::context::Context;
-/// use crate::primitives::hash::{SHA1, SHA224};
+/// use wardstone::context::Context;
+/// use wardstone::primitives::hash::{SHA1, SHA224};
+/// use wardstone::standards::nist;
 ///
 /// let ctx = Context::default();
-/// assert_eq!(validate_hash(&ctx, &SHA1), Err(SHA224));
+/// assert_eq!(nist::validate_hash(&ctx, &SHA1), Err(SHA224));
 pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
     let security = ctx.security().max(hash.collision_resistance());
@@ -212,11 +214,12 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// function.
 ///
 /// ```
-/// use crate::context::Context;
-/// use crate::primitives::hash::{SHA1, SHA224};
+/// use wardstone::context::Context;
+/// use wardstone::primitives::hash::{SHA1, SHA224};
+/// use wardstone::standards::nist;
 ///
 /// let ctx = Context::default();
-/// assert_eq!(validate_hash_based(&ctx, &SHA1), Err(SHA224));
+/// assert_eq!(nist::validate_hash_based(&ctx, &SHA1), Err(SHA224));
 pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
     let security = ctx.security().max(hash.pre_image_resistance());
@@ -255,11 +258,12 @@ pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// key (which is deprecated through the year 2023).
 ///
 /// ```
-/// use crate::context::Context;
-/// use crate::primitives::symmetric::{AES128, TDEA3};
+/// use wardstone::context::Context;
+/// use wardstone::primitives::symmetric::{AES128, TDEA3};
+/// use wardstone::standards::nist;
 ///
 /// let ctx = Context::default();
-/// assert_eq!(validate_symmetric(&ctx, &TDEA3), Ok(AES128));
+/// assert_eq!(nist::validate_symmetric(&ctx, &TDEA3), Ok(AES128));
 /// ```
 pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
   if SPECIFIED_SYMMETRIC.contains(&key.id) {
