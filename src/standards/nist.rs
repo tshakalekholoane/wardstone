@@ -62,11 +62,11 @@ lazy_static! {
 /// Diffie-Hellman and MQV according to page 54-55 of the standard.
 ///
 /// If the key is not compliant then `Err` will contain the recommended
-/// primitive that one should use instead.
+/// key sizes L and N that one should use instead.
 ///
 /// If the key is compliant but the context specifies a higher security
-/// level, `Ok` will also hold the recommended primitive with the
-/// desired security level.
+/// level, `Ok` will also hold the recommended key sizes L and N with
+/// the desired security level.
 ///
 /// **Note:** Unlike other functions in this module, this will return a
 /// generic structure that specifies minimum private and public key
@@ -360,12 +360,12 @@ pub unsafe extern "C" fn ws_nist_validate_ffc(
 /// (KDFs), and random bit generation use `ws_validate_hash_based`.
 ///
 /// If the hash function is not compliant then `struct ws_hash*
-/// alternative` will point to the recommended primitive that one should
-/// use instead.
+/// alternative` will point to the recommended key sizes L and N that
+/// one should use instead.
 ///
 /// If the hash function is compliant but the context specifies a higher
 /// security level, `struct ws_hash*` will also point to the recommended
-/// primitive with the desired security level.
+/// key sizes L and N with the desired security level.
 ///
 /// The function returns 1 if the hash function is compliant, 0 if it is
 /// not, and -1 if an error occurs as a result of a missing or invalid
