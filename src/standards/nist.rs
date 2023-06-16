@@ -25,6 +25,7 @@ use crate::primitives::hash::{
   Hash, SHA1, SHA224, SHA256, SHA384, SHA3_224, SHA3_256, SHA3_384, SHA3_512, SHA512, SHA512_224,
   SHA512_256,
 };
+use crate::primitives::ifc::{Ifc, IFC_15360, IFC_2048, IFC_3072, IFC_7680};
 use crate::primitives::symmetric::{Symmetric, AES128, AES192, AES256, TDEA2, TDEA3};
 
 const CUTOFF_YEAR: u16 = 2031;
@@ -248,6 +249,54 @@ pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   }
 }
 
+/// Validates  an integer factorisation cryptography primitive the most
+/// common of which is the RSA signature algorithm where k indicates the
+/// key size according to page 54-55 of the standard.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// key size that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended key size with the desired
+/// security level.
+///
+/// **Note:** Unlike other functions in this module, this will return a
+/// generic structure that specifies minimum private and public key
+/// sizes.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a compliant key.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::ifc::IFC_2048;
+/// use wardstone::standards::nist;
+///
+/// let ctx = Context::default();
+/// assert_eq!(nist::validate_ifc(&ctx, &IFC_2048), Ok(IFC_2048));
+pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
+  match key.k {
+    ..=2047 => {
+      if ctx.year() > CUTOFF_YEAR {
+        Err(IFC_3072)
+      } else {
+        Err(IFC_2048)
+      }
+    },
+    2048 => {
+      if ctx.year() > CUTOFF_YEAR {
+        Err(IFC_3072)
+      } else {
+        Ok(IFC_2048)
+      }
+    },
+    2049..=3072 => Ok(IFC_3072),
+    3073..=7680 => Ok(IFC_7680),
+    7681.. => Ok(IFC_15360),
+  }
+}
+
 /// Validates a symmetric key primitive according to pages 54-55 of the
 /// standard.
 ///
@@ -349,6 +398,36 @@ pub unsafe extern "C" fn ws_nist_validate_ffc(
   alternative: *mut Ffc,
 ) -> c_int {
   c_call(validate_ffc, ctx, key, alternative)
+}
+
+/// Validates  an integer factorisation cryptography primitive the most
+/// common of which is the RSA signature algorithm where k indicates the
+/// key size according to page 54-55 of the standard.
+///
+/// If the key is not compliant then `ws_ifc*` will point to the
+/// recommended key size that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `ws_ifc*` will also point to the recommended key size with
+/// the desired security level.
+///
+/// The function returns 1 if the key is compliant, 0 if it is not, and
+/// -1 if an error occurs as a result of a missing or invalid argument.
+///
+/// **Note:** Unlike other functions in this module, this will return a
+/// generic structure that specifies minimum private and public key
+/// sizes.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_nist_validate_ifc(
+  ctx: *const Context,
+  key: *const Ifc,
+  alternative: *mut Ifc,
+) -> c_int {
+  c_call(validate_ifc, ctx, key, alternative)
 }
 
 /// Validates a hash function according to page 56 of the standard. The
@@ -468,7 +547,7 @@ pub unsafe extern "C" fn ws_nist_validate_symmetric(
 #[rustfmt::skip]
 mod tests {
   use super::*;
-  use crate::primitives::{ffc::*, hash::*};
+  use crate::primitives::{ffc::*, hash::*, ifc::*};
 
   macro_rules! test_case {
     ($name:ident, $func:ident, $input:expr, $want:expr) => {
@@ -485,6 +564,12 @@ mod tests {
   test_case!(ffc_3072_256, validate_ffc, &FFC_3072_256, Ok(FFC_3072_256));
   test_case!(ffc_7680_384, validate_ffc, &FFC_7680_384, Ok(FFC_7680_384));
   test_case!(ffc_15360_512, validate_ffc, &FFC_15360_512, Ok(FFC_15360_512));
+
+  test_case!(ifc_1024, validate_ifc, &IFC_1024, Err(IFC_2048));
+  test_case!(ifc_2048, validate_ifc, &IFC_2048, Ok(IFC_2048));
+  test_case!(ifc_3072, validate_ifc, &IFC_3072, Ok(IFC_3072));
+  test_case!(ifc_7680, validate_ifc, &IFC_7680, Ok(IFC_7680));
+  test_case!(ifc_15360, validate_ifc, &IFC_15360, Ok(IFC_15360));
 
   test_case!(blake2b_256_collision_resistance, validate_hash, &BLAKE2b_256, Err(SHA256));
   test_case!(blake2b_384_collision_resistance, validate_hash, &BLAKE2b_384, Err(SHA256));
