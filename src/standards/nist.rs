@@ -88,7 +88,13 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
     Ffc {
       l: ..=2047,
       n: ..=223,
-    } => Err(FFC_2048_224),
+    } => {
+      if ctx.year() > CUTOFF_YEAR {
+        Err(FFC_3072_256)
+      } else {
+        Err(FFC_2048_224)
+      }
+    },
     Ffc { l: 2048, n: 224 } => {
       if ctx.year() > CUTOFF_YEAR {
         Err(FFC_3072_256)
