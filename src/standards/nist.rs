@@ -238,6 +238,7 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
 ///
 /// let ctx = Context::default();
 /// assert_eq!(nist::validate_hash(&ctx, &SHA1), Err(SHA224));
+/// ```
 pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
     let security = ctx.security().max(hash.collision_resistance());
@@ -305,6 +306,7 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 ///
 /// let ctx = Context::default();
 /// assert_eq!(nist::validate_hash_based(&ctx, &SHA1), Err(SHA224));
+/// ```
 pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
     let security = ctx.security().max(hash.pre_image_resistance());
@@ -353,6 +355,7 @@ pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 ///
 /// let ctx = Context::default();
 /// assert_eq!(nist::validate_ifc(&ctx, &IFC_2048), Ok(IFC_2048));
+/// ```
 pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
   match key.k {
     ..=2047 => {
