@@ -26,8 +26,9 @@ use crate::primitives::hash::*;
 use crate::primitives::ifc::*;
 use crate::primitives::symmetric::*;
 
-const CUTOFF_YEAR: u16 = 2031;
-const CUTOFF_YEAR_3TDEA: u16 = 2023;
+const CUTOFF_YEAR: u16 = 2031; // See p. 59.
+const CUTOFF_YEAR_3TDEA: u16 = 2023; // See footnote on p. 54.
+const CUTOFF_YEAR_DSA: u16 = 2023; // See FIPS-186-5 p. 16.
 
 lazy_static! {
   static ref SPECIFIED_EC: HashSet<u16> = {
@@ -77,9 +78,13 @@ lazy_static! {
   };
 }
 
-/// Validates a finite field cryptography primitive function examples
-/// which include DSA and key establishment algorithms such as
-/// Diffie-Hellman and MQV according to page 54-55 of the standard.
+/// Validates a finite field cryptography primitive.
+///
+/// Examples include the DSA and key establishment algorithms such as
+/// Diffie-Hellman and MQV which can also be implemented as such,
+/// according to page 54-55 of the standard.
+///
+/// A newer revision of FIPS-186, FIPS-186-5 no longer approves the DSA.
 ///
 /// If the key is not compliant then `Err` will contain the recommended
 /// key sizes L and N that one should use instead.
@@ -88,9 +93,11 @@ lazy_static! {
 /// level, `Ok` will also hold the recommended key sizes L and N with
 /// the desired security level.
 ///
-/// **Note:** Unlike other functions in this module, this will return a
-/// generic structure that specifies minimum private and public key
-/// sizes.
+/// **Note:** The standard specifies the choices for the pair l and n
+/// and so primitives that do not strictly conform to this will be
+/// deemed non-compliant. This restricts the choice of security
+/// specified in the `Context` to the values 160, 224, 256, 384, and
+/// 512.
 ///
 /// # Example
 ///
@@ -102,39 +109,41 @@ lazy_static! {
 /// use wardstone::standards::nist;
 ///
 /// let ctx = Context::default();
-/// assert_eq!(nist::validate_ffc(&ctx, &FFC_2048_224), Ok(FFC_2048_224));
+/// let dsa_2048 = FFC_2048_224;
+/// assert_eq!(nist::validate_ffc(&ctx, &dsa_2048), Ok(FFC_2048_224));
+/// ```
 pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
-  match key {
-    Ffc {
-      l: ..=2047,
-      n: ..=223,
-    } => {
+  // TODO: Does this also apply to other key agreement use cases?
+  if ctx.year() > CUTOFF_YEAR_DSA {
+    return Err(NOT_SUPPORTED);
+  }
+
+  // Use the public key size n as a proxy for security.
+  let mut aux = *key;
+  aux.n = ctx.security().max(key.n);
+
+  match aux {
+    Ffc { l: 1024, n: 160 } => {
       if ctx.year() > CUTOFF_YEAR {
         Err(FFC_3072_256)
       } else {
         Err(FFC_2048_224)
       }
     },
-    Ffc { l: 2048, n: 224 } => {
+    Ffc {
+      l: 2048,
+      n: 224 | 256,
+    } => {
       if ctx.year() > CUTOFF_YEAR {
         Err(FFC_3072_256)
       } else {
         Ok(FFC_2048_224)
       }
     },
-    Ffc {
-      l: 2049..=3072,
-      n: 225..=256,
-    } => Ok(FFC_3072_256),
-    Ffc {
-      l: 3073..=7680,
-      n: 257..=384,
-    } => Ok(FFC_7680_384),
-    Ffc {
-      l: 7681..,
-      n: 385..,
-    } => Ok(FFC_15360_512),
-    _ => Err(FFC_2048_224),
+    Ffc { l: 3072, n: 256 } => Ok(FFC_3072_256),
+    Ffc { l: 7680, n: 384 } => Ok(FFC_7680_384),
+    Ffc { l: 15360, n: 512 } => Ok(FFC_15360_512),
+    _ => Err(NOT_SUPPORTED),
   }
 }
 
