@@ -181,16 +181,16 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
           Err(P224)
         }
       },
-      112 => {
+      112..=127 => {
         if ctx.year() > CUTOFF_YEAR {
           Err(P256)
         } else {
           Ok(P224)
         }
       },
-      113..=128 => Ok(P256),
-      129..=192 => Ok(P384),
-      193.. => Ok(P521),
+      128..=191 => Ok(P256),
+      192..=255 => Ok(P384),
+      256.. => Ok(P521),
     }
   } else {
     Err(P256)
@@ -250,16 +250,16 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
           Err(SHA224)
         }
       },
-      112 => {
+      112..=127 => {
         if ctx.year() > CUTOFF_YEAR {
           Err(SHA256)
         } else {
           Ok(SHA224)
         }
       },
-      113..=128 => Ok(SHA256),
-      129..=192 => Ok(SHA384),
-      193.. => Ok(SHA512),
+      128..=191 => Ok(SHA256),
+      192..=255 => Ok(SHA384),
+      256.. => Ok(SHA512),
     }
   } else {
     Err(SHA256)
@@ -672,15 +672,15 @@ mod tests {
   test_case!(p384, validate_ecc, &P384, Ok(P384));
   test_case!(p521, validate_ecc, &P521, Ok(P521));
   test_case!(w25519, validate_ecc, &W25519, Ok(P256));
-  test_case!(w448, validate_ecc, &W448, Ok(P521));
+  test_case!(w448, validate_ecc, &W448, Ok(P384));
   test_case!(curve25519, validate_ecc, &Curve25519, Ok(P256));
-  test_case!(curve488, validate_ecc, &Curve448, Ok(P521));
+  test_case!(curve488, validate_ecc, &Curve448, Ok(P384));
   test_case!(edwards25519, validate_ecc, &Edwards25519, Ok(P256));
-  test_case!(edwards448, validate_ecc, &Edwards448, Ok(P521));
-  test_case!(e448, validate_ecc, &E448, Ok(P521));
+  test_case!(edwards448, validate_ecc, &Edwards448, Ok(P384));
+  test_case!(e448, validate_ecc, &E448, Ok(P384));
   test_case!(brainpoolp224r1, validate_ecc, &brainpoolP224r1, Ok(P224));
   test_case!(brainpoolp256r1, validate_ecc, &brainpoolP256r1, Ok(P256));
-  test_case!(brainpoolp320r1, validate_ecc, &brainpoolP320r1, Ok(P384));
+  test_case!(brainpoolp320r1, validate_ecc, &brainpoolP320r1, Ok(P256));
   test_case!(brainpoolp384r1, validate_ecc, &brainpoolP384r1, Ok(P384));
   test_case!(brainpoolp512r1, validate_ecc, &brainpoolP512r1, Ok(P521));
   test_case!(secp256k1_, validate_ecc, &secp256k1, Ok(P256));
