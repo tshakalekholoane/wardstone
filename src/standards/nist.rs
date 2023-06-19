@@ -357,24 +357,25 @@ pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// assert_eq!(nist::validate_ifc(&ctx, &IFC_2048), Ok(IFC_2048));
 /// ```
 pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
-  match key.k {
-    ..=2047 => {
+  let security = ctx.security().max(*key.security().start());
+  match security {
+    ..=111 => {
       if ctx.year() > CUTOFF_YEAR {
         Err(IFC_3072)
       } else {
         Err(IFC_2048)
       }
     },
-    2048 => {
+    112..=127 => {
       if ctx.year() > CUTOFF_YEAR {
         Err(IFC_3072)
       } else {
         Ok(IFC_2048)
       }
     },
-    2049..=3072 => Ok(IFC_3072),
-    3073..=7680 => Ok(IFC_7680),
-    7681.. => Ok(IFC_15360),
+    128..=191 => Ok(IFC_3072),
+    192..=255 => Ok(IFC_7680),
+    256.. => Ok(IFC_15360),
   }
 }
 

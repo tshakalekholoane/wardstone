@@ -31,3 +31,18 @@ pub static IFC_7680: Ifc = Ifc { k: 7680 };
 /// cryptography primitive.
 #[no_mangle]
 pub static IFC_15360: Ifc = Ifc { k: 15360 };
+
+impl Ifc {
+  /// Returns the approximate security provided by the key size `k`
+  /// expressed as an inclusive range.
+  pub fn security(&self) -> std::ops::RangeInclusive<u16> {
+    match self.k {
+      ..=1023 => 0..=79,
+      1024..=2047 => 80..=111,
+      2048..=3071 => 112..=127,
+      3072..=7679 => 128..=191,
+      7680..=15359 => 192..=255,
+      15360.. => 256..=u16::MAX,
+    }
+  }
+}
