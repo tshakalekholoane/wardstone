@@ -20,7 +20,7 @@ pub static IFC_2048: Ifc = Ifc { k: 2048 };
 /// Represents a choice of k = 3072 for an integer factorisation
 /// cryptography primitive.
 #[no_mangle]
-pub static IFC_3072: Ifc = Ifc { k: 3027 };
+pub static IFC_3072: Ifc = Ifc { k: 3072 };
 
 /// Represents a choice of k = 7680 for an integer factorisation
 /// cryptography primitive.
