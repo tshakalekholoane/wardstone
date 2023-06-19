@@ -29,7 +29,7 @@ pub static P521: Ecc = Ecc { id: 4, f: 521 };
 
 /// Represents the Weierstrass curve W-25519 over a prime field.
 #[no_mangle]
-pub static W25519: Ecc = Ecc { id: 5, f: 255 };
+pub static W25519: Ecc = Ecc { id: 5, f: 256 };
 
 /// Represents the Weierstrass curve W-488 over a prime field.
 #[no_mangle]
@@ -37,7 +37,7 @@ pub static W448: Ecc = Ecc { id: 6, f: 448 };
 
 /// Represents the Montgomery curve Curve25519 over a prime field.
 #[no_mangle]
-pub static Curve25519: Ecc = Ecc { id: 7, f: 255 };
+pub static Curve25519: Ecc = Ecc { id: 7, f: 256 };
 
 /// Represents the Montgomery curve Curve488 over a prime field.
 #[no_mangle]
@@ -46,7 +46,7 @@ pub static Curve448: Ecc = Ecc { id: 8, f: 448 };
 /// Represents the twisted Edwards curve Edwards25519 over a prime
 /// field.
 #[no_mangle]
-pub static Edwards25519: Ecc = Ecc { id: 9, f: 255 };
+pub static Edwards25519: Ecc = Ecc { id: 9, f: 256 };
 
 /// Represents the twisted Edwards curve Edwards488 over a prime field.
 #[no_mangle]
