@@ -80,6 +80,56 @@ lazy_static! {
   };
 }
 
+/// Validate an elliptic curve cryptography primitive used for digital
+/// signatures and key establishment where f is the key size according
+/// to page 54-55 of the standard.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended primitive with the
+/// desired security level.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a compliant key.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::ecc::P224;
+/// use wardstone::standards::nist;
+///
+/// let ctx = Context::default();
+/// assert_eq!(nist::validate_ecc(&ctx, &P224), Ok(P224));
+/// ```
+pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
+  if SPECIFIED_EC.contains(&key.id) {
+    let security = ctx.security().max(key.f >> 1);
+    match security {
+      ..=111 => {
+        if ctx.year() > CUTOFF_YEAR {
+          Err(P256)
+        } else {
+          Err(P224)
+        }
+      },
+      112..=127 => {
+        if ctx.year() > CUTOFF_YEAR {
+          Err(P256)
+        } else {
+          Ok(P224)
+        }
+      },
+      128..=191 => Ok(P256),
+      192..=255 => Ok(P384),
+      256.. => Ok(P521),
+    }
+  } else {
+    Err(P256)
+  }
+}
+
 /// Validates a finite field cryptography primitive.
 ///
 /// Examples include the DSA and key establishment algorithms such as
@@ -146,56 +196,6 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
     Ffc { l: 7680, n: 384 } => Ok(FFC_7680_384),
     Ffc { l: 15360, n: 512 } => Ok(FFC_15360_512),
     _ => Err(NOT_SUPPORTED),
-  }
-}
-
-/// Validate an elliptic curve cryptography primitive used for digital
-/// signatures and key establishment where f is the key size according
-/// to page 54-55 of the standard.
-///
-/// If the key is not compliant then `Err` will contain the recommended
-/// primitive that one should use instead.
-///
-/// If the key is compliant but the context specifies a higher security
-/// level, `Ok` will also hold the recommended primitive with the
-/// desired security level.
-///
-/// # Example
-///
-/// The following illustrates a call to validate a compliant key.
-///
-/// ```
-/// use wardstone::context::Context;
-/// use wardstone::primitives::ecc::P224;
-/// use wardstone::standards::nist;
-///
-/// let ctx = Context::default();
-/// assert_eq!(nist::validate_ecc(&ctx, &P224), Ok(P224));
-/// ```
-pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
-  if SPECIFIED_EC.contains(&key.id) {
-    let security = ctx.security().max(key.f >> 1);
-    match security {
-      ..=111 => {
-        if ctx.year() > CUTOFF_YEAR {
-          Err(P256)
-        } else {
-          Err(P224)
-        }
-      },
-      112..=127 => {
-        if ctx.year() > CUTOFF_YEAR {
-          Err(P256)
-        } else {
-          Ok(P224)
-        }
-      },
-      128..=191 => Ok(P256),
-      192..=255 => Ok(P384),
-      256.. => Ok(P521),
-    }
-  } else {
-    Err(P256)
   }
 }
 
@@ -390,9 +390,9 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
 /// If the key is not compliant then `Err` will contain the recommended
 /// primitive that one should use instead.
 ///
-/// If the hash function is compliant but the context specifies a higher
-/// security level, `Ok` will also hold the recommended primitive with
-/// the desired security level.
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended primitive with the
+/// desired security level.
 ///
 /// # Example
 ///
@@ -469,8 +469,9 @@ unsafe fn c_call<T>(
 /// level, `ws_ecc*` will also hold the recommended primitive with the
 /// desired security level.
 ///
-/// The function returns 1 if the key is compliant, 0 if it is not, and
-/// -1 if an error occurs as a result of a missing or invalid argument.
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
 ///
 /// # Safety
 ///
@@ -495,8 +496,9 @@ pub unsafe extern "C" fn ws_nist_validate_ecc(
 /// level, `struct ws_ffc` will also point to the recommended primitive
 /// with the desired security level.
 ///
-/// The function returns 1 if the key is compliant, 0 if it is not, and
-/// -1 if an error occurs as a result of a missing or invalid argument.
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
 ///
 /// **Note:** Unlike other functions in this module, this will return a
 /// generic structure that specifies minimum private and public key
@@ -525,9 +527,10 @@ pub unsafe extern "C" fn ws_nist_validate_ffc(
 /// level, `ws_ifc*` will also point to the recommended key size with
 /// the desired security level.
 ///
-/// The function returns 1 if the key is compliant, 0 if it is not, and
-/// -1 if an error occurs as a result of a missing or invalid argument.
-///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+//
 /// **Note:** Unlike other functions in this module, this will return a
 /// generic structure that specifies minimum private and public key
 /// sizes.
@@ -560,9 +563,9 @@ pub unsafe extern "C" fn ws_nist_validate_ifc(
 /// security level, `struct ws_hash*` will also point to the recommended
 /// key sizes L and N with the desired security level.
 ///
-/// The function returns 1 if the hash function is compliant, 0 if it is
-/// not, and -1 if an error occurs as a result of a missing or invalid
-/// argument.
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
 ///
 /// **Note:** that this means an alternative might be suggested for a
 /// compliant hash functions with a similar security level in which a
@@ -604,9 +607,9 @@ pub unsafe extern "C" fn ws_nist_validate_hash(
 /// security level, `struct ws_hash*` will also point to the recommended
 /// primitive with the desired security level.
 ///
-/// The function returns 1 if the hash function is compliant, 0 if it is
-/// not, and -1 if an error occurs as a result of a missing or invalid
-/// argument.
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
 ///
 /// **Note:** that this means an alternative might be suggested for a
 /// compliant hash functions with a similar security level in which a
@@ -638,12 +641,13 @@ pub unsafe extern "C" fn ws_nist_validate_hash_based(
 /// If the key is not compliant then `struct ws_symmetric* alternative`
 /// will point to the recommended primitive that one should use instead.
 ///
-/// If the symmetric key is compliant but the context specifies a higher
-/// security level, `struct ws_symmetric*` will also point to the
-/// recommended primitive with the desired security level.
+/// If the key is compliant but the context specifies a higher security
+/// level, `struct ws_symmetric*` will also point to the recommended
+/// primitive with the desired security level.
 ///
-/// The function returns 1 if the key is compliant, 0 if it is not, and
-/// -1 if an error occurs as a result of a missing or invalid argument.
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
 ///
 /// # Safety
 ///
