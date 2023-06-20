@@ -25,6 +25,7 @@ use crate::primitives::ffc::*;
 use crate::primitives::hash::*;
 use crate::primitives::ifc::*;
 use crate::primitives::symmetric::*;
+use crate::standards;
 
 const CUTOFF_YEAR: u16 = 2031; // See p. 59.
 const CUTOFF_YEAR_3TDEA: u16 = 2023; // See footnote on p. 54.
@@ -434,30 +435,6 @@ pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, S
   }
 }
 
-// This function abstracts a call to a Rust function `f` and returns a
-// result following C error handling conventions.
-unsafe fn c_call<T>(
-  f: fn(&Context, &T) -> Result<T, T>,
-  ctx: *const Context,
-  primitive: *const T,
-  alternative: *mut T,
-) -> c_int {
-  if ctx.is_null() || primitive.is_null() {
-    return -1;
-  }
-
-  let (recommendation, is_compliant) = match f(ctx.as_ref().unwrap(), primitive.as_ref().unwrap()) {
-    Ok(recommendation) => (recommendation, true),
-    Err(recommendation) => (recommendation, false),
-  };
-
-  if !alternative.is_null() {
-    *alternative = recommendation;
-  }
-
-  is_compliant as c_int
-}
-
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment where f is the key size according
 /// to page 54-55 of the standard.
@@ -482,7 +459,7 @@ pub unsafe extern "C" fn ws_nist_validate_ecc(
   key: *const Ecc,
   alternative: *mut Ecc,
 ) -> c_int {
-  c_call(validate_ecc, ctx, key, alternative)
+  standards::c_call(validate_ecc, ctx, key, alternative)
 }
 
 /// Validates a finite field cryptography primitive function examples
@@ -513,7 +490,7 @@ pub unsafe extern "C" fn ws_nist_validate_ffc(
   key: *const Ffc,
   alternative: *mut Ffc,
 ) -> c_int {
-  c_call(validate_ffc, ctx, key, alternative)
+  standards::c_call(validate_ffc, ctx, key, alternative)
 }
 
 /// Validates  an integer factorisation cryptography primitive the most
@@ -544,7 +521,7 @@ pub unsafe extern "C" fn ws_nist_validate_ifc(
   key: *const Ifc,
   alternative: *mut Ifc,
 ) -> c_int {
-  c_call(validate_ifc, ctx, key, alternative)
+  standards::c_call(validate_ifc, ctx, key, alternative)
 }
 
 /// Validates a hash function according to page 56 of the standard. The
@@ -588,7 +565,7 @@ pub unsafe extern "C" fn ws_nist_validate_hash(
   hash: *const Hash,
   alternative: *mut Hash,
 ) -> c_int {
-  c_call(validate_hash, ctx, hash, alternative)
+  standards::c_call(validate_hash, ctx, hash, alternative)
 }
 
 /// Validates a hash function according to page 56 of the standard. The
@@ -632,7 +609,7 @@ pub unsafe extern "C" fn ws_nist_validate_hash_based(
   hash: *const Hash,
   alternative: *mut Hash,
 ) -> c_int {
-  c_call(validate_hash_based, ctx, hash, alternative)
+  standards::c_call(validate_hash_based, ctx, hash, alternative)
 }
 
 /// Validates a symmetric key primitive according to pages 54-55 of the
@@ -658,23 +635,14 @@ pub unsafe extern "C" fn ws_nist_validate_symmetric(
   key: *const Symmetric,
   alternative: *mut Symmetric,
 ) -> c_int {
-  c_call(validate_symmetric, ctx, key, alternative)
+  standards::c_call(validate_symmetric, ctx, key, alternative)
 }
 
 #[cfg(test)]
 #[rustfmt::skip]
 mod tests {
   use super::*;
-
-  macro_rules! test_case {
-    ($name:ident, $func:ident, $input:expr, $want:expr) => {
-      #[test]
-      fn $name() {
-        let ctx = Context::default();
-        assert_eq!($func(&ctx, $input), $want);
-      }
-    };
-  }
+  use crate::test_case;
 
   test_case!(p224, validate_ecc, &P224, Ok(P224));
   test_case!(p256, validate_ecc, &P256, Ok(P256));
