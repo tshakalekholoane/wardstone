@@ -206,8 +206,7 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
 ///
 /// For applications that primarily require pre-image resistance such as
 /// message authentication codes (MACs), key derivation functions
-/// (KDFs), and random bit generation use
-/// [`validate_hash_based`](crate::standards::nist::validate_hash_based).
+/// (KDFs), and random bit generation use [`validate_hash_based`](crate::standards::nist::validate_hash_based).
 ///
 ///
 /// If the hash function is not compliant then `Err` will contain the
@@ -223,11 +222,6 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
 /// example, when evaluating compliance for the `SHA3-256`, a
 /// recommendation to use `SHA256` will be made but switching to this as
 /// a result is likely unnecessary.
-///
-/// **Caution:** The default recommendation is from the SHA2 family.
-/// While this is safe for most use cases, it is generally not
-/// recommended for hashing secrets given its lack of resistance against
-/// length extension attacks.
 ///
 /// # Example
 ///
@@ -275,8 +269,7 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// (MACs), key derivation functions (KDFs), and random bit generation.
 ///
 /// For applications that require collision resistance such digital
-/// signatures use
-/// [`validate_hash`](crate::standards::nist::validate_hash).
+/// signatures use [`validate_hash`](crate::standards::nist::validate_hash).
 ///
 /// If the hash function is not compliant then `Err` will contain the
 /// recommended primitive that one should use instead.
@@ -291,11 +284,6 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// example, when evaluating compliance for the `SHA3-256`, a
 /// recommendation to use `SHA256` will be made but switching to this as
 /// a result is likely unnecessary.
-///
-/// **Caution:** The default recommendation is from the SHA2 family.
-/// While this is safe for most use cases, it is generally not
-/// recommended for hashing secrets given its lack of resistance against
-/// length extension attacks.
 ///
 /// # Example
 ///
@@ -532,13 +520,13 @@ pub unsafe extern "C" fn ws_nist_validate_ifc(
 /// message authentication codes (MACs), key derivation functions
 /// (KDFs), and random bit generation use `ws_validate_hash_based`.
 ///
-/// If the hash function is not compliant then `struct ws_hash*
-/// alternative` will point to the recommended key sizes L and N that
-/// one should use instead.
+/// If the hash function is not compliant then
+/// `struct ws_hash* alternative` will point to the recommended
+/// primitive that one should use instead.
 ///
 /// If the hash function is compliant but the context specifies a higher
 /// security level, `struct ws_hash*` will also point to the recommended
-/// key sizes L and N with the desired security level.
+/// primitive with the desired security level.
 ///
 /// The function returns `1` if the hash function is compliant, `0` if
 /// it is not, and `-1` if an error occurs as a result of a missing or
@@ -550,11 +538,6 @@ pub unsafe extern "C" fn ws_nist_validate_ifc(
 /// example, when evaluating compliance for the `SHA3-256`, a
 /// recommendation to use `SHA256` will be made but this likely
 /// unnecessary.
-///
-/// **Caution:** The default recommendation is from the SHA2 family.
-/// While this is safe for most use cases, it is generally not
-/// recommended for hashing secrets given its lack of resistance against
-/// length extension attacks.
 ///
 /// # Safety
 ///
@@ -594,11 +577,6 @@ pub unsafe extern "C" fn ws_nist_validate_hash(
 /// example, when evaluating compliance for the `SHA3-256`, a
 /// recommendation to use `SHA256` will be made but this likely
 /// unnecessary.
-///
-/// **Caution:** The default recommendation is from the SHA2 family.
-/// While this is safe for most use cases, it is generally not
-/// recommended for hashing secrets given its lack of resistance against
-/// length extension attacks.
 ///
 /// # Safety
 ///
