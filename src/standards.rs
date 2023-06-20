@@ -1,3 +1,4 @@
+pub mod bsi;
 pub mod lenstra;
 pub mod nist;
 
