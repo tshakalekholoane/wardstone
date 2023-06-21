@@ -208,7 +208,6 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
 /// message authentication codes (MACs), key derivation functions
 /// (KDFs), and random bit generation use [`validate_hash_based`](crate::standards::nist::validate_hash_based).
 ///
-///
 /// If the hash function is not compliant then `Err` will contain the
 /// recommended primitive that one should use instead.
 ///
