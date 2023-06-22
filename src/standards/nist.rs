@@ -163,7 +163,7 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
 ///
 /// let ctx = Context::default();
 /// let dsa_2048 = FFC_2048_224;
-/// assert_eq!(nist::validate_ffc(&ctx, &dsa_2048), Ok(FFC_2048_224));
+/// assert_eq!(nist::validate_ffc(&ctx, &dsa_2048), Ok(dsa_2048));
 /// ```
 pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
   // TODO: Does this also apply to other key agreement use cases?
@@ -171,10 +171,9 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
     return Err(NOT_SUPPORTED);
   }
 
-  // Use the public key size n as a proxy for security.
+  // HACK: Use the public key size n as a proxy for security.
   let mut aux = *key;
   aux.n = ctx.security().max(key.n);
-
   match aux {
     Ffc { l: 1024, n: 160 } => {
       if ctx.year() > CUTOFF_YEAR {
