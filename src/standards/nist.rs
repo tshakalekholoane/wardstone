@@ -65,6 +65,8 @@ lazy_static! {
     s.insert(SHA512.id);
     s.insert(SHA512_224.id);
     s.insert(SHA512_256.id);
+    s.insert(SHAKE128.id);
+    s.insert(SHAKE256.id);
     s
   };
   static ref SPECIFIED_SYMMETRIC: HashSet<u16> = {
@@ -301,31 +303,34 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 ///
 /// ```
 /// use wardstone::context::Context;
-/// use wardstone::primitives::hash::{SHA1, SHA224};
+/// use wardstone::primitives::hash::{SHA1, SHAKE128};
 /// use wardstone::standards::nist;
 ///
 /// let ctx = Context::default();
-/// assert_eq!(nist::validate_hash_based(&ctx, &SHA1), Err(SHA224));
+/// let hmac_sha1 = SHA1;
+/// let kmac128 = SHAKE128;
+/// assert_eq!(nist::validate_hash_based(&ctx, &hmac_sha1), Err(kmac128));
 /// ```
 pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
     let security = ctx.security().max(hash.pre_image_resistance());
     match security {
-      ..=111 => Err(SHA224),
+      ..=111 => Err(SHAKE128),
       112..=127 => {
         if ctx.year() > CUTOFF_YEAR {
-          Err(SHA224)
+          Err(SHAKE128)
         } else {
-          Ok(SHA224)
+          Ok(SHAKE128)
         }
       },
-      128..=224 => Ok(SHA224),
+      128 => Ok(SHAKE128),
+      129..=224 => Ok(SHA224),
       225..=256 => Ok(SHA256),
       257..=394 => Ok(SHA384),
       395.. => Ok(SHA512),
     }
   } else {
-    Err(SHA224)
+    Err(SHAKE128)
   }
 }
 
@@ -715,17 +720,17 @@ mod tests {
   test_case!(sha512_collision_resistance, validate_hash, &SHA512, Ok(SHA512));
   test_case!(sha512_224_collision_resistance, validate_hash, &SHA512_224, Ok(SHA224));
   test_case!(sha512_256_collision_resistance, validate_hash, &SHA512_256, Ok(SHA256));
-  test_case!(shake128_collision_resistance, validate_hash, &SHAKE128, Err(SHA256));
-  test_case!(shake256_collision_resistance, validate_hash, &SHAKE256, Err(SHA256));
+  test_case!(shake128_collision_resistance, validate_hash, &SHAKE128, Err(SHA224));
+  test_case!(shake256_collision_resistance, validate_hash, &SHAKE256, Ok(SHA256));
 
-  test_case!(blake2b_256_pre_image_resistance, validate_hash_based, &BLAKE2b_256, Err(SHA224));
-  test_case!(blake2b_384_pre_image_resistance, validate_hash_based, &BLAKE2b_384, Err(SHA224));
-  test_case!(blake2b_512_pre_image_resistance, validate_hash_based, &BLAKE2b_512, Err(SHA224));
-  test_case!(blake2s_256_pre_image_resistance, validate_hash_based, &BLAKE2s_256, Err(SHA224));
-  test_case!(md4_pre_image_resistance, validate_hash_based, &MD4, Err(SHA224));
-  test_case!(md5_pre_image_resistance, validate_hash_based, &MD5, Err(SHA224));
-  test_case!(ripemd160_pre_image_resistance, validate_hash_based, &RIPEMD160, Err(SHA224));
-  test_case!(sha1_pre_image_resistance, validate_hash_based, &SHA1, Err(SHA224));
+  test_case!(blake2b_256_pre_image_resistance, validate_hash_based, &BLAKE2b_256, Err(SHAKE128));
+  test_case!(blake2b_384_pre_image_resistance, validate_hash_based, &BLAKE2b_384, Err(SHAKE128));
+  test_case!(blake2b_512_pre_image_resistance, validate_hash_based, &BLAKE2b_512, Err(SHAKE128));
+  test_case!(blake2s_256_pre_image_resistance, validate_hash_based, &BLAKE2s_256, Err(SHAKE128));
+  test_case!(md4_pre_image_resistance, validate_hash_based, &MD4, Err(SHAKE128));
+  test_case!(md5_pre_image_resistance, validate_hash_based, &MD5, Err(SHAKE128));
+  test_case!(ripemd160_pre_image_resistance, validate_hash_based, &RIPEMD160, Err(SHAKE128));
+  test_case!(sha1_pre_image_resistance, validate_hash_based, &SHA1, Err(SHAKE128));
   test_case!(sha224_pre_image_resistance, validate_hash_based, &SHA224, Ok(SHA224));
   test_case!(sha256_pre_image_resistance, validate_hash_based, &SHA256, Ok(SHA256));
   test_case!(sha384_pre_image_resistance, validate_hash_based, &SHA384, Ok(SHA384));
@@ -736,8 +741,8 @@ mod tests {
   test_case!(sha512_pre_image_resistance, validate_hash_based, &SHA512, Ok(SHA512));
   test_case!(sha512_224_pre_image_resistance, validate_hash_based, &SHA512_224, Ok(SHA224));
   test_case!(sha512_256_pre_image_resistance, validate_hash_based, &SHA512_256, Ok(SHA256));
-  test_case!(shake128_pre_image_resistance, validate_hash_based, &SHAKE128, Err(SHA224));
-  test_case!(shake256_pre_image_resistance, validate_hash_based, &SHAKE256, Err(SHA224));
+  test_case!(shake128_pre_image_resistance, validate_hash_based, &SHAKE128, Ok(SHAKE128));
+  test_case!(shake256_pre_image_resistance, validate_hash_based, &SHAKE256, Ok(SHA256));
 
   test_case!(two_key_tdea, validate_symmetric, &TDEA2, Err(AES128));
   test_case!(three_key_tdea, validate_symmetric, &TDEA3, Ok(AES128));
