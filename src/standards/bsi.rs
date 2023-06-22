@@ -20,12 +20,21 @@ use std::ffi::c_int;
 
 use lazy_static::lazy_static;
 
+use crate::primitives::ecc::*;
 use crate::primitives::hash::*;
 use crate::primitives::symmetric::*;
 use crate::standards;
 use crate::standards::Context;
 
 lazy_static! {
+  static ref SPECIFIED_EC: HashSet<u16> = {
+    let mut s = HashSet::new();
+    s.insert(brainpoolP256r1.id);
+    s.insert(brainpoolP320r1.id);
+    s.insert(brainpoolP384r1.id);
+    s.insert(brainpoolP512r1.id);
+    s
+  };
   static ref SPECIFIED_HASH: HashSet<u16> = {
     let mut s = HashSet::new();
     s.insert(SHA256.id);
@@ -44,6 +53,49 @@ lazy_static! {
     s.insert(AES256.id);
     s
   };
+}
+
+/// Validate an elliptic curve cryptography primitive used for digital
+/// signatures and key establishment where f is the key size.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended primitive with the
+/// desired security level.
+///
+/// **Note:** While the guide allows for elliptic curve system
+/// parameters "that are provided by a trustworthy authority"
+/// (see p. 73), this function conservatively deems any curve that is
+/// not explicitly stated as non-compliant. This means only the
+/// Brainpool curves are considered here.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a compliant key.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::ecc::brainpoolP256r1;
+/// use wardstone::standards::bsi;
+///
+/// let ctx = Context::default();
+/// assert_eq!(bsi::validate_ecc(&ctx, &brainpoolP256r1), Ok(brainpoolP256r1));
+/// ```
+pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
+  if SPECIFIED_EC.contains(&key.id) {
+    let security = ctx.security().max(key.f >> 1);
+    match security {
+      ..=124 => Err(brainpoolP256r1),
+      125..=128 => Ok(brainpoolP256r1),
+      129..=160 => Ok(brainpoolP320r1),
+      161..=192 => Ok(brainpoolP384r1),
+      193.. => Ok(brainpoolP512r1),
+    }
+  } else {
+    Err(brainpoolP256r1)
+  }
 }
 
 /// Validates a hash function according to page 41 of the guide. The
@@ -190,6 +242,38 @@ pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, S
   }
 }
 
+/// Validate an elliptic curve cryptography primitive used for digital
+/// signatures and key establishment where f is the key size.
+///
+/// If the key is not compliant then `ws_ecc*` will contain the
+/// recommended primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `ws_ecc*` will also hold the recommended primitive with the
+/// desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+///
+/// **Note:** While the guide allows for elliptic curve system
+/// parameters "that are provided by a trustworthy authority"
+/// (see p. 73), this function conservatively deems any curve that is
+/// not explicitly stated as non-compliant. This means only the
+/// Brainpool curves are considered.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_bsi_validate_ecc(
+  ctx: *const Context,
+  key: *const Ecc,
+  alternative: *mut Ecc,
+) -> c_int {
+  standards::c_call(validate_ecc, ctx, key, alternative)
+}
+
 /// Validates a hash function according to page 41 of the guide. The
 /// reference is made with regards to applications that require
 /// collision resistance such as digital signatures.
@@ -312,6 +396,24 @@ pub unsafe extern "C" fn ws_bsi_validate_symmetric(
 mod tests {
   use super::*;
   use crate::test_case;
+
+  test_case!(p224, validate_ecc, &P224, Err(brainpoolP256r1));
+  test_case!(p256, validate_ecc, &P256, Err(brainpoolP256r1));
+  test_case!(p384, validate_ecc, &P384, Err(brainpoolP256r1));
+  test_case!(p521, validate_ecc, &P521, Err(brainpoolP256r1));
+  test_case!(w25519, validate_ecc, &W25519, Err(brainpoolP256r1));
+  test_case!(w448, validate_ecc, &W448, Err(brainpoolP256r1));
+  test_case!(curve25519, validate_ecc, &Curve25519, Err(brainpoolP256r1));
+  test_case!(curve488, validate_ecc, &Curve448, Err(brainpoolP256r1));
+  test_case!(edwards25519, validate_ecc, &Edwards25519, Err(brainpoolP256r1));
+  test_case!(edwards448, validate_ecc, &Edwards448, Err(brainpoolP256r1));
+  test_case!(e448, validate_ecc, &E448, Err(brainpoolP256r1));
+  test_case!(brainpoolp224r1, validate_ecc, &brainpoolP224r1, Err(brainpoolP256r1));
+  test_case!(brainpoolp256r1, validate_ecc, &brainpoolP256r1, Ok(brainpoolP256r1));
+  test_case!(brainpoolp320r1, validate_ecc, &brainpoolP320r1, Ok(brainpoolP320r1));
+  test_case!(brainpoolp384r1, validate_ecc, &brainpoolP384r1, Ok(brainpoolP384r1));
+  test_case!(brainpoolp512r1, validate_ecc, &brainpoolP512r1, Ok(brainpoolP512r1));
+  test_case!(secp256k1_, validate_ecc, &secp256k1, Err(brainpoolP256r1));
 
   test_case!(blake2b_256_collision_resistance, validate_hash, &BLAKE2b_256, Err(SHA256));
   test_case!(blake2b_384_collision_resistance, validate_hash, &BLAKE2b_384, Err(SHA256));
