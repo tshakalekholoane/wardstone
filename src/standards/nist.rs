@@ -215,12 +215,12 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
 /// security level, `Ok` will also hold the recommended primitive with
 /// the desired security level.
 ///
-/// **Note:** that this means an alternative might be suggested for a
-/// compliant hash functions with a similar security level in which a
-/// switch to the recommended primitive would likely be unwarranted. For
-/// example, when evaluating compliance for the `SHA3-256`, a
-/// recommendation to use `SHA256` will be made but switching to this as
-/// a result is likely unnecessary.
+/// **Note:** An alternative might be suggested for a compliant hash
+/// functions with a similar security level in which a switch to the
+/// recommended primitive would likely be unwarranted. For example, when
+/// evaluating compliance for the `SHA3-256`, a recommendation to use
+/// `SHA256` will be made but switching to this as a result is likely
+/// unnecessary.
 ///
 /// # Example
 ///
@@ -517,7 +517,7 @@ pub unsafe extern "C" fn ws_nist_validate_ifc(
 ///
 /// For applications that primarily require pre-image resistance such as
 /// message authentication codes (MACs), key derivation functions
-/// (KDFs), and random bit generation use `ws_validate_hash_based`.
+/// (KDFs), and random bit generation use `ws_nist_validate_hash_based`.
 ///
 /// If the hash function is not compliant then
 /// `struct ws_hash* alternative` will point to the recommended
