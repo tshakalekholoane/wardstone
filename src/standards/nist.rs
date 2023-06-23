@@ -346,7 +346,8 @@ pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// use wardstone::standards::nist;
 ///
 /// let ctx = Context::default();
-/// assert_eq!(nist::validate_ifc(&ctx, &IFC_2048), Ok(IFC_2048));
+/// let rsa_2048 = IFC_2048;
+/// assert_eq!(nist::validate_ifc(&ctx, &rsa_2048), Ok(rsa_2048));
 /// ```
 pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
   let security = ctx.security().max(*key.security().start());
