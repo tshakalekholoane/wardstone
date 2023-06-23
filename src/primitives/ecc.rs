@@ -91,3 +91,10 @@ pub static brainpoolP512r1: Ecc = Ecc { id: 16, f: 512 };
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
 pub static secp256k1: Ecc = Ecc { id: 17, f: 256 };
+
+/// Placeholder for use in where this primitive is not supported.
+#[no_mangle]
+pub static ECC_NOT_SUPPORTED: Ecc = Ecc {
+  id: u16::MAX,
+  f: u16::MAX,
+};
