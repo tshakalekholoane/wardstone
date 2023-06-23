@@ -205,7 +205,9 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
 ///
 /// For applications that primarily require pre-image resistance such as
 /// message authentication codes (MACs), key derivation functions
-/// (KDFs), and random bit generation use [`validate_hash_based`](crate::standards::nist::validate_hash_based).
+/// (KDFs), and random bit generation use
+/// [`validate_hash_based`](crate::standards::nist::validate_hash_based).
+///
 ///
 /// If the hash function is not compliant then `Err` will contain the
 /// recommended primitive that one should use instead.
@@ -267,7 +269,8 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// (MACs), key derivation functions (KDFs), and random bit generation.
 ///
 /// For applications that require collision resistance such digital
-/// signatures use [`validate_hash`](crate::standards::nist::validate_hash).
+/// signatures use
+/// [`validate_hash`](crate::standards::nist::validate_hash).
 ///
 /// If the hash function is not compliant then `Err` will contain the
 /// recommended primitive that one should use instead.
