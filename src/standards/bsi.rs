@@ -155,7 +155,7 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
       l: 7681..,
       n: 385..,
     } => Ok(FFC_15360_512),
-    _ => Err(NOT_SUPPORTED),
+    _ => Err(FFC_NOT_SUPPORTED),
   }
 }
 

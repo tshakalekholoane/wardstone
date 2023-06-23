@@ -46,7 +46,7 @@ pub static FFC_15360_512: Ffc = Ffc { l: 15360, n: 512 };
 
 /// Placeholder for use in where this primitive is not supported.
 #[no_mangle]
-pub static NOT_SUPPORTED: Ffc = Ffc {
+pub static FFC_NOT_SUPPORTED: Ffc = Ffc {
   l: u16::MAX,
   n: u16::MAX,
 };

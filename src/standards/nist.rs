@@ -168,7 +168,7 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
 pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
   // TODO: Does this also apply to other key agreement use cases?
   if ctx.year() > CUTOFF_YEAR_DSA {
-    return Err(NOT_SUPPORTED);
+    return Err(FFC_NOT_SUPPORTED);
   }
 
   // HACK: Use the public key size n as a proxy for security.
@@ -195,7 +195,7 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
     Ffc { l: 3072, n: 256 } => Ok(FFC_3072_256),
     Ffc { l: 7680, n: 384 } => Ok(FFC_7680_384),
     Ffc { l: 15360, n: 512 } => Ok(FFC_15360_512),
-    _ => Err(NOT_SUPPORTED),
+    _ => Err(FFC_NOT_SUPPORTED),
   }
 }
 
