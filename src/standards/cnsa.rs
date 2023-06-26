@@ -1,7 +1,5 @@
 //! Validate cryptographic primitives against the Commercial National
-//! Security Algorithm Suites.
-//!
-//! For more information, see [press release].
+//! Security Algorithm Suites, [CNSA 1.0] and [CNSA 2.0].
 //!
 //! # Safety
 //!
@@ -14,7 +12,8 @@
 //! Checks against null dereferences are made in which the function will
 //! return `-1` if the argument is required.
 //!
-//! [press release]: https://media.defense.gov/2022/Sep/07/2003071834/-1/-1/0/CSA_CNSA_2.0_ALGORITHMS_.PDF
+//! [CNSA 1.0]: https://media.defense.gov/2021/Sep/27/2002862527/-1/-1/0/CNSS%20WORKSHEET.PDF
+//! [CNSA 2.0]: https://media.defense.gov/2022/Sep/07/2003071834/-1/-1/0/CSA_CNSA_2.0_ALGORITHMS_.PDF
 
 use std::collections::HashSet;
 use std::ffi::c_int;
