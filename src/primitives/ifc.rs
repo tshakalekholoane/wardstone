@@ -32,6 +32,10 @@ pub static IFC_7680: Ifc = Ifc { k: 7680 };
 #[no_mangle]
 pub static IFC_15360: Ifc = Ifc { k: 15360 };
 
+/// Placeholder for use in where this primitive is not supported.
+#[no_mangle]
+pub static IFC_NOT_SUPPORTED: Ifc = Ifc { k: u16::MAX };
+
 impl Ifc {
   /// Returns the approximate security provided by the key size `k`
   /// expressed as an inclusive range.
