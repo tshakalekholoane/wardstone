@@ -16,16 +16,29 @@
 //!
 //! [press release]: https://media.defense.gov/2022/Sep/07/2003071834/-1/-1/0/CSA_CNSA_2.0_ALGORITHMS_.PDF
 
+use std::collections::HashSet;
 use std::ffi::c_int;
+
+use lazy_static::lazy_static;
 
 use crate::context::Context;
 use crate::primitives::ecc::*;
 use crate::primitives::ffc::*;
+use crate::primitives::hash::*;
 use crate::primitives::ifc::*;
 use crate::standards;
 
 // Exclusive use of CNSA 2.0 by this date.
 const CUTOFF_YEAR: u16 = 2030;
+
+lazy_static! {
+  static ref SPECIFIED_HASH: HashSet<u16> = {
+    let mut s = HashSet::new();
+    s.insert(SHA384.id);
+    s.insert(SHA512.id);
+    s
+  };
+}
 
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment.
@@ -135,6 +148,46 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
   }
 }
 
+/// Validates a hash function.
+///
+/// Unlike other functions in this module, there is no distinction in
+/// security based on the application. As such this module does not have
+/// a corresponding `validate_hash_based` function. All hash function
+/// and hash based application are assessed by this single function.
+///
+/// If the hash function is not compliant then `Err` will contain the
+/// recommended primitive that one should use instead.
+///
+/// If the hash function is compliant but the context specifies a higher
+/// security level, `Ok` will also hold the recommended primitive with
+/// the desired security level.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a non-compliant hash
+/// function.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::hash::{SHA1, SHA384};
+/// use wardstone::standards::cnsa;
+///
+/// let ctx = Context::default();
+/// assert_eq!(cnsa::validate_hash(&ctx, &SHA1), Err(SHA384));
+/// ```
+pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
+  if SPECIFIED_HASH.contains(&hash.id) {
+    let security = ctx.security().max(hash.collision_resistance());
+    match security {
+      ..=191 => Err(SHA384),
+      192..=255 => Ok(SHA384),
+      256.. => Ok(SHA512),
+    }
+  } else {
+    Err(SHA384)
+  }
+}
+
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment.
 ///
@@ -222,6 +275,37 @@ pub unsafe extern "C" fn ws_cnsa_validate_ifc(
   standards::c_call(validate_ifc, ctx, key, alternative)
 }
 
+/// Validates a hash function.
+///
+/// Unlike other functions in this module, there is no distinction in
+/// security based on the application. As such this module does not have
+/// a corresponding `validate_hash_based` function. All hash function
+/// and hash based application are assessed by this single function.
+///
+/// If the hash function is not compliant then
+/// `struct ws_hash* alternative` will point to the recommended
+/// primitive that one should use instead.
+///
+/// If the hash function is compliant but the context specifies a higher
+/// security level, `struct ws_hash*` will also point to the recommended
+/// primitive with the desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_cnsa_validate_hash(
+  ctx: *const Context,
+  hash: *const Hash,
+  alternative: *mut Hash,
+) -> c_int {
+  standards::c_call(validate_hash, ctx, hash, alternative)
+}
+
 #[cfg(test)]
 #[rustfmt::skip]
 mod tests {
@@ -245,6 +329,27 @@ mod tests {
   test_case!(brainpoolp384r1, validate_ecc, &brainpoolP384r1, Err(P384));
   test_case!(brainpoolp512r1, validate_ecc, &brainpoolP512r1, Err(P384));
   test_case!(secp256k1_, validate_ecc, &secp256k1, Err(P384));
+
+  test_case!(blake2b_256, validate_hash, &BLAKE2b_256, Err(SHA384));
+  test_case!(blake2b_384, validate_hash, &BLAKE2b_384, Err(SHA384));
+  test_case!(blake2b_512, validate_hash, &BLAKE2b_512, Err(SHA384));
+  test_case!(blake2s_256, validate_hash, &BLAKE2s_256, Err(SHA384));
+  test_case!(md4, validate_hash, &MD4, Err(SHA384));
+  test_case!(md5, validate_hash, &MD5, Err(SHA384));
+  test_case!(ripemd160, validate_hash, &RIPEMD160, Err(SHA384));
+  test_case!(sha1, validate_hash, &SHA1, Err(SHA384));
+  test_case!(sha224, validate_hash, &SHA224, Err(SHA384));
+  test_case!(sha256, validate_hash, &SHA256, Err(SHA384));
+  test_case!(sha384, validate_hash, &SHA384, Ok(SHA384));
+  test_case!(sha3_224, validate_hash, &SHA3_224, Err(SHA384));
+  test_case!(sha3_256, validate_hash, &SHA3_256, Err(SHA384));
+  test_case!(sha3_384, validate_hash, &SHA3_384, Err(SHA384));
+  test_case!(sha3_512, validate_hash, &SHA3_512, Err(SHA384));
+  test_case!(sha512, validate_hash, &SHA512, Ok(SHA512));
+  test_case!(sha512_224, validate_hash, &SHA512_224, Err(SHA384));
+  test_case!(sha512_256, validate_hash, &SHA512_256, Err(SHA384));
+  test_case!(shake128, validate_hash, &SHAKE128, Err(SHA384));
+  test_case!(shake256, validate_hash, &SHAKE256, Err(SHA384));
 
   test_case!(ffc_1024_160, validate_ffc, &FFC_1024_160, Err(FFC_NOT_SUPPORTED));
   test_case!(ffc_2048_224, validate_ffc, &FFC_2048_224, Err(FFC_NOT_SUPPORTED));
