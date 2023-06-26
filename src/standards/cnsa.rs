@@ -21,6 +21,7 @@ use std::ffi::c_int;
 use crate::context::Context;
 use crate::primitives::ecc::*;
 use crate::primitives::ffc::*;
+use crate::primitives::ifc::*;
 use crate::standards;
 
 // Exclusive use of CNSA 2.0 by this date.
@@ -92,6 +93,48 @@ pub fn validate_ffc(_ctx: &Context, _key: &Ffc) -> Result<Ffc, Ffc> {
   Err(FFC_NOT_SUPPORTED)
 }
 
+/// Validates  an integer factorisation cryptography primitive the most
+/// common of which is the RSA signature algorithm.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// key size that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended key size with the desired
+/// security level.
+///
+/// **Note:** Unlike other functions in this module, this will return a
+/// generic structure that specifies minimum private and public key
+/// sizes.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a non-compliant key.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::ifc::{IFC_2048, IFC_3072};
+/// use wardstone::standards::cnsa;
+///
+/// let ctx = Context::default();
+/// let rsa_2048 = IFC_2048;
+/// let rsa_3072 = IFC_3072;
+/// assert_eq!(cnsa::validate_ifc(&ctx, &rsa_2048), Err(rsa_3072));
+/// ```
+pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
+  if ctx.year() > CUTOFF_YEAR {
+    return Err(IFC_NOT_SUPPORTED);
+  }
+
+  let security = ctx.security().max(*key.security().start());
+  match security {
+    ..=127 => Err(IFC_3072),
+    128..=191 => Ok(IFC_3072),
+    192..=255 => Ok(IFC_7680),
+    256.. => Ok(IFC_15360),
+  }
+}
+
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment.
 ///
@@ -149,6 +192,36 @@ pub unsafe extern "C" fn ws_cnsa_validate_ffc(
   standards::c_call(validate_ffc, ctx, key, alternative)
 }
 
+/// Validates  an integer factorisation cryptography primitive the most
+/// common of which is the RSA signature algorithm.
+///
+/// If the key is not compliant then `ws_ifc*` will point to the
+/// recommended key size that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `ws_ifc*` will also point to the recommended key size with
+/// the desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+//
+/// **Note:** Unlike other functions in this module, this will return a
+/// generic structure that specifies minimum private and public key
+/// sizes.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_cnsa_validate_ifc(
+  ctx: *const Context,
+  key: *const Ifc,
+  alternative: *mut Ifc,
+) -> c_int {
+  standards::c_call(validate_ifc, ctx, key, alternative)
+}
+
 #[cfg(test)]
 #[rustfmt::skip]
 mod tests {
@@ -178,4 +251,10 @@ mod tests {
   test_case!(ffc_3072_256, validate_ffc, &FFC_3072_256, Err(FFC_NOT_SUPPORTED));
   test_case!(ffc_7680_384, validate_ffc, &FFC_7680_384, Err(FFC_NOT_SUPPORTED));
   test_case!(ffc_15360_512, validate_ffc, &FFC_15360_512, Err(FFC_NOT_SUPPORTED));
+
+  test_case!(ifc_1024, validate_ifc, &IFC_1024, Err(IFC_3072));
+  test_case!(ifc_2048, validate_ifc, &IFC_2048, Err(IFC_3072));
+  test_case!(ifc_3072, validate_ifc, &IFC_3072, Ok(IFC_3072));
+  test_case!(ifc_7680, validate_ifc, &IFC_7680, Ok(IFC_7680));
+  test_case!(ifc_15360, validate_ifc, &IFC_15360, Ok(IFC_15360));
 }
