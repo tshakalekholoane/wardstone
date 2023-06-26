@@ -20,6 +20,7 @@ use std::ffi::c_int;
 
 use crate::context::Context;
 use crate::primitives::ecc::*;
+use crate::primitives::ffc::*;
 use crate::standards;
 
 // Exclusive use of CNSA 2.0 by this date.
@@ -59,6 +60,38 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
   }
 }
 
+/// Validates a finite field cryptography primitive.
+///
+/// Examples include the DSA and key establishment algorithms such as
+/// Diffie-Hellman and MQV which can also be implemented as such.
+///
+/// This primitive is not supported by either version of the CNSA
+/// guidance.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// key sizes L and N that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended key sizes L and N with
+/// the desired security level.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a non-compliant key.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::ffc::{FFC_7680_384, FFC_NOT_SUPPORTED};
+/// use wardstone::standards::cnsa;
+///
+/// let ctx = Context::default();
+/// let dsa_7680 = FFC_7680_384;
+/// assert_eq!(cnsa::validate_ffc(&ctx, &dsa_7680), Err(FFC_NOT_SUPPORTED));
+/// ```
+pub fn validate_ffc(_ctx: &Context, _key: &Ffc) -> Result<Ffc, Ffc> {
+  Err(FFC_NOT_SUPPORTED)
+}
+
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment.
 ///
@@ -85,7 +118,39 @@ pub unsafe extern "C" fn ws_cnsa_validate_ecc(
   standards::c_call(validate_ecc, ctx, key, alternative)
 }
 
+/// Validates a finite field cryptography primitive function.
+///
+/// Examples include the DSA and key establishment algorithms such as
+/// Diffie-Hellman and MQV which can also be implemented as such.
+///
+/// This primitive is not supported by either version of the CNSA
+/// guidance.
+///
+/// If the key is not compliant then `struct ws_ffc*` will point to the
+/// recommended primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `struct ws_ffc` will also point to the recommended primitive
+/// with the desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_cnsa_validate_ffc(
+  ctx: *const Context,
+  key: *const Ffc,
+  alternative: *mut Ffc,
+) -> c_int {
+  standards::c_call(validate_ffc, ctx, key, alternative)
+}
+
 #[cfg(test)]
+#[rustfmt::skip]
 mod tests {
   use super::*;
   use crate::test_case;
@@ -107,4 +172,10 @@ mod tests {
   test_case!(brainpoolp384r1, validate_ecc, &brainpoolP384r1, Err(P384));
   test_case!(brainpoolp512r1, validate_ecc, &brainpoolP512r1, Err(P384));
   test_case!(secp256k1_, validate_ecc, &secp256k1, Err(P384));
+
+  test_case!(ffc_1024_160, validate_ffc, &FFC_1024_160, Err(FFC_NOT_SUPPORTED));
+  test_case!(ffc_2048_224, validate_ffc, &FFC_2048_224, Err(FFC_NOT_SUPPORTED));
+  test_case!(ffc_3072_256, validate_ffc, &FFC_3072_256, Err(FFC_NOT_SUPPORTED));
+  test_case!(ffc_7680_384, validate_ffc, &FFC_7680_384, Err(FFC_NOT_SUPPORTED));
+  test_case!(ffc_15360_512, validate_ffc, &FFC_15360_512, Err(FFC_NOT_SUPPORTED));
 }
