@@ -172,12 +172,14 @@ pub static SHA512_224: Hash = Hash { id: 22, n: 224 };
 pub static SHA512_256: Hash = Hash { id: 23, n: 256 };
 
 /// The SHAKE128 extendable-output function as defined in [FIPS 202].
+/// This assumes an output length of 128-bits.
 ///
 /// [FIPS 202]: https://doi.org/10.6028/NIST.FIPS.202
 #[no_mangle]
 pub static SHAKE128: Hash = Hash { id: 24, n: 128 };
 
 /// The SHAKE256 extendable-output function as defined in [FIPS 202].
+/// This assumes an output length of 256-bits.
 ///
 /// [FIPS 202]: https://doi.org/10.6028/NIST.FIPS.202
 #[no_mangle]
