@@ -17,6 +17,7 @@ use std::ffi::c_int;
 
 use crate::context::Context;
 use crate::primitives::ecc::*;
+use crate::primitives::ffc::*;
 use crate::standards;
 
 // "Thus the key take home message is that decision makers now make
@@ -69,6 +70,66 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
   }
 }
 
+/// Validates a finite field cryptography primitive according to page 47
+/// of the report.
+///
+/// Examples include the DSA and key establishment algorithms such as
+/// Diffie-Hellman and MQV which can also be implemented as such,
+/// according to page 47 of the report.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// key sizes L and N that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended key sizes L and N with
+/// the desired security level.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a compliant key.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::ffc::{FFC_2048_224, FFC_3072_256};
+/// use wardstone::standards::ecrypt;
+///
+/// let ctx = Context::default();
+/// let dsa_2048 = FFC_2048_224;
+/// let dsa_3072= FFC_3072_256;
+/// assert_eq!(ecrypt::validate_ffc(&ctx, &dsa_2048), Ok(dsa_3072));
+/// ```
+pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
+  // HACK: Use the public key size n as a proxy for security.
+  let mut aux = *key;
+  aux.n = ctx.security().max(key.n);
+  match aux {
+    Ffc {
+      l: ..=1023,
+      n: ..=159,
+    } => Err(FFC_3072_256),
+    Ffc {
+      l: 1024..=3071,
+      n: 160..=255,
+    } => {
+      if ctx.year() > CUTOFF_YEAR {
+        Err(FFC_3072_256)
+      } else {
+        Ok(FFC_3072_256)
+      }
+    },
+    Ffc { l: 3072, n: 256 } => Ok(FFC_3072_256),
+    Ffc {
+      l: 3073..=7680,
+      n: 257..=384,
+    } => Ok(FFC_7680_384),
+    Ffc {
+      l: 7681..,
+      n: 385..,
+    } => Ok(FFC_15360_512),
+    _ => Err(FFC_NOT_SUPPORTED),
+  }
+}
+
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment where f is the key size according
 /// to page 47 of the report.
@@ -99,6 +160,38 @@ pub unsafe extern "C" fn ws_ecrypt_validate_ecc(
   standards::c_call(validate_ecc, ctx, key, alternative)
 }
 
+/// Validates a finite field cryptography primitive according to page 47
+/// of the report.
+///
+/// Examples include the DSA and key establishment algorithms such as
+/// Diffie-Hellman.
+///
+/// If the key is not compliant then `struct ws_ffc*` will point to the
+/// recommended primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `struct ws_ffc` will also point to the recommended primitive
+/// with the desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+///
+/// **Note:** The choice of security specified in the `Context` is
+/// restricted to the values 160, 224, 256, 384, and 512.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_ecrypt_validate_ffc(
+  ctx: *const Context,
+  key: *const Ffc,
+  alternative: *mut Ffc,
+) -> c_int {
+  standards::c_call(validate_ffc, ctx, key, alternative)
+}
+
 #[cfg(test)]
 #[rustfmt::skip]
 mod tests {
@@ -122,4 +215,10 @@ mod tests {
   test_case!(brainpoolp384r1, validate_ecc, &brainpoolP384r1, Ok(ECC_384));
   test_case!(brainpoolp512r1, validate_ecc, &brainpoolP512r1, Ok(ECC_512));
   test_case!(secp256k1_, validate_ecc, &secp256k1, Ok(ECC_256));
+
+  test_case!(ffc_1024_160, validate_ffc, &FFC_1024_160, Ok(FFC_3072_256));
+  test_case!(ffc_2048_224, validate_ffc, &FFC_2048_224, Ok(FFC_3072_256));
+  test_case!(ffc_3072_256, validate_ffc, &FFC_3072_256, Ok(FFC_3072_256));
+  test_case!(ffc_7680_384, validate_ffc, &FFC_7680_384, Ok(FFC_7680_384));
+  test_case!(ffc_15360_512, validate_ffc, &FFC_15360_512, Ok(FFC_15360_512));
 }
