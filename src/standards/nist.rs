@@ -335,9 +335,8 @@ pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// level, `Ok` will also hold the recommended key size with the desired
 /// security level.
 ///
-/// **Note:** Unlike other functions in this module, this will return a
-/// generic structure that specifies minimum private and public key
-/// sizes.
+/// **Note:** This will return a generic structure that specifies
+/// minimum private and public key sizes.
 ///
 /// # Example
 ///

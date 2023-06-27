@@ -92,6 +92,26 @@ pub static brainpoolP512r1: Ecc = Ecc { id: 16, f: 512 };
 #[no_mangle]
 pub static secp256k1: Ecc = Ecc { id: 17, f: 256 };
 
+/// Generic instance that represents a choice of f = 224 for an elliptic
+/// curve primitive.
+#[no_mangle]
+pub static ECC_224: Ecc = Ecc { id: 65531, f: 224 };
+
+/// Generic instance that represents a choice of f = 256 for an elliptic
+/// curve primitive.
+#[no_mangle]
+pub static ECC_256: Ecc = Ecc { id: 65532, f: 256 };
+
+/// Generic instance that represents a choice of f = 384 for an elliptic
+/// curve primitive.
+#[no_mangle]
+pub static ECC_384: Ecc = Ecc { id: 65533, f: 384 };
+
+/// Generic instance that represents a choice of f = 512 for an elliptic
+/// curve primitive.
+#[no_mangle]
+pub static ECC_512: Ecc = Ecc { id: 65534, f: 512 };
+
 /// Placeholder for use in where this primitive is not supported.
 #[no_mangle]
 pub static ECC_NOT_SUPPORTED: Ecc = Ecc {
