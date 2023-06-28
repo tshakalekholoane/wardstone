@@ -23,6 +23,7 @@ use crate::primitives::ecc::*;
 use crate::primitives::ffc::*;
 use crate::primitives::hash::*;
 use crate::primitives::ifc::*;
+use crate::primitives::symmetric::*;
 use crate::standards;
 
 // "Thus the key take home message is that decision makers now make
@@ -57,6 +58,21 @@ lazy_static! {
     s.insert(SHAKE128.id);
     s.insert(SHAKE256.id);
     s.insert(WHIRLPOOL.id);
+    s
+  };
+  static ref SPECIFIED_SYMMETRIC: HashSet<u16> = {
+    let mut s = HashSet::new();
+    s.insert(AES128.id);
+    s.insert(AES192.id);
+    s.insert(AES256.id);
+    s.insert(Camellia128.id);
+    s.insert(Camellia192.id);
+    s.insert(Camellia256.id);
+    s.insert(Serpent128.id);
+    s.insert(Serpent192.id);
+    s.insert(Serpent256.id);
+    s.insert(TDEA2.id);
+    s.insert(TDEA3.id);
     s
   };
 }
@@ -265,6 +281,49 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
   }
 }
 
+/// Validates a symmetric key primitive according to pages 37 to 40 of
+/// the report.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended primitive with the
+/// desired security level.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a non-compliant key.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::symmetric::{AES128, TDEA3};
+/// use wardstone::standards::ecrypt;
+///
+/// let ctx = Context::default();
+/// assert_eq!(ecrypt::validate_symmetric(&ctx, &TDEA3), Ok(AES128));
+/// ```
+pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
+  if SPECIFIED_SYMMETRIC.contains(&key.id) {
+    let security = ctx.security().max(key.security);
+    match security {
+      ..=79 => Err(AES128),
+      80..=127 => {
+        if ctx.year() > CUTOFF_YEAR {
+          Err(AES128)
+        } else {
+          Ok(AES128)
+        }
+      },
+      128 => Ok(AES128),
+      129..=192 => Ok(AES192),
+      193.. => Ok(AES256),
+    }
+  } else {
+    Err(AES128)
+  }
+}
+
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment where f is the key size according
 /// to page 47 of the report.
@@ -389,6 +448,32 @@ pub unsafe extern "C" fn ws_ecrypt_validate_ifc(
   standards::c_call(validate_ifc, ctx, key, alternative)
 }
 
+/// Validates a symmetric key primitive according to pages 37 to 40 of
+/// the report.
+///
+/// If the key is not compliant then `struct ws_symmetric* alternative`
+/// will point to the recommended primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `struct ws_symmetric*` will also point to the recommended
+/// primitive with the desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_ecrypt_validate_symmetric(
+  ctx: *const Context,
+  key: *const Symmetric,
+  alternative: *mut Symmetric,
+) -> c_int {
+  standards::c_call(validate_symmetric, ctx, key, alternative)
+}
+
 #[cfg(test)]
 #[rustfmt::skip]
 mod tests {
@@ -450,4 +535,16 @@ mod tests {
   test_case!(ifc_3072, validate_ifc, &IFC_3072, Ok(IFC_3072));
   test_case!(ifc_7680, validate_ifc, &IFC_7680, Ok(IFC_7680));
   test_case!(ifc_15360, validate_ifc, &IFC_15360, Ok(IFC_15360));
+
+  test_case!(aes128, validate_symmetric, &AES128, Ok(AES128));
+  test_case!(aes192, validate_symmetric, &AES192, Ok(AES192));
+  test_case!(aes256, validate_symmetric, &AES256, Ok(AES256));
+  test_case!(camellia128, validate_symmetric, &Camellia128, Ok(AES128));
+  test_case!(camellia192, validate_symmetric, &Camellia192, Ok(AES192));
+  test_case!(camellia256, validate_symmetric, &Camellia256, Ok(AES256));
+  test_case!(serpent128, validate_symmetric, &Serpent128, Ok(AES128));
+  test_case!(serpent192, validate_symmetric, &Serpent192, Ok(AES192));
+  test_case!(serpent256, validate_symmetric, &Serpent256, Ok(AES256));
+  test_case!(three_key_tdea, validate_symmetric, &TDEA3, Ok(AES128));
+  test_case!(two_key_tdea, validate_symmetric, &TDEA2, Ok(AES128));
 }
