@@ -106,6 +106,46 @@ pub fn validate_ffc(_ctx: &Context, _key: &Ffc) -> Result<Ffc, Ffc> {
   Err(FFC_NOT_SUPPORTED)
 }
 
+/// Validates a hash function.
+///
+/// Unlike other functions in this module, there is no distinction in
+/// security based on the application. As such this module does not have
+/// a corresponding `validate_hash_based` function. All hash function
+/// and hash based application are assessed by this single function.
+///
+/// If the hash function is not compliant then `Err` will contain the
+/// recommended primitive that one should use instead.
+///
+/// If the hash function is compliant but the context specifies a higher
+/// security level, `Ok` will also hold the recommended primitive with
+/// the desired security level.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a non-compliant hash
+/// function.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::hash::{SHA1, SHA384};
+/// use wardstone::standards::cnsa;
+///
+/// let ctx = Context::default();
+/// assert_eq!(cnsa::validate_hash(&ctx, &SHA1), Err(SHA384));
+/// ```
+pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
+  if SPECIFIED_HASH.contains(&hash.id) {
+    let security = ctx.security().max(hash.collision_resistance());
+    match security {
+      ..=191 => Err(SHA384),
+      192..=255 => Ok(SHA384),
+      256.. => Ok(SHA512),
+    }
+  } else {
+    Err(SHA384)
+  }
+}
+
 /// Validates  an integer factorisation cryptography primitive the most
 /// common of which is the RSA signature algorithm.
 ///
@@ -145,46 +185,6 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
     128..=191 => Ok(IFC_3072),
     192..=255 => Ok(IFC_7680),
     256.. => Ok(IFC_15360),
-  }
-}
-
-/// Validates a hash function.
-///
-/// Unlike other functions in this module, there is no distinction in
-/// security based on the application. As such this module does not have
-/// a corresponding `validate_hash_based` function. All hash function
-/// and hash based application are assessed by this single function.
-///
-/// If the hash function is not compliant then `Err` will contain the
-/// recommended primitive that one should use instead.
-///
-/// If the hash function is compliant but the context specifies a higher
-/// security level, `Ok` will also hold the recommended primitive with
-/// the desired security level.
-///
-/// # Example
-///
-/// The following illustrates a call to validate a non-compliant hash
-/// function.
-///
-/// ```
-/// use wardstone::context::Context;
-/// use wardstone::primitives::hash::{SHA1, SHA384};
-/// use wardstone::standards::cnsa;
-///
-/// let ctx = Context::default();
-/// assert_eq!(cnsa::validate_hash(&ctx, &SHA1), Err(SHA384));
-/// ```
-pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
-  if SPECIFIED_HASH.contains(&hash.id) {
-    let security = ctx.security().max(hash.collision_resistance());
-    match security {
-      ..=191 => Err(SHA384),
-      192..=255 => Ok(SHA384),
-      256.. => Ok(SHA512),
-    }
-  } else {
-    Err(SHA384)
   }
 }
 
@@ -274,36 +274,6 @@ pub unsafe extern "C" fn ws_cnsa_validate_ffc(
   standards::c_call(validate_ffc, ctx, key, alternative)
 }
 
-/// Validates  an integer factorisation cryptography primitive the most
-/// common of which is the RSA signature algorithm.
-///
-/// If the key is not compliant then `ws_ifc*` will point to the
-/// recommended key size that one should use instead.
-///
-/// If the key is compliant but the context specifies a higher security
-/// level, `ws_ifc*` will also point to the recommended key size with
-/// the desired security level.
-///
-/// The function returns `1` if the hash function is compliant, `0` if
-/// it is not, and `-1` if an error occurs as a result of a missing or
-/// invalid argument.
-//
-/// **Note:** Unlike other functions in this module, this will return a
-/// generic structure that specifies minimum private and public key
-/// sizes.
-///
-/// # Safety
-///
-/// See module documentation for comment on safety.
-#[no_mangle]
-pub unsafe extern "C" fn ws_cnsa_validate_ifc(
-  ctx: *const Context,
-  key: *const Ifc,
-  alternative: *mut Ifc,
-) -> c_int {
-  standards::c_call(validate_ifc, ctx, key, alternative)
-}
-
 /// Validates a hash function.
 ///
 /// Unlike other functions in this module, there is no distinction in
@@ -333,6 +303,36 @@ pub unsafe extern "C" fn ws_cnsa_validate_hash(
   alternative: *mut Hash,
 ) -> c_int {
   standards::c_call(validate_hash, ctx, hash, alternative)
+}
+
+/// Validates  an integer factorisation cryptography primitive the most
+/// common of which is the RSA signature algorithm.
+///
+/// If the key is not compliant then `ws_ifc*` will point to the
+/// recommended key size that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `ws_ifc*` will also point to the recommended key size with
+/// the desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+//
+/// **Note:** Unlike other functions in this module, this will return a
+/// generic structure that specifies minimum private and public key
+/// sizes.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_cnsa_validate_ifc(
+  ctx: *const Context,
+  key: *const Ifc,
+  alternative: *mut Ifc,
+) -> c_int {
+  standards::c_call(validate_ifc, ctx, key, alternative)
 }
 
 /// Validates a symmetric key primitive.
