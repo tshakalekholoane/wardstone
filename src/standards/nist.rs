@@ -34,17 +34,17 @@ const CUTOFF_YEAR_DSA: u16 = 2023; // See FIPS-186-5 p. 16.
 lazy_static! {
   static ref SPECIFIED_EC: HashSet<u16> = {
     let mut s = HashSet::new();
+    s.insert(Curve25519.id);
+    s.insert(Curve448.id);
+    s.insert(E448.id);
+    s.insert(Edwards25519.id);
+    s.insert(Edwards448.id);
     s.insert(P224.id);
     s.insert(P256.id);
     s.insert(P384.id);
     s.insert(P521.id);
     s.insert(W25519.id);
     s.insert(W448.id);
-    s.insert(Curve25519.id);
-    s.insert(Curve448.id);
-    s.insert(Edwards25519.id);
-    s.insert(Edwards448.id);
-    s.insert(E448.id);
     s.insert(brainpoolP224r1.id);
     s.insert(brainpoolP256r1.id);
     s.insert(brainpoolP320r1.id);
@@ -72,11 +72,11 @@ lazy_static! {
   };
   static ref SPECIFIED_SYMMETRIC: HashSet<u16> = {
     let mut s = HashSet::new();
-    s.insert(TDEA2.id);
-    s.insert(TDEA3.id);
     s.insert(AES128.id);
     s.insert(AES192.id);
     s.insert(AES256.id);
+    s.insert(TDEA2.id);
+    s.insert(TDEA3.id);
     s
   };
 }
