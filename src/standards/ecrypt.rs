@@ -293,7 +293,7 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
 ///
 /// # Example
 ///
-/// The following illustrates a call to validate a non-compliant key.
+/// The following illustrates a call to validate a compliant key.
 ///
 /// ```
 /// use wardstone::context::Context;
