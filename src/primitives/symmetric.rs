@@ -32,13 +32,61 @@ pub static AES256: Symmetric = Symmetric {
   security: 256,
 };
 
+/// The Camellia encryption algorithm as defined in [RFC 3713].
+///
+/// [RFC 3714]: https://datatracker.ietf.org/doc/html/rfc3713
+#[no_mangle]
+pub static Camellia128: Symmetric = Symmetric {
+  id: 4,
+  security: 128,
+};
+
+/// The Camellia encryption algorithm as defined in [RFC 3713].
+///
+/// [RFC 3714]: https://datatracker.ietf.org/doc/html/rfc3713
+#[no_mangle]
+pub static Camellia192: Symmetric = Symmetric {
+  id: 5,
+  security: 192,
+};
+
+/// The Camellia encryption algorithm as defined in [RFC 3713].
+///
+/// [RFC 3714]: https://datatracker.ietf.org/doc/html/rfc3713
+#[no_mangle]
+pub static Camellia256: Symmetric = Symmetric {
+  id: 6,
+  security: 256,
+};
+
+/// The Serpent encryption algorithm.
+#[no_mangle]
+pub static Serpent128: Symmetric = Symmetric {
+  id: 7,
+  security: 128,
+};
+
+/// The Serpent encryption algorithm.
+#[no_mangle]
+pub static Serpent192: Symmetric = Symmetric {
+  id: 8,
+  security: 192,
+};
+
+/// The Serpent encryption algorithm.
+#[no_mangle]
+pub static Serpent256: Symmetric = Symmetric {
+  id: 9,
+  security: 256,
+};
+
 /// The two-key Triple Data Encryption Algorithm as defined in
 /// [SP800-67].
 ///
 /// [SP800-67]: https://doi.org/10.6028/NIST.SP.800-67r2
 #[no_mangle]
 pub static TDEA2: Symmetric = Symmetric {
-  id: 4,
+  id: 10,
   security: 95,
 };
 
@@ -48,6 +96,6 @@ pub static TDEA2: Symmetric = Symmetric {
 /// [SP800-67]: https://doi.org/10.6028/NIST.SP.800-67r2
 #[no_mangle]
 pub static TDEA3: Symmetric = Symmetric {
-  id: 5,
+  id: 11,
   security: 112,
 };
