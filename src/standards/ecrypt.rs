@@ -22,6 +22,7 @@ use crate::context::Context;
 use crate::primitives::ecc::*;
 use crate::primitives::ffc::*;
 use crate::primitives::hash::*;
+use crate::primitives::ifc::*;
 use crate::standards;
 
 // "Thus the key take home message is that decision makers now make
@@ -217,6 +218,52 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   }
 }
 
+/// Validates  an integer factorisation cryptography primitive the most
+/// common of which is the RSA signature algorithm according to pages
+/// 47-48.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// key size that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended key size with the desired
+/// security level.
+///
+/// **Note:** Unlike other functions in this module, this will return a
+/// generic structure that specifies minimum private and public key
+/// sizes.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a compliant key.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::ifc::{IFC_2048, IFC_3072};
+/// use wardstone::standards::ecrypt;
+///
+/// let ctx = Context::default();
+/// let rsa_2048 = IFC_2048;
+/// let rsa_3072 = IFC_3072;
+/// assert_eq!(ecrypt::validate_ifc(&ctx, &rsa_2048), Ok(rsa_3072));
+/// ```
+pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
+  let security = ctx.security().max(*key.security().start());
+  match security {
+    ..=79 => Err(IFC_3072),
+    80..=127 => {
+      if ctx.year() > CUTOFF_YEAR {
+        Err(IFC_3072)
+      } else {
+        Ok(IFC_3072)
+      }
+    },
+    128..=191 => Ok(IFC_3072),
+    192..=255 => Ok(IFC_7680),
+    256.. => Ok(IFC_15360),
+  }
+}
+
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment where f is the key size according
 /// to page 47 of the report.
@@ -310,6 +357,37 @@ pub unsafe extern "C" fn ws_ecrypt_validate_hash(
   standards::c_call(validate_hash, ctx, hash, alternative)
 }
 
+/// Validates  an integer factorisation cryptography primitive the most
+/// common of which is the RSA signature algorithm according to pages
+/// 47-48.
+///
+/// If the key is not compliant then `ws_ifc*` will point to the
+/// recommended key size that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `ws_ifc*` will also point to the recommended key size with
+/// the desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+//
+/// **Note:** Unlike other functions in this module, this will return a
+/// generic structure that specifies minimum private and public key
+/// sizes.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_ecrypt_validate_ifc(
+  ctx: *const Context,
+  key: *const Ifc,
+  alternative: *mut Ifc,
+) -> c_int {
+  standards::c_call(validate_ifc, ctx, key, alternative)
+}
+
 #[cfg(test)]
 #[rustfmt::skip]
 mod tests {
@@ -366,4 +444,9 @@ mod tests {
   test_case!(shake256, validate_hash, &SHAKE256, Ok(SHA256));
   test_case!(whirlpool, validate_hash, &WHIRLPOOL, Ok(SHA512));
 
+  test_case!(ifc_1024, validate_ifc, &IFC_1024, Ok(IFC_3072));
+  test_case!(ifc_2048, validate_ifc, &IFC_2048, Ok(IFC_3072));
+  test_case!(ifc_3072, validate_ifc, &IFC_3072, Ok(IFC_3072));
+  test_case!(ifc_7680, validate_ifc, &IFC_7680, Ok(IFC_7680));
+  test_case!(ifc_15360, validate_ifc, &IFC_15360, Ok(IFC_15360));
 }
