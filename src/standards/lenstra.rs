@@ -13,33 +13,105 @@
 //! Checks against null dereferences are made in which the function will
 //! return `-1` if the argument is required.
 
+use std::collections::HashSet;
 use std::ffi::c_int;
-use std::result;
 
-use crate::primitives::hash::Hash;
 use crate::primitives::symmetric::Symmetric;
+use lazy_static::lazy_static;
+
+use crate::context::Context;
+use crate::primitives::hash::*;
+use crate::standards;
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum ValidationError {
   SecurityLevelTooLow,
 }
 
-type Result<T> = result::Result<T, ValidationError>;
-
 const BASE_YEAR: u16 = 1982;
 const BASE_SECURITY: u16 = 56;
 
-fn calculate_year(security: u16) -> Result<u16> {
-  if security < BASE_SECURITY {
-    return Err(ValidationError::SecurityLevelTooLow);
-  }
-  Ok(BASE_YEAR + (((security + (security << 1)) - 168) >> 1))
+lazy_static! {
+  // Not strict. See p. 13 and discussion therein.
+  static ref SPECIFIED_HASH: HashSet<u16> = {
+    let mut s = HashSet::new();
+    s.insert(RIPEMD160.id);
+    s.insert(SHA1.id);
+    s.insert(SHA256.id);
+    s.insert(SHA384.id);
+    s.insert(SHA512.id);
+    s
+  };
 }
 
-/// Validates a hash function according to page 14 of the paper.
-pub fn validate_hash(hash: &Hash, expiry: u16) -> Result<bool> {
-  let security = hash.n >> 1;
-  calculate_year(security).map(|year| year >= expiry)
+// Calculates the security according to the formula on page 7. If the
+// year is less than the BASE_YEAR, a ValidationError is returned.
+fn calculate_security(year: u16) -> Result<u16, ValidationError> {
+  if year < BASE_YEAR {
+    Err(ValidationError::SecurityLevelTooLow)
+  } else {
+    let mut a = (year - BASE_YEAR) << 1;
+    a /= 3;
+    a += BASE_SECURITY;
+    Ok(a)
+  }
+}
+
+/// Validates a hash function according to pages 12-14 of the paper.
+///
+/// Unlike other functions in this module, there is no distinction in
+/// security based on the application. As such this module does not have
+/// a corresponding `validate_hash_based` function. All hash function
+/// and hash based application are assessed by this single function.
+///
+/// If the hash function is not compliant then `Err` will contain the
+/// recommended primitive that one should use instead.
+///
+/// If the hash function is compliant but the context specifies a higher
+/// security level, `Ok` will also hold the recommended primitive with
+/// the desired security level.
+///
+/// **Note:** An alternative might be suggested for a compliant hash
+/// function with a similar security level in which a switch to the
+/// recommended primitive would likely be unwarranted. For example, when
+/// evaluating compliance for the `SHA3-256`, a recommendation to use
+/// `SHA256` will be made but switching to this as a result is likely
+/// unnecessary.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a non-compliant hash
+/// function.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::hash::{SHA1, SHA256};
+/// use wardstone::standards::lenstra;
+///
+/// let ctx = Context::default();
+/// assert_eq!(lenstra::validate_hash(&ctx, &SHA1), Err(SHA256));
+/// ```
+pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
+  if SPECIFIED_HASH.contains(&hash.id) {
+    let implied_security = ctx.security().max(hash.collision_resistance());
+    let recommendation = match implied_security {
+      // SHA1 and RIPEMD-160 offer less security than their digest
+      // length so they are omitted even though they might cover the
+      // range ..=80.
+      ..=128 => SHA256,
+      129..=192 => SHA384,
+      193.. => SHA512,
+    };
+    calculate_security(ctx.year()).map_or(Err(recommendation), |minimum_security| {
+      if implied_security < minimum_security {
+        Err(recommendation)
+      } else {
+        Ok(recommendation)
+      }
+    })
+  } else {
+    Err(SHA256)
+  }
 }
 
 /// Validates a symmetric key primitive according to pages 11-12 of the
@@ -50,17 +122,35 @@ pub fn validate_symmetric(symmetric: &Symmetric, expiry: u16) -> Result<bool> {
 
 /// Validates a hash function according to page 14 of the paper.
 ///
+/// If the hash function is not compliant then
+/// `struct ws_hash* alternative` will point to the recommended
+/// primitive that one should use instead.
+///
+/// If the hash function is compliant but the context specifies a higher
+/// security level, `struct ws_hash*` will also point to the recommended
+/// primitive with the desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+///
+/// **Note:** that this means an alternative might be suggested for a
+/// compliant hash functions with a similar security level in which a
+/// switch to the recommended primitive would likely be unwarranted. For
+/// example, when evaluating compliance for the `SHA3-256`, a
+/// recommendation to use `SHA256` will be made but this likely
+/// unnecessary.
+///
 /// # Safety
 ///
-/// See [module documentation](crate::standards::lenstra) for comment on
-/// safety.
+/// See module documentation for comment on safety.
 #[no_mangle]
-pub unsafe extern "C" fn lenstra_validate_hash(hash: *const Hash, expiry: u16) -> c_int {
-  if let Some(hash_ref) = unsafe { hash.as_ref() } {
-    validate_hash(hash_ref, expiry).map_or(-1, |is_compliant| is_compliant as c_int)
-  } else {
-    -1
-  }
+pub unsafe extern "C" fn ws_lenstra_validate_hash(
+  ctx: *const Context,
+  hash: *const Hash,
+  alternative: *mut Hash,
+) -> c_int {
+  standards::c_call(validate_hash, ctx, hash, alternative)
 }
 
 /// Validates a symmetric key primitive according to pages 11-12 of the
@@ -80,4 +170,34 @@ pub unsafe extern "C" fn lenstra_validate_symmetric(
   } else {
     -1
   }
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::test_case;
+
+  test_case!(blake_224, validate_hash, &BLAKE_224, Err(SHA256));
+  test_case!(blake_256, validate_hash, &BLAKE_256, Err(SHA256));
+  test_case!(blake_384, validate_hash, &BLAKE_384, Err(SHA256));
+  test_case!(blake_512, validate_hash, &BLAKE_512, Err(SHA256));
+  test_case!(blake2b_256, validate_hash, &BLAKE2b_256, Err(SHA256));
+  test_case!(blake2b_384, validate_hash, &BLAKE2b_384, Err(SHA256));
+  test_case!(blake2b_512, validate_hash, &BLAKE2b_512, Err(SHA256));
+  test_case!(blake2s_256, validate_hash, &BLAKE2s_256, Err(SHA256));
+  test_case!(md4, validate_hash, &MD4, Err(SHA256));
+  test_case!(md5, validate_hash, &MD5, Err(SHA256));
+  test_case!(ripemd160, validate_hash, &RIPEMD160, Err(SHA256));
+  test_case!(sha1, validate_hash, &SHA1, Err(SHA256));
+  test_case!(sha224, validate_hash, &SHA224, Err(SHA256));
+  test_case!(sha256, validate_hash, &SHA256, Ok(SHA256));
+  test_case!(sha384, validate_hash, &SHA384, Ok(SHA384));
+  test_case!(sha3_224, validate_hash, &SHA3_224, Err(SHA256));
+  test_case!(sha3_256, validate_hash, &SHA3_256, Err(SHA256));
+  test_case!(sha3_384, validate_hash, &SHA3_384, Err(SHA256));
+  test_case!(sha3_512, validate_hash, &SHA3_512, Err(SHA256));
+  test_case!(sha512, validate_hash, &SHA512, Ok(SHA512));
+  test_case!(sha512_224, validate_hash, &SHA512_224, Err(SHA256));
+  test_case!(sha512_256, validate_hash, &SHA512_256, Err(SHA256));
+  test_case!(shake128, validate_hash, &SHAKE128, Err(SHA256));
+  test_case!(shake256, validate_hash, &SHAKE256, Err(SHA256));
+  test_case!(whirlpool, validate_hash, &WHIRLPOOL, Err(SHA256));
 }
