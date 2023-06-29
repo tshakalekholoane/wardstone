@@ -59,24 +59,45 @@ pub static Camellia256: Symmetric = Symmetric {
   security: 256,
 };
 
+/// The Data Encryption Standard algorithm.
+#[no_mangle]
+pub static DES: Symmetric = Symmetric {
+  id: 8,
+  security: 56,
+};
+
+/// The DES-X encryption algorithm.
+#[no_mangle]
+pub static DESX: Symmetric = Symmetric {
+  id: 9,
+  security: 120,
+};
+
+/// The International Data Encryption algorithm.
+#[no_mangle]
+pub static IDEA: Symmetric = Symmetric {
+  id: 10,
+  security: 126, /* See Wikipedia article. */
+};
+
 /// The Serpent encryption algorithm.
 #[no_mangle]
 pub static Serpent128: Symmetric = Symmetric {
-  id: 7,
+  id: 11,
   security: 128,
 };
 
 /// The Serpent encryption algorithm.
 #[no_mangle]
 pub static Serpent192: Symmetric = Symmetric {
-  id: 8,
+  id: 12,
   security: 192,
 };
 
 /// The Serpent encryption algorithm.
 #[no_mangle]
 pub static Serpent256: Symmetric = Symmetric {
-  id: 9,
+  id: 13,
   security: 256,
 };
 
@@ -86,7 +107,7 @@ pub static Serpent256: Symmetric = Symmetric {
 /// [SP800-67]: https://doi.org/10.6028/NIST.SP.800-67r2
 #[no_mangle]
 pub static TDEA2: Symmetric = Symmetric {
-  id: 10,
+  id: 14,
   security: 95,
 };
 
@@ -96,6 +117,6 @@ pub static TDEA2: Symmetric = Symmetric {
 /// [SP800-67]: https://doi.org/10.6028/NIST.SP.800-67r2
 #[no_mangle]
 pub static TDEA3: Symmetric = Symmetric {
-  id: 11,
+  id: 15,
   security: 112,
 };
