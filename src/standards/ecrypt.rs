@@ -1,4 +1,5 @@
-//! Validate cryptographic primitives against the [ECRYPT-CSA D5.4 Algorithms, Key Size and Protocols Report].
+//! Validate cryptographic primitives against the [ECRYPT-CSA D5.4
+//! Algorithms, Key Size and Protocols Report].
 //!
 //! # Safety
 //!
@@ -97,7 +98,7 @@ lazy_static! {
 ///
 /// ```
 /// use wardstone::context::Context;
-/// use wardstone::primitives::ecc::{P224, ECC_256};
+/// use wardstone::primitives::ecc::{ECC_256, P224};
 /// use wardstone::standards::ecrypt;
 ///
 /// let ctx = Context::default();
@@ -145,7 +146,7 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
 ///
 /// let ctx = Context::default();
 /// let dsa_2048 = FFC_2048_224;
-/// let dsa_3072= FFC_3072_256;
+/// let dsa_3072 = FFC_3072_256;
 /// assert_eq!(ecrypt::validate_ffc(&ctx, &dsa_2048), Ok(dsa_3072));
 /// ```
 pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
