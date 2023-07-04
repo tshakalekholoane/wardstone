@@ -105,7 +105,7 @@ lazy_static! {
 /// assert_eq!(ecrypt::validate_ecc(&ctx, &P224), Ok(ECC_256));
 /// ```
 pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
-  let security = ctx.security().max(key.f >> 1);
+  let security = ctx.security().max(key.security());
   match security {
     ..=79 => Err(ECC_256),
     80..=127 => {

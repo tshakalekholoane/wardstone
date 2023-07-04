@@ -7,6 +7,13 @@ pub struct Ecc {
   pub f: u16,
 }
 
+impl Ecc {
+  /// Returns the security level of an elliptic curve key.
+  pub fn security(&self) -> u16 {
+    self.f >> 1
+  }
+}
+
 /// Represents the Weierstrass curve P-224 over a prime field. Also
 /// known as secp224r1.
 #[no_mangle]
