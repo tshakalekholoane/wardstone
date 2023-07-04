@@ -19,6 +19,7 @@ use std::ffi::c_int;
 use lazy_static::lazy_static;
 
 use crate::context::Context;
+use crate::primitives::ecc::*;
 use crate::primitives::hash::*;
 use crate::primitives::ifc::*;
 use crate::primitives::symmetric::*;
@@ -67,6 +68,49 @@ fn calculate_security(year: u16) -> Result<u16, ValidationError> {
     lambda += BASE_SECURITY;
     Ok(lambda)
   }
+}
+
+/// Validate an elliptic curve cryptography primitive used for digital
+/// signatures and key establishment where f is the key size.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended primitive with the
+/// desired security level.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a compliant key.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::ecc::{brainpoolP256r1, ECC_256};
+/// use wardstone::standards::lenstra;
+///
+/// let ctx = Context::default();
+/// assert_eq!(lenstra::validate_ecc(&ctx, &brainpoolP256r1), Ok(ECC_256));
+/// ```
+pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
+  let implied_security = ctx.security().max(key.security());
+  let recommendation = match implied_security {
+    ..=111 => ECC_NOT_SUPPORTED,
+    112 => ECC_224,
+    113..=128 => ECC_256,
+    129..=192 => ECC_384,
+    193.. => ECC_512,
+  };
+  // Because group orders are generally chosen as powers of 2,
+  // log(#<g>, base = 4) gives the lambda value of half the exponent.
+  // For example, DSA has #<g> = 2 ** 160 which implies lambda = 80.
+  calculate_security(ctx.year()).map_or(Err(recommendation), |min_security| {
+    if implied_security < min_security {
+      Err(recommendation)
+    } else {
+      Ok(recommendation)
+    }
+  })
 }
 
 /// Validates a hash function according to pages 12-14 of the paper.
@@ -156,7 +200,7 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
   // Per Table 4 on page 25.
   let (implied_year, implied_security) = match key.k {
-    ..=1023 => (1982, 56),
+    ..=1023 => (u16::MIN, u16::MIN),
     1024 => (2006, 72),
     1025..=1280 => (2014, 78),
     1281..=1536 => (2020, 82),
@@ -228,6 +272,32 @@ pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, S
   } else {
     Err(AES128)
   }
+}
+
+/// Validate an elliptic curve cryptography primitive used for digital
+/// signatures and key establishment where f is the key size.
+///
+/// If the key is not compliant then `ws_ecc*` will contain the
+/// recommended primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `ws_ecc*` will also hold the recommended primitive with the
+/// desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_lenstra_validate_ecc(
+  ctx: *const Context,
+  key: *const Ecc,
+  alternative: *mut Ecc,
+) -> c_int {
+  standards::c_call(validate_ecc, ctx, key, alternative)
 }
 
 /// Validates a hash function according to page 14 of the paper.
@@ -320,9 +390,28 @@ pub unsafe extern "C" fn ws_lenstra_validate_symmetric(
 }
 
 #[cfg(test)]
+#[rustfmt::skip]
 mod tests {
   use super::*;
   use crate::test_case;
+
+  test_case!(p224, validate_ecc, &P224, Ok(ECC_224));
+  test_case!(p256, validate_ecc, &P256, Ok(ECC_256));
+  test_case!(p384, validate_ecc, &P384, Ok(ECC_384));
+  test_case!(p521, validate_ecc, &P521, Ok(ECC_512));
+  test_case!(w25519, validate_ecc, &W25519, Ok(ECC_256));
+  test_case!(w448, validate_ecc, &W448, Ok(ECC_512));
+  test_case!(curve25519, validate_ecc, &Curve25519, Ok(ECC_256));
+  test_case!(curve488, validate_ecc, &Curve448, Ok(ECC_512));
+  test_case!(edwards25519, validate_ecc, &Edwards25519, Ok(ECC_256));
+  test_case!(edwards448, validate_ecc, &Edwards448, Ok(ECC_512));
+  test_case!(e448, validate_ecc, &E448, Ok(ECC_512));
+  test_case!(brainpoolp224r1, validate_ecc, &brainpoolP224r1, Ok(ECC_224));
+  test_case!(brainpoolp256r1, validate_ecc, &brainpoolP256r1, Ok(ECC_256));
+  test_case!(brainpoolp320r1, validate_ecc, &brainpoolP320r1, Ok(ECC_384));
+  test_case!(brainpoolp384r1, validate_ecc, &brainpoolP384r1, Ok(ECC_384));
+  test_case!(brainpoolp512r1, validate_ecc, &brainpoolP512r1, Ok(ECC_512));
+  test_case!(secp256k1_, validate_ecc, &secp256k1, Ok(ECC_256));
 
   test_case!(ifc_1024, validate_ifc, &IFC_1024, Err(IFC_2048));
   test_case!(ifc_1280, validate_ifc, &IFC_1280, Err(IFC_2048));
