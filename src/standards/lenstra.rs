@@ -62,10 +62,10 @@ fn calculate_security(year: u16) -> Result<u16, ValidationError> {
   if year < BASE_YEAR {
     Err(ValidationError::SecurityLevelTooLow)
   } else {
-    let mut a = (year - BASE_YEAR) << 1;
-    a /= 3;
-    a += BASE_SECURITY;
-    Ok(a)
+    let mut lambda = (year - BASE_YEAR) << 1;
+    lambda /= 3;
+    lambda += BASE_SECURITY;
+    Ok(lambda)
   }
 }
 
@@ -218,8 +218,8 @@ pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, S
       129..=192 => AES192,
       193.. => AES256,
     };
-    calculate_security(ctx.year()).map_or(Err(recommendation), |minimum_security| {
-      if implied_security < minimum_security {
+    calculate_security(ctx.year()).map_or(Err(recommendation), |min_security| {
+      if implied_security < min_security {
         Err(recommendation)
       } else {
         Ok(recommendation)
