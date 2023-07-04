@@ -92,7 +92,7 @@ lazy_static! {
 /// ```
 pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
   if SPECIFIED_EC.contains(&key.id) {
-    let security = ctx.security().max(key.f >> 1);
+    let security = ctx.security().max(key.security());
     match security {
       ..=124 => Err(brainpoolP256r1),
       125..=128 => Ok(brainpoolP256r1),
