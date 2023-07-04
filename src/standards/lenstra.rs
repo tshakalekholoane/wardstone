@@ -20,6 +20,7 @@ use lazy_static::lazy_static;
 
 use crate::context::Context;
 use crate::primitives::ecc::*;
+use crate::primitives::ffc::*;
 use crate::primitives::hash::*;
 use crate::primitives::ifc::*;
 use crate::primitives::symmetric::*;
@@ -111,6 +112,65 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
       Ok(recommendation)
     }
   })
+}
+
+/// Validates a finite field cryptography primitive.
+///
+/// Examples include the DSA and key establishment algorithms such as
+/// Diffie-Hellman and MQV which can also be implemented as such.
+///
+/// If the key is not compliant then `Err` will contain the recommended
+/// key sizes L and N that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `Ok` will also hold the recommended key sizes L and N with
+/// the desired security level.
+///
+/// # Example
+///
+/// The following illustrates a call to validate a compliant key.
+///
+/// ```
+/// use wardstone::context::Context;
+/// use wardstone::primitives::ffc::FFC_2048_256;
+/// use wardstone::standards::lenstra;
+///
+/// let ctx = Context::default();
+/// let dsa_2048 = FFC_2048_256;
+/// assert_eq!(lenstra::validate_ffc(&ctx, &dsa_2048), Ok(dsa_2048));
+/// ```
+pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
+  // HACK: Use the private key as a proxy for security.
+  let (implied_year, implied_security) = match key.l {
+    ..=1023 => (u16::MIN, u16::MIN),
+    1024 => (2006, 72),
+    1025..=1280 => (2014, 78),
+    1281..=1536 => (2020, 82),
+    1537..=2048 => (2030, 88),
+    2049..=3072 => (2046, 99),
+    3073..=4096 => (2060, 108),
+    4097.. /* =8192 */ => (2100, 135),
+  };
+
+  // XXX: The table above might yield overly conservative
+  // recommendations.
+  let year = implied_year.max(ctx.year());
+  let (security_range, recommendation) = match year {
+    ..=2006 => (0..=72, FFC_1024_160),
+    2007..=2014 => (73..=78, FFC_2048_224),
+    2015..=2020 => (79..=82, FFC_2048_224),
+    2021..=2030 => (83..=88, FFC_2048_256),
+    2031..=2046 => (89..=99, FFC_3072_256),
+    2047..=2060 => (100..=108, FFC_7680_384),
+    2061.. /* =2100 */ => (109..=135 /* technically u16::MAX */, FFC_15360_512),
+  };
+
+  let security = ctx.security().max(implied_security);
+  if !security_range.contains(&security) {
+    Err(recommendation)
+  } else {
+    Ok(recommendation)
+  }
 }
 
 /// Validates a hash function according to pages 12-14 of the paper.
@@ -300,6 +360,37 @@ pub unsafe extern "C" fn ws_lenstra_validate_ecc(
   standards::c_call(validate_ecc, ctx, key, alternative)
 }
 
+/// Validates a finite field cryptography primitive function examples
+/// which include DSA and key establishment algorithms such as
+/// Diffie-Hellman and MQV.
+///
+/// If the key is not compliant then `struct ws_ffc*` will point to the
+/// recommended primitive that one should use instead.
+///
+/// If the key is compliant but the context specifies a higher security
+/// level, `struct ws_ffc` will also point to the recommended primitive
+/// with the desired security level.
+///
+/// The function returns `1` if the hash function is compliant, `0` if
+/// it is not, and `-1` if an error occurs as a result of a missing or
+/// invalid argument.
+///
+/// **Note:** Unlike other functions in this module, this will return a
+/// generic structure that specifies minimum private and public key
+/// sizes.
+///
+/// # Safety
+///
+/// See module documentation for comment on safety.
+#[no_mangle]
+pub unsafe extern "C" fn ws_lenstra_validate_ffc(
+  ctx: *const Context,
+  key: *const Ffc,
+  alternative: *mut Ffc,
+) -> c_int {
+  standards::c_call(validate_ffc, ctx, key, alternative)
+}
+
 /// Validates a hash function according to page 14 of the paper.
 ///
 /// If the hash function is not compliant then
@@ -412,6 +503,12 @@ mod tests {
   test_case!(brainpoolp384r1, validate_ecc, &brainpoolP384r1, Ok(ECC_384));
   test_case!(brainpoolp512r1, validate_ecc, &brainpoolP512r1, Ok(ECC_512));
   test_case!(secp256k1_, validate_ecc, &secp256k1, Ok(ECC_256));
+
+  test_case!(ffc_1024_160, validate_ffc, &FFC_1024_160, Err(FFC_2048_256));
+  test_case!(ffc_2048_224, validate_ffc, &FFC_2048_256, Ok(FFC_2048_256));
+  test_case!(ffc_3072_256, validate_ffc, &FFC_3072_256, Ok(FFC_3072_256));
+  test_case!(ffc_7680_384, validate_ffc, &FFC_7680_384, Ok(FFC_15360_512));
+  test_case!(ffc_15360_512, validate_ffc, &FFC_15360_512, Ok(FFC_15360_512));
 
   test_case!(ifc_1024, validate_ifc, &IFC_1024, Err(IFC_2048));
   test_case!(ifc_1280, validate_ifc, &IFC_1280, Err(IFC_2048));
