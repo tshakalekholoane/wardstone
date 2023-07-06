@@ -1,0 +1,13 @@
+[package]
+name = "wardstone_ffi"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+wardstone_core = { path = "../core" }
+
+[build-dependencies]
+cbindgen = "0.24.5"

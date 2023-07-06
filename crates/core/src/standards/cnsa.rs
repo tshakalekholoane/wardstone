@@ -1,24 +1,9 @@
 //! Validate cryptographic primitives against the Commercial National
 //! Security Algorithm Suites, [CNSA 1.0] and [CNSA 2.0].
 //!
-//! # Safety
-//!
-//! This module contains functions that use raw pointers as arguments
-//! for reading and writing data. However, this is only for the C API
-//! that is exposed to interact with safe Rust equivalents. The C API is
-//! essentially a wrapper around the Rust function to maintain
-//! consistency with existing conventions.
-//!
-//! Checks against null dereferences are made in which the function will
-//! return `-1` if the argument is required.
-//!
 //! [CNSA 1.0]: https://media.defense.gov/2021/Sep/27/2002862527/-1/-1/0/CNSS%20WORKSHEET.PDF
 //! [CNSA 2.0]: https://media.defense.gov/2022/Sep/07/2003071834/-1/-1/0/CSA_CNSA_2.0_ALGORITHMS_.PDF
-
 use std::collections::HashSet;
-use std::ffi::c_int;
-
-use lazy_static::lazy_static;
 
 use crate::context::Context;
 use crate::primitives::ecc::*;
@@ -26,7 +11,6 @@ use crate::primitives::ffc::*;
 use crate::primitives::hash::*;
 use crate::primitives::ifc::*;
 use crate::primitives::symmetric::*;
-use crate::standards;
 
 // Exclusive use of CNSA 2.0 by this date.
 const CUTOFF_YEAR: u16 = 2030;
@@ -55,9 +39,9 @@ lazy_static! {
 /// The following illustrates a call to validate a non-compliant key.
 ///
 /// ```
-/// use wardstone::context::Context;
-/// use wardstone::primitives::ecc::{P256, P384};
-/// use wardstone::standards::cnsa;
+/// use wardstone_core::context::Context;
+/// use wardstone_core::primitives::ecc::{P256, P384};
+/// use wardstone_core::standards::cnsa;
 ///
 /// let ctx = Context::default();
 /// assert_eq!(cnsa::validate_ecc(&ctx, &P256), Err(P384));
@@ -94,9 +78,9 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
 /// The following illustrates a call to validate a non-compliant key.
 ///
 /// ```
-/// use wardstone::context::Context;
-/// use wardstone::primitives::ffc::{FFC_7680_384, FFC_NOT_SUPPORTED};
-/// use wardstone::standards::cnsa;
+/// use wardstone_core::context::Context;
+/// use wardstone_core::primitives::ffc::{FFC_7680_384, FFC_NOT_SUPPORTED};
+/// use wardstone_core::standards::cnsa;
 ///
 /// let ctx = Context::default();
 /// let dsa_7680 = FFC_7680_384;
@@ -126,9 +110,9 @@ pub fn validate_ffc(_ctx: &Context, _key: &Ffc) -> Result<Ffc, Ffc> {
 /// function.
 ///
 /// ```
-/// use wardstone::context::Context;
-/// use wardstone::primitives::hash::{SHA1, SHA384};
-/// use wardstone::standards::cnsa;
+/// use wardstone_core::context::Context;
+/// use wardstone_core::primitives::hash::{SHA1, SHA384};
+/// use wardstone_core::standards::cnsa;
 ///
 /// let ctx = Context::default();
 /// assert_eq!(cnsa::validate_hash(&ctx, &SHA1), Err(SHA384));
@@ -165,9 +149,9 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// The following illustrates a call to validate a non-compliant key.
 ///
 /// ```
-/// use wardstone::context::Context;
-/// use wardstone::primitives::ifc::{IFC_2048, IFC_3072};
-/// use wardstone::standards::cnsa;
+/// use wardstone_core::context::Context;
+/// use wardstone_core::primitives::ifc::{IFC_2048, IFC_3072};
+/// use wardstone_core::standards::cnsa;
 ///
 /// let ctx = Context::default();
 /// let rsa_2048 = IFC_2048;
@@ -202,9 +186,9 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
 /// The following illustrates a call to validate a non-compliant key.
 ///
 /// ```
-/// use wardstone::context::Context;
-/// use wardstone::primitives::symmetric::{AES256, TDEA3};
-/// use wardstone::standards::cnsa;
+/// use wardstone_core::context::Context;
+/// use wardstone_core::primitives::symmetric::{AES256, TDEA3};
+/// use wardstone_core::standards::cnsa;
 ///
 /// let ctx = Context::default();
 /// assert_eq!(cnsa::validate_symmetric(&ctx, &TDEA3), Err(AES256));
@@ -215,149 +199,6 @@ pub fn validate_symmetric(_ctx: &Context, key: &Symmetric) -> Result<Symmetric, 
   } else {
     Ok(AES256)
   }
-}
-
-/// Validate an elliptic curve cryptography primitive used for digital
-/// signatures and key establishment.
-///
-/// If the key is not compliant then `ws_ecc*` will contain the
-/// recommended primitive that one should use instead.
-///
-/// If the key is compliant but the context specifies a higher security
-/// level, `ws_ecc*` will also hold the recommended primitive with the
-/// desired security level.
-///
-/// The function returns `1` if the hash function is compliant, `0` if
-/// it is not, and `-1` if an error occurs as a result of a missing or
-/// invalid argument.
-///
-/// # Safety
-///
-/// See module documentation for comment on safety.
-#[no_mangle]
-pub unsafe extern "C" fn ws_cnsa_validate_ecc(
-  ctx: *const Context,
-  key: *const Ecc,
-  alternative: *mut Ecc,
-) -> c_int {
-  standards::c_call(validate_ecc, ctx, key, alternative)
-}
-
-/// Validates a finite field cryptography primitive function.
-///
-/// Examples include the DSA and key establishment algorithms such as
-/// Diffie-Hellman and MQV which can also be implemented as such.
-///
-/// This primitive is not supported by either version of the CNSA
-/// guidance.
-///
-/// If the key is not compliant then `struct ws_ffc*` will point to the
-/// recommended primitive that one should use instead.
-///
-/// If the key is compliant but the context specifies a higher security
-/// level, `struct ws_ffc` will also point to the recommended primitive
-/// with the desired security level.
-///
-/// The function returns `1` if the hash function is compliant, `0` if
-/// it is not, and `-1` if an error occurs as a result of a missing or
-/// invalid argument.
-///
-/// # Safety
-///
-/// See module documentation for comment on safety.
-#[no_mangle]
-pub unsafe extern "C" fn ws_cnsa_validate_ffc(
-  ctx: *const Context,
-  key: *const Ffc,
-  alternative: *mut Ffc,
-) -> c_int {
-  standards::c_call(validate_ffc, ctx, key, alternative)
-}
-
-/// Validates a hash function.
-///
-/// Unlike other functions in this module, there is no distinction in
-/// security based on the application. As such this module does not have
-/// a corresponding `validate_hash_based` function. All hash function
-/// and hash based application are assessed by this single function.
-///
-/// If the hash function is not compliant then
-/// `struct ws_hash* alternative` will point to the recommended
-/// primitive that one should use instead.
-///
-/// If the hash function is compliant but the context specifies a higher
-/// security level, `struct ws_hash*` will also point to the recommended
-/// primitive with the desired security level.
-///
-/// The function returns `1` if the hash function is compliant, `0` if
-/// it is not, and `-1` if an error occurs as a result of a missing or
-/// invalid argument.
-///
-/// # Safety
-///
-/// See module documentation for comment on safety.
-#[no_mangle]
-pub unsafe extern "C" fn ws_cnsa_validate_hash(
-  ctx: *const Context,
-  hash: *const Hash,
-  alternative: *mut Hash,
-) -> c_int {
-  standards::c_call(validate_hash, ctx, hash, alternative)
-}
-
-/// Validates  an integer factorisation cryptography primitive the most
-/// common of which is the RSA signature algorithm.
-///
-/// If the key is not compliant then `ws_ifc*` will point to the
-/// recommended key size that one should use instead.
-///
-/// If the key is compliant but the context specifies a higher security
-/// level, `ws_ifc*` will also point to the recommended key size with
-/// the desired security level.
-///
-/// The function returns `1` if the hash function is compliant, `0` if
-/// it is not, and `-1` if an error occurs as a result of a missing or
-/// invalid argument.
-//
-/// **Note:** Unlike other functions in this module, this will return a
-/// generic structure that specifies minimum private and public key
-/// sizes.
-///
-/// # Safety
-///
-/// See module documentation for comment on safety.
-#[no_mangle]
-pub unsafe extern "C" fn ws_cnsa_validate_ifc(
-  ctx: *const Context,
-  key: *const Ifc,
-  alternative: *mut Ifc,
-) -> c_int {
-  standards::c_call(validate_ifc, ctx, key, alternative)
-}
-
-/// Validates a symmetric key primitive.
-///
-/// If the key is not compliant then `struct ws_symmetric* alternative`
-/// will point to the recommended primitive that one should use instead.
-///
-/// If the key is compliant but the context specifies a higher security
-/// level, `struct ws_symmetric*` will also point to the recommended
-/// primitive with the desired security level.
-///
-/// The function returns `1` if the hash function is compliant, `0` if
-/// it is not, and `-1` if an error occurs as a result of a missing or
-/// invalid argument.
-///
-/// # Safety
-///
-/// See module documentation for comment on safety.
-#[no_mangle]
-pub unsafe extern "C" fn ws_cnsa_validate_symmetric(
-  ctx: *const Context,
-  key: *const Symmetric,
-  alternative: *mut Symmetric,
-) -> c_int {
-  standards::c_call(validate_symmetric, ctx, key, alternative)
 }
 
 #[cfg(test)]

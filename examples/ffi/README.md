@@ -10,7 +10,7 @@ First compile the Rust library and generate the bindings using the following.
 cargo build --release
 ```
 
-The dynamic library and associated header file will be placed in the `target` directory in the root directory of this repository.
+The static library and associated header file will be placed in the `target` directory in the root directory of this repository.
 
 Finally, compile the C example and run it using the following commands in the current directory. This assumes you are on a Unix system.
 
