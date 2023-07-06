@@ -1,3 +1,7 @@
+//! Specifies a symmetric key cryptography primitive and a set of
+//! commonly used instances.
+
+/// Represents a symmetric key cryptography primitive.
 #[repr(C)]
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct Symmetric {
@@ -34,7 +38,7 @@ pub static AES256: Symmetric = Symmetric {
 
 /// The Camellia encryption algorithm as defined in [RFC 3713].
 ///
-/// [RFC 3714]: https://datatracker.ietf.org/doc/html/rfc3713
+/// [RFC 3713]: https://datatracker.ietf.org/doc/html/rfc3713
 #[no_mangle]
 pub static Camellia128: Symmetric = Symmetric {
   id: 4,
@@ -43,7 +47,7 @@ pub static Camellia128: Symmetric = Symmetric {
 
 /// The Camellia encryption algorithm as defined in [RFC 3713].
 ///
-/// [RFC 3714]: https://datatracker.ietf.org/doc/html/rfc3713
+/// [RFC 3713]: https://datatracker.ietf.org/doc/html/rfc3713
 #[no_mangle]
 pub static Camellia192: Symmetric = Symmetric {
   id: 5,
@@ -52,7 +56,7 @@ pub static Camellia192: Symmetric = Symmetric {
 
 /// The Camellia encryption algorithm as defined in [RFC 3713].
 ///
-/// [RFC 3714]: https://datatracker.ietf.org/doc/html/rfc3713
+/// [RFC 3713]: https://datatracker.ietf.org/doc/html/rfc3713
 #[no_mangle]
 pub static Camellia256: Symmetric = Symmetric {
   id: 6,

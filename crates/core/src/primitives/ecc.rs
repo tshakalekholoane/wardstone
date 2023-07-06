@@ -1,3 +1,6 @@
+//! Specifies a elliptic curve cryptography primitive and a set of
+//! commonly used instances.
+
 /// Represents an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment where f is the key size.
 #[repr(C)]

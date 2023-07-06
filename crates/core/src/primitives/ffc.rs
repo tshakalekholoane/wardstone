@@ -1,3 +1,6 @@
+//! Specifies a finite field cryptography primitive and a set of
+//! commonly used instances.
+
 /// Represents a finite field cryptography primitive used to implement
 /// discrete logarithm cryptography.
 ///

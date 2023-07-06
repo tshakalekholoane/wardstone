@@ -1,5 +1,9 @@
-/// Specifies the context in which a cryptographic primitive will be
-/// assessed against.
+//! Specifies the context in which a cryptographic primitive will be
+//! assessed against.
+
+/// Represents the context in which a cryptographic primitive will be
+/// assessed against such as the year and minimum security required by
+/// the user.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Context {

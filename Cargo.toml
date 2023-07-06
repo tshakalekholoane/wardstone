@@ -1,13 +1,6 @@
-[package]
-name = "wardstone"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-crate-type = ["cdylib", "lib", "staticlib"]
-
-[dependencies]
-lazy_static = "1.4.0"
-
-[build-dependencies]
-cbindgen = "0.24.5"
+[workspace]
+resolver = "2"
+members = [
+  "crates/core",
+  "crates/ffi",
+]

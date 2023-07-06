@@ -1,3 +1,6 @@
+//! Specifies a hash or hash-based cryptography primitive and a set of
+//! commonly used instances.
+
 /// Represents a hash or hash-based function cryptographic primitive
 /// where `id` is a unique identifier and `n` the digest length.
 #[repr(C)]

@@ -1,3 +1,6 @@
+//! Specifies a integer factorisation cryptography primitive and a set
+//! of commonly used instances.
+
 /// Represents an integer factorisation cryptography primitive the most
 /// common of which is the RSA signature algorithm where k indicates the
 /// key size.
