@@ -40,7 +40,7 @@ pub static AES256: Symmetric = Symmetric {
 ///
 /// [RFC 3713]: https://datatracker.ietf.org/doc/html/rfc3713
 #[no_mangle]
-pub static Camellia128: Symmetric = Symmetric {
+pub static CAMELLIA128: Symmetric = Symmetric {
   id: 4,
   security: 128,
 };
@@ -49,7 +49,7 @@ pub static Camellia128: Symmetric = Symmetric {
 ///
 /// [RFC 3713]: https://datatracker.ietf.org/doc/html/rfc3713
 #[no_mangle]
-pub static Camellia192: Symmetric = Symmetric {
+pub static CAMELLIA192: Symmetric = Symmetric {
   id: 5,
   security: 192,
 };
@@ -58,7 +58,7 @@ pub static Camellia192: Symmetric = Symmetric {
 ///
 /// [RFC 3713]: https://datatracker.ietf.org/doc/html/rfc3713
 #[no_mangle]
-pub static Camellia256: Symmetric = Symmetric {
+pub static CAMELLIA256: Symmetric = Symmetric {
   id: 6,
   security: 256,
 };
@@ -86,21 +86,21 @@ pub static IDEA: Symmetric = Symmetric {
 
 /// The Serpent encryption algorithm.
 #[no_mangle]
-pub static Serpent128: Symmetric = Symmetric {
+pub static SERPENT128: Symmetric = Symmetric {
   id: 11,
   security: 128,
 };
 
 /// The Serpent encryption algorithm.
 #[no_mangle]
-pub static Serpent192: Symmetric = Symmetric {
+pub static SERPENT192: Symmetric = Symmetric {
   id: 12,
   security: 192,
 };
 
 /// The Serpent encryption algorithm.
 #[no_mangle]
-pub static Serpent256: Symmetric = Symmetric {
+pub static SERPENT256: Symmetric = Symmetric {
   id: 13,
   security: 256,
 };

@@ -18,23 +18,23 @@ const CUTOFF_YEAR_DSA: u16 = 2023; // See FIPS-186-5 p. 16.
 lazy_static! {
   static ref SPECIFIED_EC: HashSet<u16> = {
     let mut s = HashSet::new();
-    s.insert(Curve25519.id);
-    s.insert(Curve448.id);
+    s.insert(CURVE25519.id);
+    s.insert(CURVE448.id);
     s.insert(E448.id);
-    s.insert(Edwards25519.id);
-    s.insert(Edwards448.id);
+    s.insert(EDWARDS25519.id);
+    s.insert(EDWARDS448.id);
     s.insert(P224.id);
     s.insert(P256.id);
     s.insert(P384.id);
     s.insert(P521.id);
     s.insert(W25519.id);
     s.insert(W448.id);
-    s.insert(brainpoolP224r1.id);
-    s.insert(brainpoolP256r1.id);
-    s.insert(brainpoolP320r1.id);
-    s.insert(brainpoolP384r1.id);
-    s.insert(brainpoolP512r1.id);
-    s.insert(secp256k1.id);
+    s.insert(BRAINPOOLP224R1.id);
+    s.insert(BRAINPOOLP256R1.id);
+    s.insert(BRAINPOOLP320R1.id);
+    s.insert(BRAINPOOLP384R1.id);
+    s.insert(BRAINPOOLP512R1.id);
+    s.insert(SECP256K1.id);
     s
   };
   static ref SPECIFIED_HASH: HashSet<u16> = {
@@ -419,17 +419,17 @@ mod tests {
   test_case!(p521, validate_ecc, &P521, Ok(P521));
   test_case!(w25519, validate_ecc, &W25519, Ok(P256));
   test_case!(w448, validate_ecc, &W448, Ok(P384));
-  test_case!(curve25519, validate_ecc, &Curve25519, Ok(P256));
-  test_case!(curve488, validate_ecc, &Curve448, Ok(P384));
-  test_case!(edwards25519, validate_ecc, &Edwards25519, Ok(P256));
-  test_case!(edwards448, validate_ecc, &Edwards448, Ok(P384));
+  test_case!(curve25519, validate_ecc, &CURVE25519, Ok(P256));
+  test_case!(curve488, validate_ecc, &CURVE448, Ok(P384));
+  test_case!(edwards25519, validate_ecc, &EDWARDS25519, Ok(P256));
+  test_case!(edwards448, validate_ecc, &EDWARDS448, Ok(P384));
   test_case!(e448, validate_ecc, &E448, Ok(P384));
-  test_case!(brainpoolp224r1, validate_ecc, &brainpoolP224r1, Ok(P224));
-  test_case!(brainpoolp256r1, validate_ecc, &brainpoolP256r1, Ok(P256));
-  test_case!(brainpoolp320r1, validate_ecc, &brainpoolP320r1, Ok(P256));
-  test_case!(brainpoolp384r1, validate_ecc, &brainpoolP384r1, Ok(P384));
-  test_case!(brainpoolp512r1, validate_ecc, &brainpoolP512r1, Ok(P521));
-  test_case!(secp256k1_, validate_ecc, &secp256k1, Ok(P256));
+  test_case!(brainpoolp224r1, validate_ecc, &BRAINPOOLP224R1, Ok(P224));
+  test_case!(brainpoolp256r1, validate_ecc, &BRAINPOOLP256R1, Ok(P256));
+  test_case!(brainpoolp320r1, validate_ecc, &BRAINPOOLP320R1, Ok(P256));
+  test_case!(brainpoolp384r1, validate_ecc, &BRAINPOOLP384R1, Ok(P384));
+  test_case!(brainpoolp512r1, validate_ecc, &BRAINPOOLP512R1, Ok(P521));
+  test_case!(secp256k1, validate_ecc, &SECP256K1, Ok(P256));
 
   test_case!(ffc_1024_160, validate_ffc, &FFC_1024_160, Err(FFC_2048_224));
   test_case!(ffc_2048_224, validate_ffc, &FFC_2048_224, Ok(FFC_2048_224));
@@ -443,10 +443,10 @@ mod tests {
   test_case!(ifc_7680, validate_ifc, &IFC_7680, Ok(IFC_7680));
   test_case!(ifc_15360, validate_ifc, &IFC_15360, Ok(IFC_15360));
 
-  test_case!(blake2b_256_collision_resistance, validate_hash, &BLAKE2b_256, Err(SHA256));
-  test_case!(blake2b_384_collision_resistance, validate_hash, &BLAKE2b_384, Err(SHA256));
-  test_case!(blake2b_512_collision_resistance, validate_hash, &BLAKE2b_512, Err(SHA256));
-  test_case!(blake2s_256_collision_resistance, validate_hash, &BLAKE2s_256, Err(SHA256));
+  test_case!(blake2b_256_collision_resistance, validate_hash, &BLAKE2B_256, Err(SHA256));
+  test_case!(blake2b_384_collision_resistance, validate_hash, &BLAKE2B_384, Err(SHA256));
+  test_case!(blake2b_512_collision_resistance, validate_hash, &BLAKE2B_512, Err(SHA256));
+  test_case!(blake2s_256_collision_resistance, validate_hash, &BLAKE2S_256, Err(SHA256));
   test_case!(md4_collision_resistance, validate_hash, &MD4, Err(SHA256));
   test_case!(md5_collision_resistance, validate_hash, &MD5, Err(SHA256));
   test_case!(ripemd160_collision_resistance, validate_hash, &RIPEMD160, Err(SHA256));
@@ -464,10 +464,10 @@ mod tests {
   test_case!(shake128_collision_resistance, validate_hash, &SHAKE128, Err(SHA224));
   test_case!(shake256_collision_resistance, validate_hash, &SHAKE256, Ok(SHA256));
 
-  test_case!(blake2b_256_pre_image_resistance, validate_hash_based, &BLAKE2b_256, Err(SHAKE128));
-  test_case!(blake2b_384_pre_image_resistance, validate_hash_based, &BLAKE2b_384, Err(SHAKE128));
-  test_case!(blake2b_512_pre_image_resistance, validate_hash_based, &BLAKE2b_512, Err(SHAKE128));
-  test_case!(blake2s_256_pre_image_resistance, validate_hash_based, &BLAKE2s_256, Err(SHAKE128));
+  test_case!(blake2b_256_pre_image_resistance, validate_hash_based, &BLAKE2B_256, Err(SHAKE128));
+  test_case!(blake2b_384_pre_image_resistance, validate_hash_based, &BLAKE2B_384, Err(SHAKE128));
+  test_case!(blake2b_512_pre_image_resistance, validate_hash_based, &BLAKE2B_512, Err(SHAKE128));
+  test_case!(blake2s_256_pre_image_resistance, validate_hash_based, &BLAKE2S_256, Err(SHAKE128));
   test_case!(md4_pre_image_resistance, validate_hash_based, &MD4, Err(SHAKE128));
   test_case!(md5_pre_image_resistance, validate_hash_based, &MD5, Err(SHAKE128));
   test_case!(ripemd160_pre_image_resistance, validate_hash_based, &RIPEMD160, Err(SHAKE128));

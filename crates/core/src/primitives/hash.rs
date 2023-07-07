@@ -50,25 +50,25 @@ pub static BLAKE_512: Hash = Hash { id: 4, n: 512 };
 ///
 /// [RFC 7693]: https://www.rfc-editor.org/rfc/rfc7693.html
 #[no_mangle]
-pub static BLAKE2b_256: Hash = Hash { id: 5, n: 256 };
+pub static BLAKE2B_256: Hash = Hash { id: 5, n: 256 };
 
 /// The BLAKE2b hash function as defined in [RFC 7693].
 ///
 /// [RFC 7693]: https://www.rfc-editor.org/rfc/rfc7693.html
 #[no_mangle]
-pub static BLAKE2b_384: Hash = Hash { id: 6, n: 384 };
+pub static BLAKE2B_384: Hash = Hash { id: 6, n: 384 };
 
 /// The BLAKE2b hash function as defined in [RFC 7693].
 ///
 /// [RFC 7693]: https://www.rfc-editor.org/rfc/rfc7693.html
 #[no_mangle]
-pub static BLAKE2b_512: Hash = Hash { id: 7, n: 512 };
+pub static BLAKE2B_512: Hash = Hash { id: 7, n: 512 };
 
 /// The BLAKE2s hash function as defined in [RFC 7693].
 ///
 /// [RFC 7693]: https://www.rfc-editor.org/rfc/rfc7693.html
 #[no_mangle]
-pub static BLAKE2s_256: Hash = Hash { id: 8, n: 256 };
+pub static BLAKE2S_256: Hash = Hash { id: 8, n: 256 };
 
 /// The BLAKE3 hash function.
 #[no_mangle]
