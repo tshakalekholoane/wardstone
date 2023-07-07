@@ -71,11 +71,11 @@ fn calculate_security(year: u16) -> Result<u16, ValidationError> {
 ///
 /// ```
 /// use wardstone_core::context::Context;
-/// use wardstone_core::primitives::ecc::{brainpoolP256r1, ECC_256};
+/// use wardstone_core::primitives::ecc::{BRAINPOOLP256R1, ECC_256};
 /// use wardstone_core::standards::lenstra;
 ///
 /// let ctx = Context::default();
-/// assert_eq!(lenstra::validate_ecc(&ctx, &brainpoolP256r1), Ok(ECC_256));
+/// assert_eq!(lenstra::validate_ecc(&ctx, &BRAINPOOLP256R1), Ok(ECC_256));
 /// ```
 pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
   let implied_security = ctx.security().max(key.security());
@@ -330,17 +330,17 @@ mod tests {
   test_case!(p521, validate_ecc, &P521, Ok(ECC_512));
   test_case!(w25519, validate_ecc, &W25519, Ok(ECC_256));
   test_case!(w448, validate_ecc, &W448, Ok(ECC_512));
-  test_case!(curve25519, validate_ecc, &Curve25519, Ok(ECC_256));
-  test_case!(curve488, validate_ecc, &Curve448, Ok(ECC_512));
-  test_case!(edwards25519, validate_ecc, &Edwards25519, Ok(ECC_256));
-  test_case!(edwards448, validate_ecc, &Edwards448, Ok(ECC_512));
+  test_case!(curve25519, validate_ecc, &CURVE25519, Ok(ECC_256));
+  test_case!(curve488, validate_ecc, &CURVE448, Ok(ECC_512));
+  test_case!(edwards25519, validate_ecc, &EDWARDS25519, Ok(ECC_256));
+  test_case!(edwards448, validate_ecc, &EDWARDS448, Ok(ECC_512));
   test_case!(e448, validate_ecc, &E448, Ok(ECC_512));
-  test_case!(brainpoolp224r1, validate_ecc, &brainpoolP224r1, Ok(ECC_224));
-  test_case!(brainpoolp256r1, validate_ecc, &brainpoolP256r1, Ok(ECC_256));
-  test_case!(brainpoolp320r1, validate_ecc, &brainpoolP320r1, Ok(ECC_384));
-  test_case!(brainpoolp384r1, validate_ecc, &brainpoolP384r1, Ok(ECC_384));
-  test_case!(brainpoolp512r1, validate_ecc, &brainpoolP512r1, Ok(ECC_512));
-  test_case!(secp256k1_, validate_ecc, &secp256k1, Ok(ECC_256));
+  test_case!(brainpoolp224r1, validate_ecc, &BRAINPOOLP224R1, Ok(ECC_224));
+  test_case!(brainpoolp256r1, validate_ecc, &BRAINPOOLP256R1, Ok(ECC_256));
+  test_case!(brainpoolp320r1, validate_ecc, &BRAINPOOLP320R1, Ok(ECC_384));
+  test_case!(brainpoolp384r1, validate_ecc, &BRAINPOOLP384R1, Ok(ECC_384));
+  test_case!(brainpoolp512r1, validate_ecc, &BRAINPOOLP512R1, Ok(ECC_512));
+  test_case!(secp256k1, validate_ecc, &SECP256K1, Ok(ECC_256));
 
   test_case!(ffc_1024_160, validate_ffc, &FFC_1024_160, Err(FFC_2048_256));
   test_case!(ffc_2048_224, validate_ffc, &FFC_2048_256, Ok(FFC_2048_256));
@@ -362,10 +362,10 @@ mod tests {
   test_case!(blake_256, validate_hash, &BLAKE_256, Err(SHA256));
   test_case!(blake_384, validate_hash, &BLAKE_384, Err(SHA256));
   test_case!(blake_512, validate_hash, &BLAKE_512, Err(SHA256));
-  test_case!(blake2b_256, validate_hash, &BLAKE2b_256, Err(SHA256));
-  test_case!(blake2b_384, validate_hash, &BLAKE2b_384, Err(SHA256));
-  test_case!(blake2b_512, validate_hash, &BLAKE2b_512, Err(SHA256));
-  test_case!(blake2s_256, validate_hash, &BLAKE2s_256, Err(SHA256));
+  test_case!(blake2b_256, validate_hash, &BLAKE2B_256, Err(SHA256));
+  test_case!(blake2b_384, validate_hash, &BLAKE2B_384, Err(SHA256));
+  test_case!(blake2b_512, validate_hash, &BLAKE2B_512, Err(SHA256));
+  test_case!(blake2s_256, validate_hash, &BLAKE2S_256, Err(SHA256));
   test_case!(md4, validate_hash, &MD4, Err(SHA256));
   test_case!(md5, validate_hash, &MD5, Err(SHA256));
   test_case!(ripemd160, validate_hash, &RIPEMD160, Err(SHA256));
@@ -387,15 +387,15 @@ mod tests {
   test_case!(aes128, validate_symmetric, &AES128, Ok(AES128));
   test_case!(aes192, validate_symmetric, &AES192, Ok(AES192));
   test_case!(aes256, validate_symmetric, &AES256, Ok(AES256));
-  test_case!(camellia128, validate_symmetric, &Camellia128, Err(AES128));
-  test_case!(camellia192, validate_symmetric, &Camellia192, Err(AES128));
-  test_case!(camellia256, validate_symmetric, &Camellia256, Err(AES128));
+  test_case!(camellia128, validate_symmetric, &CAMELLIA128, Err(AES128));
+  test_case!(camellia192, validate_symmetric, &CAMELLIA192, Err(AES128));
+  test_case!(camellia256, validate_symmetric, &CAMELLIA256, Err(AES128));
   test_case!(des, validate_symmetric, &DES, Err(TDEA2));
   test_case!(desx, validate_symmetric, &DESX, Ok(DESX));
   test_case!(idea, validate_symmetric, &IDEA, Ok(AES128));
-  test_case!(serpent128, validate_symmetric, &Serpent128, Err(AES128));
-  test_case!(serpent192, validate_symmetric, &Serpent192, Err(AES128));
-  test_case!(serpent256, validate_symmetric, &Serpent256, Err(AES128));
+  test_case!(serpent128, validate_symmetric, &SERPENT128, Err(AES128));
+  test_case!(serpent192, validate_symmetric, &SERPENT192, Err(AES128));
+  test_case!(serpent256, validate_symmetric, &SERPENT256, Err(AES128));
   test_case!(three_key_tdea, validate_symmetric, &TDEA3, Ok(TDEA3));
   test_case!(two_key_tdea, validate_symmetric, &TDEA2, Ok(TDEA2));
 }

@@ -47,20 +47,20 @@ pub static W448: Ecc = Ecc { id: 6, f: 448 };
 
 /// Represents the Montgomery curve Curve25519 over a prime field.
 #[no_mangle]
-pub static Curve25519: Ecc = Ecc { id: 7, f: 256 };
+pub static CURVE25519: Ecc = Ecc { id: 7, f: 256 };
 
 /// Represents the Montgomery curve Curve488 over a prime field.
 #[no_mangle]
-pub static Curve448: Ecc = Ecc { id: 8, f: 448 };
+pub static CURVE448: Ecc = Ecc { id: 8, f: 448 };
 
 /// Represents the twisted Edwards curve Edwards25519 over a prime
 /// field.
 #[no_mangle]
-pub static Edwards25519: Ecc = Ecc { id: 9, f: 256 };
+pub static EDWARDS25519: Ecc = Ecc { id: 9, f: 256 };
 
 /// Represents the twisted Edwards curve Edwards488 over a prime field.
 #[no_mangle]
-pub static Edwards448: Ecc = Ecc { id: 10, f: 448 };
+pub static EDWARDS448: Ecc = Ecc { id: 10, f: 448 };
 
 /// Represents the Edwards curve E448 over a prime field.
 #[no_mangle]
@@ -70,37 +70,37 @@ pub static E448: Ecc = Ecc { id: 11, f: 448 };
 ///
 /// [RFC 5639]: https://datatracker.ietf.org/doc/rfc5639
 #[no_mangle]
-pub static brainpoolP224r1: Ecc = Ecc { id: 12, f: 224 };
+pub static BRAINPOOLP224R1: Ecc = Ecc { id: 12, f: 224 };
 
 /// Represents the curve brainpoolP256r1 specified in [RFC 5639].
 ///
 /// [RFC 5639]: https://datatracker.ietf.org/doc/rfc5639
 #[no_mangle]
-pub static brainpoolP256r1: Ecc = Ecc { id: 13, f: 256 };
+pub static BRAINPOOLP256R1: Ecc = Ecc { id: 13, f: 256 };
 
 /// Represents the curve brainpoolP320r1 specified in [RFC 5639].
 ///
 /// [RFC 5639]: https://datatracker.ietf.org/doc/rfc5639
 #[no_mangle]
-pub static brainpoolP320r1: Ecc = Ecc { id: 14, f: 320 };
+pub static BRAINPOOLP320R1: Ecc = Ecc { id: 14, f: 320 };
 
 /// Represents the curve brainpoolP384r1 specified in [RFC 5639].
 ///
 /// [RFC 5639]: https://datatracker.ietf.org/doc/rfc5639
 #[no_mangle]
-pub static brainpoolP384r1: Ecc = Ecc { id: 15, f: 384 };
+pub static BRAINPOOLP384R1: Ecc = Ecc { id: 15, f: 384 };
 
 /// Represents the curve brainpoolP512r1 specified in [RFC 5639].
 ///
 /// [RFC 5639]: https://datatracker.ietf.org/doc/rfc5639
 #[no_mangle]
-pub static brainpoolP512r1: Ecc = Ecc { id: 16, f: 512 };
+pub static BRAINPOOLP512R1: Ecc = Ecc { id: 16, f: 512 };
 
 /// Represents the curve secp256k1 specified in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static secp256k1: Ecc = Ecc { id: 17, f: 256 };
+pub static SECP256K1: Ecc = Ecc { id: 17, f: 256 };
 
 /// Generic instance that represents a choice of f = 224 for an elliptic
 /// curve primitive.
