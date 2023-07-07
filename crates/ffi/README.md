@@ -15,11 +15,11 @@ The following is a C example that illustrates how this API can be called from ot
 
 int main(void) {
   struct ws_hash got;
-  struct ws_hash want = SHA224;
-  struct ws_context ctx = context_default();
-  assert(ws_nist_validate_hash(&ctx, &SHA1, &got) == false && "SHA1 should fail");
+  struct ws_hash want = WS_SHA224;
+  struct ws_context ctx = ws_context_default();
+  assert(ws_nist_validate_hash(&ctx, &WS_SHA1, &got) == false && "SHA1 should fail");
   assert(got.id == want.id && "unexpected hash function recommendation");
-  assert(ws_nist_validate_hash(&ctx, &SHA256, NULL) == true && "SHA256 should pass");
+  assert(ws_nist_validate_hash(&ctx, &WS_SHA256, NULL) == true && "SHA256 should pass");
   assert(ws_nist_validate_hash(NULL, NULL, NULL) == -1 && "null pointer should err");
 }
 ```
