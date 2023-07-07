@@ -68,7 +68,9 @@ jobs:
 
       - name: Build FFI example
         working-directory: ./examples/ffi/
-        run: cc ./main.c -L../../target/release/ -I../../target/ -lwardstone -o ../../target/release/ffi_example
+        run: |
+          cc -I ../../target/ ./main.c ../../target/release/libwardstone_ffi.a \
+            -o ../../target/release/ffi_example
 
       - name: Run FFI example
-        run: LD_LIBRARY_PATH=./target/release/ ./target/release/ffi_example
+        run: ./target/release/ffi_example
