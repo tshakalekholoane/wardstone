@@ -1,5 +1,6 @@
 //! Specifies the context in which a cryptographic primitive will be
 //! assessed against.
+use crate::primitive::Security;
 
 /// Represents the context in which a cryptographic primitive will be
 /// assessed against such as the year and minimum security required by
@@ -7,7 +8,7 @@
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Context {
-  security: u16,
+  security: Security,
   year: u16,
 }
 
