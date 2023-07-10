@@ -1,5 +1,6 @@
 //! Specifies a integer factorisation cryptography primitive and a set
 //! of commonly used instances.
+use wardstone_core::ifc::Ifc;
 use wardstone_core::primitives::ifc::*;
 
 /// Generic instance that represents a choice of k = 1024 for an integer

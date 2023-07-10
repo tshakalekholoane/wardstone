@@ -1,21 +1,6 @@
-//! Specifies a elliptic curve cryptography primitive and a set of
-//! commonly used instances.
-
-/// Represents an elliptic curve cryptography primitive used for digital
-/// signatures and key establishment where f is the key size.
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct Ecc {
-  pub id: u16,
-  pub f: u16,
-}
-
-impl Ecc {
-  /// Returns the security level of an elliptic curve key.
-  pub fn security(&self) -> u16 {
-    self.f >> 1
-  }
-}
+//! Specifies a set of commonly used elliptic curve cryptography
+//! primitives.
+use crate::ecc::Ecc;
 
 /// Represents the Weierstrass curve P-224 over a prime field. Also
 /// known as secp224r1.

@@ -1,5 +1,4 @@
-//! Submodules that contain cryptographic primitives and their
-//! instances.
+//! Submodules that contain common cryptographic primitive instances.
 pub mod ecc;
 pub mod ffc;
 pub mod hash;

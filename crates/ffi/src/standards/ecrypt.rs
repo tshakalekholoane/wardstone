@@ -5,12 +5,12 @@
 use std::ffi::c_int;
 
 use wardstone_core::context::Context;
-use wardstone_core::primitives::ecc::*;
-use wardstone_core::primitives::ffc::*;
-use wardstone_core::primitives::hash::*;
-use wardstone_core::primitives::ifc::*;
-use wardstone_core::primitives::symmetric::*;
+use wardstone_core::ecc::Ecc;
+use wardstone_core::ffc::Ffc;
+use wardstone_core::hash::Hash;
+use wardstone_core::ifc::Ifc;
 use wardstone_core::standards::ecrypt;
+use wardstone_core::symmetric::Symmetric;
 
 use crate::standards;
 

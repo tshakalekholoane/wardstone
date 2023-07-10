@@ -1,5 +1,6 @@
-//! Specifies a finite field cryptography primitive and a set of
-//! commonly used instances.
+//! Specifies a set of commonly used finite field cryptography
+//! instances.
+use wardstone_core::ffc::Ffc;
 use wardstone_core::primitives::ffc::*;
 
 /// Generic instance that represents a choice of L = 1024 and N = 160

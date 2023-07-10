@@ -28,9 +28,14 @@
 //! [SHA-256]: https://doi.org/10.6028/NIST.FIPS.180-4
 //! [guidance made by the NSA]: https://media.defense.gov/2022/Sep/07/2003071834/-1/-1/0/CSA_CNSA_2.0_ALGORITHMS_.PDF
 pub mod context;
+pub mod ecc;
+pub mod ffc;
+pub mod hash;
+pub mod ifc;
 pub mod primitives;
 pub mod standards;
 mod testing;
+pub mod symmetric;
 
 #[macro_use]
 extern crate lazy_static;
