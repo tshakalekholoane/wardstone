@@ -1,5 +1,5 @@
 //! Submodules that validate cryptographic primitives according to
-//! different standards and research publications.
+//! selected standards and research publications.
 pub mod bsi;
 pub mod cnsa;
 pub mod ecrypt;
