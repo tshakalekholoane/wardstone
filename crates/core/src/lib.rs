@@ -34,7 +34,6 @@ pub mod hash;
 pub mod ifc;
 pub mod primitives;
 pub mod standards;
-mod testing;
 pub mod symmetric;
 
 #[macro_use]
