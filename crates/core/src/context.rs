@@ -11,18 +11,6 @@ pub struct Context {
   year: u16,
 }
 
-/// Creates a context which will default to the year 2023 and will use
-/// the minimum security defined by the standard.
-///
-/// # Note
-///
-/// This returns a raw pointer and is meant to be called from C. Prefer
-/// the [default constructor](crate::context::Context::default) instead.
-#[no_mangle]
-pub extern "C" fn context_default() -> Context {
-  Context::default()
-}
-
 impl Context {
   // NOTE: This does not imply that the minimum security level is 0 but
   // rather that it will default to the minimum security level specified
