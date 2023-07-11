@@ -8,6 +8,7 @@ use crate::ecc::Ecc;
 use crate::ffc::Ffc;
 use crate::hash::Hash;
 use crate::ifc::Ifc;
+use crate::primitive::Primitive;
 use crate::primitives::ecc::*;
 use crate::primitives::ffc::*;
 use crate::primitives::hash::*;
@@ -47,8 +48,8 @@ lazy_static! {
   };
 }
 
-// Calculates the security according to the formula on page 7. If the
-// year is less than the BASE_YEAR, a ValidationError is returned.
+/// Calculates the security according to the formula on page 7. If the
+/// year is less than the BASE_YEAR, a ValidationError is returned.
 fn calculate_security(year: u16) -> Result<u16, ValidationError> {
   if year < BASE_YEAR {
     Err(ValidationError::SecurityLevelTooLow)
@@ -83,24 +84,27 @@ fn calculate_security(year: u16) -> Result<u16, ValidationError> {
 /// assert_eq!(lenstra::validate_ecc(&ctx, &BRAINPOOLP256R1), Ok(ECC_256));
 /// ```
 pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
+  // Unlike the other functions in this crate, there is a third security
+  // preference that is implied by context year which is derived from
+  // the equation used in this module and be used to inform the
+  // recommendation.
   let implied_security = ctx.security().max(key.security());
-  let recommendation = match implied_security {
+  let min_security = match calculate_security(ctx.year()) {
+    Ok(security) => security,
+    Err(_) => return Err(ECC_NOT_SUPPORTED),
+  };
+  let recommendation = match implied_security.max(min_security) {
     ..=111 => ECC_NOT_SUPPORTED,
     112 => ECC_224,
     113..=128 => ECC_256,
     129..=192 => ECC_384,
     193.. => ECC_512,
   };
-  // Because group orders are generally chosen as powers of 2,
-  // log(#<g>, base = 4) gives the lambda value of half the exponent.
-  // For example, DSA has #<g> = 2 ** 160 which implies lambda = 80.
-  calculate_security(ctx.year()).map_or(Err(recommendation), |min_security| {
-    if implied_security < min_security {
-      Err(recommendation)
-    } else {
-      Ok(recommendation)
-    }
-  })
+  if implied_security < min_security {
+    Err(recommendation)
+  } else {
+    Ok(recommendation)
+  }
 }
 
 /// Validates a finite field cryptography primitive.
@@ -121,41 +125,32 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
 ///
 /// ```
 /// use wardstone_core::context::Context;
-/// use wardstone_core::primitives::ffc::FFC_2048_256;
+/// use wardstone_core::primitives::ffc::FFC_3072_256;
 /// use wardstone_core::standards::lenstra;
 ///
 /// let ctx = Context::default();
-/// let dsa_2048 = FFC_2048_256;
-/// assert_eq!(lenstra::validate_ffc(&ctx, &dsa_2048), Ok(dsa_2048));
+/// let dsa_3072 = FFC_3072_256;
+/// assert_eq!(lenstra::validate_ffc(&ctx, &dsa_3072), Ok(dsa_3072));
 /// ```
 pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
-  // HACK: Use the private key as a proxy for security.
-  let (implied_year, implied_security) = match key.l {
-    ..=1023 => (u16::MIN, u16::MIN),
-    1024 => (2006, 72),
-    1025..=1280 => (2014, 78),
-    1281..=1536 => (2020, 82),
-    1537..=2048 => (2030, 88),
-    2049..=3072 => (2046, 99),
-    3073..=4096 => (2060, 108),
-    4097.. /* =8192 */ => (2100, 135),
+  // Unlike the other functions in this crate, there is a third security
+  // preference that is implied by context year which is derived from
+  // the equation used in this module and be used to inform the
+  // recommendation.
+  let implied_security = ctx.security().max(key.security());
+  let min_security = match calculate_security(ctx.year()) {
+    Ok(security) => security,
+    Err(_) => return Err(FFC_NOT_SUPPORTED),
   };
-
-  // XXX: The table above might yield overly conservative
-  // recommendations.
-  let year = implied_year.max(ctx.year());
-  let (security_range, recommendation) = match year {
-    ..=2006 => (0..=72, FFC_1024_160),
-    2007..=2014 => (73..=78, FFC_2048_224),
-    2015..=2020 => (79..=82, FFC_2048_224),
-    2021..=2030 => (83..=88, FFC_2048_256),
-    2031..=2046 => (89..=99, FFC_3072_256),
-    2047..=2060 => (100..=108, FFC_7680_384),
-    2061.. /* =2100 */ => (109..=135 /* technically u16::MAX */, FFC_15360_512),
+  let recommendation = match implied_security.max(min_security) {
+    ..=79 => FFC_NOT_SUPPORTED,
+    80 => FFC_1024_160,
+    81..=112 => FFC_2048_224,
+    113..=128 => FFC_3072_256,
+    129..=192 => FFC_7680_384,
+    193.. => FFC_15360_512,
   };
-
-  let security = ctx.security().max(implied_security);
-  if !security_range.contains(&security) {
+  if implied_security < min_security {
     Err(recommendation)
   } else {
     Ok(recommendation)
@@ -198,7 +193,7 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
 /// ```
 pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
-    let implied_security = ctx.security().max(hash.collision_resistance());
+    let implied_security = ctx.security().max(hash.security());
     let recommendation = match implied_security {
       // SHA1 and RIPEMD-160 offer less security than their digest
       // length so they are omitted even though they might cover the
@@ -302,7 +297,7 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
 /// ```
 pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
   if SPECIFIED_SYMMETRIC.contains(&key.id) {
-    let implied_security = ctx.security().max(key.security);
+    let implied_security = ctx.security().max(key.security());
     let recommendation = match implied_security {
       ..=95 => TDEA2,
       96..=112 => TDEA3,
@@ -347,10 +342,10 @@ mod tests {
   test_case!(brainpoolp512r1, validate_ecc, &BRAINPOOLP512R1, Ok(ECC_512));
   test_case!(secp256k1, validate_ecc, &SECP256K1, Ok(ECC_256));
 
-  test_case!(ffc_1024_160, validate_ffc, &FFC_1024_160, Err(FFC_2048_256));
-  test_case!(ffc_2048_224, validate_ffc, &FFC_2048_256, Ok(FFC_2048_256));
+  test_case!(ffc_1024_160, validate_ffc, &FFC_1024_160, Err(FFC_2048_224));
+  test_case!(ffc_2048_224, validate_ffc, &FFC_2048_224, Ok(FFC_2048_224));
   test_case!(ffc_3072_256, validate_ffc, &FFC_3072_256, Ok(FFC_3072_256));
-  test_case!(ffc_7680_384, validate_ffc, &FFC_7680_384, Ok(FFC_15360_512));
+  test_case!(ffc_7680_384, validate_ffc, &FFC_7680_384, Ok(FFC_7680_384));
   test_case!(ffc_15360_512, validate_ffc, &FFC_15360_512, Ok(FFC_15360_512));
 
   test_case!(ifc_1024, validate_ifc, &IFC_1024, Err(IFC_2048));

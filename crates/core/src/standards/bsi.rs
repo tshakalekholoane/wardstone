@@ -10,6 +10,7 @@ use crate::ecc::Ecc;
 use crate::ffc::Ffc;
 use crate::hash::Hash;
 use crate::ifc::Ifc;
+use crate::primitive::Primitive;
 use crate::primitives::ecc::*;
 use crate::primitives::ffc::*;
 use crate::primitives::hash::*;
@@ -39,6 +40,8 @@ lazy_static! {
     s.insert(SHA512_256.id);
     s
   };
+  // "The present version of this Technical Guideline does not recommend
+  // any other block ciphers besides AES" (2023, p. 24).
   static ref SPECIFIED_SYMMETRIC: HashSet<u16> = {
     let mut s = HashSet::new();
     s.insert(AES128.id);
@@ -62,7 +65,7 @@ lazy_static! {
 /// parameters "that are provided by a trustworthy authority"
 /// (see p. 73), this function conservatively deems any curve that is
 /// not explicitly stated as non-compliant. This means only the
-/// Brainpool curves are considered here.
+/// Brainpool curves are considered compliant.
 ///
 /// # Example
 ///
@@ -106,9 +109,6 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
 /// level, `Ok` will also hold the recommended key sizes L and N with
 /// the desired security level.
 ///
-/// **Note:** The choice of security specified in the `Context` is
-/// restricted to the values 160, 224, 256, 384, and 512.
-///
 /// # Example
 ///
 /// The following illustrates a call to validate a non-compliant key.
@@ -124,27 +124,13 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
 /// assert_eq!(bsi::validate_ffc(&ctx, &dsa_2048), Err(dsa_3072));
 /// ```
 pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
-  // HACK: Use the public key size n as a proxy for security.
-  let mut aux = *key;
-  aux.n = ctx.security().max(key.n);
-  match aux {
-    Ffc {
-      l: ..=2999,
-      n: ..=249,
-    } => Err(FFC_3072_256),
-    Ffc {
-      l: 3000..=3072,
-      n: 250..=256,
-    } => Ok(FFC_3072_256),
-    Ffc {
-      l: 3073..=7680,
-      n: 257..=384,
-    } => Ok(FFC_7680_384),
-    Ffc {
-      l: 7681..,
-      n: 385..,
-    } => Ok(FFC_15360_512),
-    _ => Err(FFC_NOT_SUPPORTED),
+  let security = ctx.security().max(key.security());
+  match security {
+    // Page 48 says q > 2²⁵⁰.
+    ..=124 => Err(FFC_3072_256),
+    125..=128 => Ok(FFC_3072_256),
+    129..=192 => Ok(FFC_7680_384),
+    193.. => Ok(FFC_15360_512),
   }
 }
 
@@ -186,7 +172,7 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
 /// ```
 pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
-    let security = ctx.security().max(hash.collision_resistance());
+    let security = ctx.security().max(hash.security());
     match security {
       ..=119 => Err(SHA256),
       120..=128 => Ok(SHA256),
@@ -243,7 +229,8 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// ```
 pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
-    let security = ctx.security().max(hash.pre_image_resistance());
+    let pre_image_resistance = hash.security() << 1;
+    let security = ctx.security().max(pre_image_resistance);
     match security {
       ..=127 => Err(SHA256),
       128..=256 => Ok(SHA256),
@@ -283,11 +270,7 @@ pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// assert_eq!(bsi::validate_ifc(&ctx, &rsa_2048), Ok(rsa_2048));
 /// ```
 pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
-  // XXX: Key sizes in the range 2000..=2047 evaluated before 2024 are
-  // marked as non-compliant. This should not matter in practice since
-  // key sizes tend to be powers of two. This is also true of key sizes
-  // less than 3072 post the cut-off period (the guide states ≥ 3000).
-  let security = ctx.security().max(*key.security().start());
+  let security = ctx.security().max(key.security());
   match security {
     ..=111 => {
       if ctx.year() > CUTOFF_YEAR_RSA {
@@ -333,10 +316,8 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
 /// assert_eq!(bsi::validate_symmetric(&ctx, &TDEA3), Err(AES128));
 /// ```
 pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
-  // "The present version of this Technical Guideline does not recommend
-  // any other block ciphers besides AES" (2023, p. 24).
   if SPECIFIED_SYMMETRIC.contains(&key.id) {
-    let security = ctx.security().max(key.security);
+    let security = ctx.security().max(key.security());
     match security {
       ..=119 => Err(AES128),
       120..=128 => Ok(AES128),

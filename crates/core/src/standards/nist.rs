@@ -9,6 +9,7 @@ use crate::ecc::Ecc;
 use crate::ffc::Ffc;
 use crate::hash::Hash;
 use crate::ifc::Ifc;
+use crate::primitive::Primitive;
 use crate::primitives::ecc::*;
 use crate::primitives::ffc::*;
 use crate::primitives::hash::*;
@@ -155,35 +156,29 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
 /// assert_eq!(nist::validate_ffc(&ctx, &dsa_2048), Ok(dsa_2048));
 /// ```
 pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
-  // TODO: Does this also apply to other key agreement use cases?
   if ctx.year() > CUTOFF_YEAR_DSA {
     return Err(FFC_NOT_SUPPORTED);
   }
 
-  // HACK: Use the public key size n as a proxy for security.
-  let mut aux = *key;
-  aux.n = ctx.security().max(key.n);
-  match aux {
-    Ffc { l: 1024, n: 160 } => {
+  let security = ctx.security().max(key.security());
+  match security {
+    80 => {
       if ctx.year() > CUTOFF_YEAR {
         Err(FFC_3072_256)
       } else {
         Err(FFC_2048_224)
       }
     },
-    Ffc {
-      l: 2048,
-      n: 224 | 256,
-    } => {
+    112 => {
       if ctx.year() > CUTOFF_YEAR {
         Err(FFC_3072_256)
       } else {
         Ok(FFC_2048_224)
       }
     },
-    Ffc { l: 3072, n: 256 } => Ok(FFC_3072_256),
-    Ffc { l: 7680, n: 384 } => Ok(FFC_7680_384),
-    Ffc { l: 15360, n: 512 } => Ok(FFC_15360_512),
+    128 => Ok(FFC_3072_256),
+    192 => Ok(FFC_7680_384),
+    256 => Ok(FFC_15360_512),
     _ => Err(FFC_NOT_SUPPORTED),
   }
 }
@@ -226,7 +221,7 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
 /// ```
 pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
-    let security = ctx.security().max(hash.collision_resistance());
+    let security = ctx.security().max(hash.security());
     match security {
       ..=111 => {
         if ctx.year() > CUTOFF_YEAR {
@@ -291,7 +286,8 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// ```
 pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
-    let security = ctx.security().max(hash.pre_image_resistance());
+    let pre_image_resistance = hash.security() << 1;
+    let security = ctx.security().max(pre_image_resistance);
     match security {
       ..=111 => Err(SHAKE128),
       112..=127 => {
@@ -340,7 +336,7 @@ pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// assert_eq!(nist::validate_ifc(&ctx, &rsa_2048), Ok(rsa_2048));
 /// ```
 pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
-  let security = ctx.security().max(*key.security().start());
+  let security = ctx.security().max(key.security());
   match security {
     ..=111 => {
       if ctx.year() > CUTOFF_YEAR {
@@ -387,7 +383,7 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
 /// ```
 pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
   if SPECIFIED_SYMMETRIC.contains(&key.id) {
-    let security = ctx.security().max(key.security);
+    let security = ctx.security().max(key.security());
     match security {
       ..=111 => Err(AES128),
       112 => {

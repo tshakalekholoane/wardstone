@@ -33,7 +33,7 @@ use crate::standards;
 /// parameters "that are provided by a trustworthy authority"
 /// (see p. 73), this function conservatively deems any curve that is
 /// not explicitly stated as non-compliant. This means only the
-/// Brainpool curves are considered.
+/// Brainpool curves are considered compliant.
 ///
 /// # Safety
 ///
@@ -62,9 +62,6 @@ pub unsafe extern "C" fn ws_bsi_validate_ecc(
 /// The function returns `1` if the hash function is compliant, `0` if
 /// it is not, and `-1` if an error occurs as a result of a missing or
 /// invalid argument.
-///
-/// **Note:** The choice of security specified in the `Context` is
-/// restricted to the values 160, 224, 256, 384, and 512.
 ///
 /// # Safety
 ///
