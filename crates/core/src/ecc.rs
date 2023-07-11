@@ -1,8 +1,9 @@
 //! Elliptic curve primitive.
-use crate::primitive::Security;
+use crate::primitive::{Primitive, Security};
 
 /// Represents an elliptic curve cryptography primitive used for digital
-/// signatures and key establishment where f is the key size.
+/// signatures and key establishment where f is the key size (the size
+/// of n, where n is the order of the base point G).
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Ecc {
@@ -10,10 +11,10 @@ pub struct Ecc {
   pub f: u16,
 }
 
-impl Ecc {
-  /// Returns the security level of an elliptic curve key.
-  pub fn security(&self) -> Security {
+impl Primitive for Ecc {
+  /// Returns the security level of an elliptic curve key (which is
+  /// approximately len(n)/2).
+  fn security(&self) -> Security {
     self.f >> 1
   }
 }
-
