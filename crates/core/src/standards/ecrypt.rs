@@ -9,6 +9,7 @@ use crate::ecc::Ecc;
 use crate::ffc::Ffc;
 use crate::hash::Hash;
 use crate::ifc::Ifc;
+use crate::primitive::Primitive;
 use crate::primitives::ecc::*;
 use crate::primitives::ffc::*;
 use crate::primitives::hash::*;
@@ -139,34 +140,19 @@ pub fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
 /// assert_eq!(ecrypt::validate_ffc(&ctx, &dsa_2048), Ok(dsa_3072));
 /// ```
 pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
-  // HACK: Use the public key size n as a proxy for security.
-  let mut aux = *key;
-  aux.n = ctx.security().max(key.n);
-  match aux {
-    Ffc {
-      l: ..=1023,
-      n: ..=159,
-    } => Err(FFC_3072_256),
-    Ffc {
-      l: 1024..=3071,
-      n: 160..=255,
-    } => {
+  let security = ctx.security().max(key.security());
+  match security {
+    ..=79 => Err(FFC_3072_256),
+    80..=127 => {
       if ctx.year() > CUTOFF_YEAR {
         Err(FFC_3072_256)
       } else {
         Ok(FFC_3072_256)
       }
     },
-    Ffc { l: 3072, n: 256 } => Ok(FFC_3072_256),
-    Ffc {
-      l: 3073..=7680,
-      n: 257..=384,
-    } => Ok(FFC_7680_384),
-    Ffc {
-      l: 7681..,
-      n: 385..,
-    } => Ok(FFC_15360_512),
-    _ => Err(FFC_NOT_SUPPORTED),
+    128 => Ok(FFC_3072_256),
+    129..=192 => Ok(FFC_7680_384),
+    193.. => Ok(FFC_15360_512),
   }
 }
 
@@ -206,7 +192,7 @@ pub fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
 /// ```
 pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
-    let security = ctx.security().max(hash.collision_resistance());
+    let security = ctx.security().max(hash.security());
     match security {
       ..=79 => Err(SHA256),
       80..=127 => {
@@ -255,7 +241,7 @@ pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
 /// assert_eq!(ecrypt::validate_ifc(&ctx, &rsa_2048), Ok(rsa_3072));
 /// ```
 pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
-  let security = ctx.security().max(*key.security().start());
+  let security = ctx.security().max(key.security());
   match security {
     ..=79 => Err(IFC_3072),
     80..=127 => {
@@ -295,7 +281,7 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
 /// ```
 pub fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
   if SPECIFIED_SYMMETRIC.contains(&key.id) {
-    let security = ctx.security().max(key.security);
+    let security = ctx.security().max(key.security());
     match security {
       ..=79 => Err(AES128),
       80..=127 => {

@@ -10,6 +10,7 @@ use crate::ecc::Ecc;
 use crate::ffc::Ffc;
 use crate::hash::Hash;
 use crate::ifc::Ifc;
+use crate::primitive::Primitive;
 use crate::primitives::ecc::*;
 use crate::primitives::ffc::*;
 use crate::primitives::hash::*;
@@ -124,7 +125,7 @@ pub fn validate_ffc(_ctx: &Context, _key: &Ffc) -> Result<Ffc, Ffc> {
 /// ```
 pub fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
   if SPECIFIED_HASH.contains(&hash.id) {
-    let security = ctx.security().max(hash.collision_resistance());
+    let security = ctx.security().max(hash.security());
     match security {
       ..=191 => Err(SHA384),
       192..=255 => Ok(SHA384),
@@ -168,7 +169,7 @@ pub fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
     return Err(IFC_NOT_SUPPORTED);
   }
 
-  let security = ctx.security().max(*key.security().start());
+  let security = ctx.security().max(key.security());
   match security {
     ..=127 => Err(IFC_3072),
     128..=191 => Ok(IFC_3072),
