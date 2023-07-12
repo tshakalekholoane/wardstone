@@ -1,12 +1,19 @@
-//! Assess primitives against a cryptographic standard or research
-//! publication.
+//! Assess the security of a cryptographic primitive against a standard
+//! or research publication.
+pub mod bsi;
+pub mod cnsa;
+pub mod ecrypt;
+pub mod instances;
+pub mod lenstra;
+pub mod nist;
 mod utilities;
+
 use crate::context::Context;
-use crate::ecc::Ecc;
-use crate::ffc::Ffc;
-use crate::hash::Hash;
-use crate::ifc::Ifc;
-use crate::symmetric::Symmetric;
+use crate::primitive::ecc::Ecc;
+use crate::primitive::ffc::Ffc;
+use crate::primitive::hash::Hash;
+use crate::primitive::ifc::Ifc;
+use crate::primitive::symmetric::Symmetric;
 
 /// Represents a cryptographic standard or research publication.
 ///

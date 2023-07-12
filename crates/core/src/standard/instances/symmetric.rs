@@ -1,6 +1,6 @@
 //! Specifies a set of commonly used symmetric key cryptography
 //! primitives.
-use crate::symmetric::Symmetric;
+use crate::primitive::symmetric::Symmetric;
 
 /// The Advanced Encryption Standard algorithm as defined in [FIPS 197].
 ///

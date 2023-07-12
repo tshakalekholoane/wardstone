@@ -1,6 +1,6 @@
 //! Specifies a set of commonly used finite field cryptography
 //! primitives.
-use crate::ffc::Ffc;
+use crate::primitive::ffc::Ffc;
 
 /// Generic instance that represents a choice of L = 1024 and N = 160
 /// for a finite field cryptography primitive.

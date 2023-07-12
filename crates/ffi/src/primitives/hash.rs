@@ -1,7 +1,7 @@
 //! Specifies a hash or hash-based cryptography primitive and a set of
 //! commonly used instances.
-use wardstone_core::hash::Hash;
-use wardstone_core::primitives::hash::*;
+use wardstone_core::primitive::hash::Hash;
+use wardstone_core::standard::instances::hash::*;
 
 /// The BLAKE-224 hash function.
 #[no_mangle]

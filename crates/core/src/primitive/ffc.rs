@@ -11,7 +11,7 @@ use crate::primitive::{Primitive, Security};
 /// signature algorithms such as DSA and key establishment algorithms
 /// such as Diffie-Hellman and MQV.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Ffc {
   pub l: u16,
   pub n: u16,

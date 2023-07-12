@@ -5,7 +5,7 @@ use crate::primitive::{Primitive, Security};
 /// signatures and key establishment where f is the key size (the size
 /// of n, where n is the order of the base point G).
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Ecc {
   pub id: u16,
   pub f: u16,

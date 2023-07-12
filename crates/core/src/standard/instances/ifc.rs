@@ -1,6 +1,6 @@
 //! Specifies set of commonly used integer factorisation cryptography
 //! primitives.
-use crate::ifc::Ifc;
+use crate::primitive::ifc::Ifc;
 
 /// Generic instance that represents a choice of k = 1024 for an integer
 /// factorisation cryptography primitive.
