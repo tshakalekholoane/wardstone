@@ -13,7 +13,7 @@ use wardstone_core::ifc::Ifc;
 use wardstone_core::standards::cnsa;
 use wardstone_core::symmetric::Symmetric;
 
-use crate::standards;
+use crate::utilities;
 
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment.
@@ -38,7 +38,7 @@ pub unsafe extern "C" fn ws_cnsa_validate_ecc(
   key: *const Ecc,
   alternative: *mut Ecc,
 ) -> c_int {
-  standards::c_call(cnsa::validate_ecc, ctx, key, alternative)
+  utilities::c_call(Cnsa::validate_ecc, ctx, key, alternative)
 }
 
 /// Validates a finite field cryptography primitive function.
@@ -69,7 +69,7 @@ pub unsafe extern "C" fn ws_cnsa_validate_ffc(
   key: *const Ffc,
   alternative: *mut Ffc,
 ) -> c_int {
-  standards::c_call(cnsa::validate_ffc, ctx, key, alternative)
+  utilities::c_call(Cnsa::validate_ffc, ctx, key, alternative)
 }
 
 /// Validates a hash function.
@@ -100,7 +100,7 @@ pub unsafe extern "C" fn ws_cnsa_validate_hash(
   hash: *const Hash,
   alternative: *mut Hash,
 ) -> c_int {
-  standards::c_call(cnsa::validate_hash, ctx, hash, alternative)
+  utilities::c_call(Cnsa::validate_hash, ctx, hash, alternative)
 }
 
 /// Validates  an integer factorisation cryptography primitive the most
@@ -130,7 +130,7 @@ pub unsafe extern "C" fn ws_cnsa_validate_ifc(
   key: *const Ifc,
   alternative: *mut Ifc,
 ) -> c_int {
-  standards::c_call(cnsa::validate_ifc, ctx, key, alternative)
+  utilities::c_call(Cnsa::validate_ifc, ctx, key, alternative)
 }
 
 /// Validates a symmetric key primitive.
@@ -155,5 +155,5 @@ pub unsafe extern "C" fn ws_cnsa_validate_symmetric(
   key: *const Symmetric,
   alternative: *mut Symmetric,
 ) -> c_int {
-  standards::c_call(cnsa::validate_symmetric, ctx, key, alternative)
+  utilities::c_call(Cnsa::validate_symmetric, ctx, key, alternative)
 }

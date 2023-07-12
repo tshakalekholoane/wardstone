@@ -12,7 +12,7 @@ use wardstone_core::ifc::Ifc;
 use wardstone_core::standards::nist;
 use wardstone_core::symmetric::Symmetric;
 
-use crate::standards;
+use crate::utilities;
 
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment where f is the key size according
@@ -38,7 +38,7 @@ pub unsafe extern "C" fn ws_nist_validate_ecc(
   key: *const Ecc,
   alternative: *mut Ecc,
 ) -> c_int {
-  standards::c_call(nist::validate_ecc, ctx, key, alternative)
+  utilities::c_call(Nist::validate_ecc, ctx, key, alternative)
 }
 
 /// Validates a finite field cryptography primitive function examples
@@ -69,7 +69,7 @@ pub unsafe extern "C" fn ws_nist_validate_ffc(
   key: *const Ffc,
   alternative: *mut Ffc,
 ) -> c_int {
-  standards::c_call(nist::validate_ffc, ctx, key, alternative)
+  utilities::c_call(Nist::validate_ffc, ctx, key, alternative)
 }
 
 /// Validates  an integer factorisation cryptography primitive the most
@@ -100,7 +100,7 @@ pub unsafe extern "C" fn ws_nist_validate_ifc(
   key: *const Ifc,
   alternative: *mut Ifc,
 ) -> c_int {
-  standards::c_call(nist::validate_ifc, ctx, key, alternative)
+  utilities::c_call(Nist::validate_ifc, ctx, key, alternative)
 }
 
 /// Validates a hash function according to page 56 of the standard. The
@@ -139,7 +139,7 @@ pub unsafe extern "C" fn ws_nist_validate_hash(
   hash: *const Hash,
   alternative: *mut Hash,
 ) -> c_int {
-  standards::c_call(nist::validate_hash, ctx, hash, alternative)
+  utilities::c_call(Nist::validate_hash, ctx, hash, alternative)
 }
 
 /// Validates a hash function according to page 56 of the standard. The
@@ -178,7 +178,7 @@ pub unsafe extern "C" fn ws_nist_validate_hash_based(
   hash: *const Hash,
   alternative: *mut Hash,
 ) -> c_int {
-  standards::c_call(nist::validate_hash_based, ctx, hash, alternative)
+  utilities::c_call(Nist::validate_hash_based, ctx, hash, alternative)
 }
 
 /// Validates a symmetric key primitive according to pages 54-55 of the
@@ -204,5 +204,5 @@ pub unsafe extern "C" fn ws_nist_validate_symmetric(
   key: *const Symmetric,
   alternative: *mut Symmetric,
 ) -> c_int {
-  standards::c_call(nist::validate_symmetric, ctx, key, alternative)
+  utilities::c_call(Nist::validate_symmetric, ctx, key, alternative)
 }

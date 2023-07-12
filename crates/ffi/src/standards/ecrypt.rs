@@ -12,7 +12,7 @@ use wardstone_core::ifc::Ifc;
 use wardstone_core::standards::ecrypt;
 use wardstone_core::symmetric::Symmetric;
 
-use crate::standards;
+use crate::utilities;
 
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment where f is the key size according
@@ -41,7 +41,7 @@ pub unsafe extern "C" fn ws_ecrypt_validate_ecc(
   key: *const Ecc,
   alternative: *mut Ecc,
 ) -> c_int {
-  standards::c_call(ecrypt::validate_ecc, ctx, key, alternative)
+  utilities::c_call(Ecrypt::validate_ecc, ctx, key, alternative)
 }
 
 /// Validates a finite field cryptography primitive according to page 47
@@ -73,7 +73,7 @@ pub unsafe extern "C" fn ws_ecrypt_validate_ffc(
   key: *const Ffc,
   alternative: *mut Ffc,
 ) -> c_int {
-  standards::c_call(ecrypt::validate_ffc, ctx, key, alternative)
+  utilities::c_call(Ecrypt::validate_ffc, ctx, key, alternative)
 }
 
 /// Validates a hash function according to pages 40-43 of the report.
@@ -104,7 +104,7 @@ pub unsafe extern "C" fn ws_ecrypt_validate_hash(
   hash: *const Hash,
   alternative: *mut Hash,
 ) -> c_int {
-  standards::c_call(ecrypt::validate_hash, ctx, hash, alternative)
+  utilities::c_call(Ecrypt::validate_hash, ctx, hash, alternative)
 }
 
 /// Validates  an integer factorisation cryptography primitive the most
@@ -135,7 +135,7 @@ pub unsafe extern "C" fn ws_ecrypt_validate_ifc(
   key: *const Ifc,
   alternative: *mut Ifc,
 ) -> c_int {
-  standards::c_call(ecrypt::validate_ifc, ctx, key, alternative)
+  utilities::c_call(Ecrypt::validate_ifc, ctx, key, alternative)
 }
 
 /// Validates a symmetric key primitive according to pages 37 to 40 of
@@ -161,5 +161,5 @@ pub unsafe extern "C" fn ws_ecrypt_validate_symmetric(
   key: *const Symmetric,
   alternative: *mut Symmetric,
 ) -> c_int {
-  standards::c_call(ecrypt::validate_symmetric, ctx, key, alternative)
+  utilities::c_call(Ecrypt::validate_symmetric, ctx, key, alternative)
 }

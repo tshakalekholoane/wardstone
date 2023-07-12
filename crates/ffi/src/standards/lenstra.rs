@@ -11,7 +11,7 @@ use wardstone_core::ifc::Ifc;
 use wardstone_core::standards::lenstra;
 use wardstone_core::symmetric::Symmetric;
 
-use crate::standards;
+use crate::utilities;
 
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment where f is the key size.
@@ -36,7 +36,7 @@ pub unsafe extern "C" fn ws_lenstra_validate_ecc(
   key: *const Ecc,
   alternative: *mut Ecc,
 ) -> c_int {
-  standards::c_call(lenstra::validate_ecc, ctx, key, alternative)
+  utilities::c_call(Lenstra::validate_ecc, ctx, key, alternative)
 }
 
 /// Validates a finite field cryptography primitive function examples
@@ -67,7 +67,7 @@ pub unsafe extern "C" fn ws_lenstra_validate_ffc(
   key: *const Ffc,
   alternative: *mut Ffc,
 ) -> c_int {
-  standards::c_call(lenstra::validate_ffc, ctx, key, alternative)
+  utilities::c_call(Lenstra::validate_ffc, ctx, key, alternative)
 }
 
 /// Validates a hash function according to page 14 of the paper.
@@ -100,7 +100,7 @@ pub unsafe extern "C" fn ws_lenstra_validate_hash(
   hash: *const Hash,
   alternative: *mut Hash,
 ) -> c_int {
-  standards::c_call(lenstra::validate_hash, ctx, hash, alternative)
+  utilities::c_call(Lenstra::validate_hash, ctx, hash, alternative)
 }
 
 /// Validates  an integer factorisation cryptography primitive the most
@@ -130,7 +130,7 @@ pub unsafe extern "C" fn ws_lenstra_validate_ifc(
   key: *const Ifc,
   alternative: *mut Ifc,
 ) -> c_int {
-  standards::c_call(lenstra::validate_ifc, ctx, key, alternative)
+  utilities::c_call(Lenstra::validate_ifc, ctx, key, alternative)
 }
 
 /// Validates a symmetric key primitive according to pages 9-12 of the
@@ -156,5 +156,5 @@ pub unsafe extern "C" fn ws_lenstra_validate_symmetric(
   key: *const Symmetric,
   alternative: *mut Symmetric,
 ) -> c_int {
-  standards::c_call(lenstra::validate_symmetric, ctx, key, alternative)
+  utilities::c_call(Lenstra::validate_symmetric, ctx, key, alternative)
 }
