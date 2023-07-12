@@ -37,6 +37,3 @@ pub mod primitives;
 pub mod standard;
 pub mod standards;
 pub mod symmetric;
-
-#[macro_use]
-extern crate lazy_static;
