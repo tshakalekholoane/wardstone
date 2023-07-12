@@ -13,7 +13,7 @@ use wardstone_core::ifc::Ifc;
 use wardstone_core::standards::bsi;
 use wardstone_core::symmetric::Symmetric;
 
-use crate::standards;
+use crate::utilities;
 
 /// Validate an elliptic curve cryptography primitive used for digital
 /// signatures and key establishment where f is the key size.
@@ -44,7 +44,7 @@ pub unsafe extern "C" fn ws_bsi_validate_ecc(
   key: *const Ecc,
   alternative: *mut Ecc,
 ) -> c_int {
-  standards::c_call(bsi::validate_ecc, ctx, key, alternative)
+  utilities::c_call(Bsi::validate_ecc, ctx, key, alternative)
 }
 
 /// Validates a finite field cryptography primitive.
@@ -72,7 +72,7 @@ pub unsafe extern "C" fn ws_bsi_validate_ffc(
   key: *const Ffc,
   alternative: *mut Ffc,
 ) -> c_int {
-  standards::c_call(bsi::validate_ffc, ctx, key, alternative)
+  utilities::c_call(Bsi::validate_ffc, ctx, key, alternative)
 }
 
 /// Validates a hash function according to page 41 of the guide. The
@@ -119,7 +119,7 @@ pub unsafe extern "C" fn ws_bsi_validate_hash(
   hash: *const Hash,
   alternative: *mut Hash,
 ) -> c_int {
-  standards::c_call(bsi::validate_hash, ctx, hash, alternative)
+  utilities::c_call(Bsi::validate_hash, ctx, hash, alternative)
 }
 
 /// Validates a hash function. The reference is made with regards to
@@ -163,7 +163,7 @@ pub unsafe extern "C" fn ws_bsi_validate_hash_based(
   hash: *const Hash,
   alternative: *mut Hash,
 ) -> c_int {
-  standards::c_call(bsi::validate_hash_based, ctx, hash, alternative)
+  utilities::c_call(Bsi::validate_hash_based, ctx, hash, alternative)
 }
 
 /// Validates  an integer factorisation cryptography primitive the most
@@ -193,7 +193,7 @@ pub unsafe extern "C" fn ws_bsi_validate_ifc(
   key: *const Ifc,
   alternative: *mut Ifc,
 ) -> c_int {
-  standards::c_call(bsi::validate_ifc, ctx, key, alternative)
+  utilities::c_call(Bsi::validate_ifc, ctx, key, alternative)
 }
 
 /// Validates a symmetric key primitive according to pages 24 of the
@@ -219,5 +219,5 @@ pub unsafe extern "C" fn ws_bsi_validate_symmetric(
   key: *const Symmetric,
   alternative: *mut Symmetric,
 ) -> c_int {
-  standards::c_call(bsi::validate_symmetric, ctx, key, alternative)
+  utilities::c_call(Bsi::validate_symmetric, ctx, key, alternative)
 }
