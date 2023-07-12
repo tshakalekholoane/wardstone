@@ -1,5 +1,6 @@
 //! Assess primitives against a cryptographic standard or research
 //! publication.
+mod utilities;
 use crate::context::Context;
 use crate::ecc::Ecc;
 use crate::ffc::Ffc;
