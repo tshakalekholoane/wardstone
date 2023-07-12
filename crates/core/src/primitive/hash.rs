@@ -4,7 +4,7 @@ use crate::primitive::{Primitive, Security};
 /// Represents a hash or hash-based function cryptographic primitive
 /// where `id` is a unique identifier and `n` the digest length.
 #[repr(C)]
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Hash {
   pub id: u16,
   pub n: u16,

@@ -1,7 +1,7 @@
 //! Specifies a symmetric key cryptography primitive and a set of
 //! commonly used instances.
-use wardstone_core::primitives::symmetric::*;
-use wardstone_core::symmetric::Symmetric;
+use wardstone_core::primitive::symmetric::Symmetric;
+use wardstone_core::standard::instances::symmetric::*;
 
 /// The Advanced Encryption Standard algorithm as defined in [FIPS 197].
 ///

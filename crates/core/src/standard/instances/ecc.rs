@@ -1,6 +1,6 @@
 //! Specifies a set of commonly used elliptic curve cryptography
 //! primitives.
-use crate::ecc::Ecc;
+use crate::primitive::ecc::Ecc;
 
 /// Represents the Weierstrass curve P-224 over a prime field. Also
 /// known as secp224r1.

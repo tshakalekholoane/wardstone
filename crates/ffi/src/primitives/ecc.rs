@@ -1,8 +1,7 @@
 //! Specifies a set of commonly used elliptic curve cryptography
 //! instances.
-
-use wardstone_core::ecc::Ecc;
-use wardstone_core::primitives::ecc::*;
+use wardstone_core::primitive::ecc::Ecc;
+use wardstone_core::standard::instances::ecc::*;
 
 /// Represents the Weierstrass curve P-224 over a prime field. Also
 /// known as secp224r1.

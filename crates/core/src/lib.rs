@@ -9,11 +9,12 @@
 //!
 //! ```
 //! use wardstone_core::context::Context;
-//! use wardstone_core::primitives::hash::{SHA256, SHA384};
-//! use wardstone_core::standards::cnsa;
+//! use wardstone_core::standard::cnsa::Cnsa;
+//! use wardstone_core::standard::instances::hash::{SHA256, SHA384};
+//! use wardstone_core::standard::Standard;
 //!
 //! let ctx = Context::default();
-//! assert_eq!(cnsa::validate_hash(&ctx, &SHA256), Err(SHA384));
+//! assert_eq!(Cnsa::validate_hash(&ctx, &SHA256), Err(SHA384));
 //! ```
 //!
 //! Since the NSA no longer recommends the use of the SHA-256 algorithm,
@@ -28,12 +29,5 @@
 //! [SHA-256]: https://doi.org/10.6028/NIST.FIPS.180-4
 //! [guidance made by the NSA]: https://media.defense.gov/2022/Sep/07/2003071834/-1/-1/0/CSA_CNSA_2.0_ALGORITHMS_.PDF
 pub mod context;
-pub mod ecc;
-pub mod ffc;
-pub mod hash;
-pub mod ifc;
 pub mod primitive;
-pub mod primitives;
 pub mod standard;
-pub mod standards;
-pub mod symmetric;

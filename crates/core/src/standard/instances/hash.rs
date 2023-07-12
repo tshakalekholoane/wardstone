@@ -1,6 +1,6 @@
 //! Specifies set of commonly used cryptographic hash and hash-based
 //! primitives.
-use crate::hash::Hash;
+use crate::primitive::hash::Hash;
 
 /// The BLAKE-224 hash function.
 #[no_mangle]

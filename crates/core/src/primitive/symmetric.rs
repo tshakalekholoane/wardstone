@@ -3,7 +3,7 @@ use crate::primitive::{Primitive, Security};
 
 /// Represents a symmetric key cryptography primitive.
 #[repr(C)]
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Symmetric {
   pub id: u16,
   pub security: u16,

@@ -5,7 +5,7 @@ use crate::primitive::{Primitive, Security};
 /// common of which is the RSA signature algorithm where k indicates the
 /// key size.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct Ifc {
   pub k: u16,
 }
