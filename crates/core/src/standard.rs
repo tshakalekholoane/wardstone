@@ -16,6 +16,5 @@ pub trait Standard {
   fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc>;
   fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc>;
   fn validate_hash(ctx: &Context, key: &Hash) -> Result<Hash, Hash>;
-  fn validate_hash_based(ctx: &Context, key: &Hash) -> Result<Hash, Hash>;
   fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric>;
 }
