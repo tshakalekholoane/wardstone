@@ -13,6 +13,7 @@ fn main() {
     .rename_item("Ffc", "ws_ffc")
     .rename_item("Hash", "ws_hash")
     .rename_item("Ifc", "ws_ifc")
+    .rename_item("Security", "ws_security")
     .rename_item("Symmetric", "ws_symmetric")
     .with_cpp_compat(true)
     .with_crate(crate_dir)
