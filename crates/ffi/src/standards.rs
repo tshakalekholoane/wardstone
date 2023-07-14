@@ -16,4 +16,5 @@ pub mod cnsa;
 pub mod ecrypt;
 pub mod lenstra;
 pub mod nist;
+pub mod strong;
 pub mod weak;

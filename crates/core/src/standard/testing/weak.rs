@@ -27,7 +27,7 @@ pub struct Weak;
 
 impl Standard for Weak {
   /// Validate an elliptic curve cryptography primitive used for digital
-  /// signatures and key establishment where f is the key size.
+  /// signatures and key establishment.
   ///
   /// If the key is not compliant then `Err` will contain the
   /// recommended primitive that one should use instead.
