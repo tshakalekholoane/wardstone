@@ -107,7 +107,7 @@ impl Nist {
   ///
   /// # Example
   ///
-  /// The following illustrates a call to validate a non-compliant hash
+  /// The following illustrates a call to validate a compliant hash
   /// function.
   ///
   /// ```
@@ -118,8 +118,7 @@ impl Nist {
   ///
   /// let ctx = Context::default();
   /// let hmac_sha1 = SHA1;
-  /// let kmac128 = SHAKE128;
-  /// assert_eq!(Nist::validate_hash_based(&ctx, &hmac_sha1), Err(kmac128));
+  /// assert_eq!(Nist::validate_hash_based(&ctx, &hmac_sha1), Ok(hmac_sha1));
   /// ```
   pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
     if SPECIFIED_HASH_FUNCTIONS.contains(hash) {
@@ -135,7 +134,8 @@ impl Nist {
           }
         },
         128 => Ok(SHAKE128),
-        129..=224 => Ok(SHA224),
+        129..=160 => Ok(SHA1),
+        161..=224 => Ok(SHA224),
         225..=256 => Ok(SHA256),
         257..=394 => Ok(SHA384),
         395.. => Ok(SHA512),
@@ -552,7 +552,7 @@ mod tests {
     &RIPEMD160,
     Err(SHAKE128)
   );
-  test_hash_based!(sha1_pre_image_resistance, Nist, &SHA1, Err(SHAKE128));
+  test_hash_based!(sha1_pre_image_resistance, Nist, &SHA1, Ok(SHA1));
   test_hash_based!(sha224_pre_image_resistance, Nist, &SHA224, Ok(SHA224));
   test_hash_based!(sha256_pre_image_resistance, Nist, &SHA256, Ok(SHA256));
   test_hash_based!(sha384_pre_image_resistance, Nist, &SHA384, Ok(SHA384));

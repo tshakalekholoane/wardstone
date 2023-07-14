@@ -6,6 +6,7 @@ pub mod ecrypt;
 pub mod instances;
 pub mod lenstra;
 pub mod nist;
+pub mod testing;
 mod utilities;
 
 use crate::context::Context;
