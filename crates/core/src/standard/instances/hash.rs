@@ -84,7 +84,7 @@ pub static RIPEMD160: Hash = Hash { id: 12, n: 160 };
 ///
 /// [RFC 3174]: https://www.rfc-editor.org/rfc/rfc3174.html
 #[no_mangle]
-pub static SHA1: Hash = Hash { id: 13, n: 105 };
+pub static SHA1: Hash = Hash { id: 13, n: 160 };
 
 /// The SHA224 hash function as defined in [FIPS 180-4].
 ///
