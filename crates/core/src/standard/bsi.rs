@@ -25,6 +25,9 @@ const CUTOFF_YEAR_RSA: u16 = 2023; // See p. 17.
 
 static SPECIFIED_CURVES: Lazy<HashSet<Ecc>> = Lazy::new(|| {
   let mut s = HashSet::new();
+  s.insert(P256);
+  s.insert(P384);
+  s.insert(P521);
   s.insert(BRAINPOOLP256R1);
   s.insert(BRAINPOOLP320R1);
   s.insert(BRAINPOOLP384R1);
@@ -137,7 +140,8 @@ impl Standard for Bsi {
   /// parameters "that are provided by a trustworthy authority"
   /// (see p. 73), this function conservatively deems any curve that is
   /// not explicitly stated as non-compliant. This means only the
-  /// Brainpool curves are considered compliant.
+  /// Brainpool and NIST curves that satisfy minimum security
+  /// requirements are considered compliant.
   ///
   /// # Example
   ///
@@ -355,9 +359,9 @@ mod tests {
   use crate::{test_ecc, test_ffc, test_hash, test_hash_based, test_ifc, test_symmetric};
 
   test_ecc!(p224, Bsi, &P224, Err(BRAINPOOLP256R1));
-  test_ecc!(p256, Bsi, &P256, Err(BRAINPOOLP256R1));
-  test_ecc!(p384, Bsi, &P384, Err(BRAINPOOLP256R1));
-  test_ecc!(p521, Bsi, &P521, Err(BRAINPOOLP256R1));
+  test_ecc!(p256, Bsi, &P256, Ok(BRAINPOOLP256R1));
+  test_ecc!(p384, Bsi, &P384, Ok(BRAINPOOLP384R1));
+  test_ecc!(p521, Bsi, &P521, Ok(BRAINPOOLP512R1));
   test_ecc!(w25519, Bsi, &W25519, Err(BRAINPOOLP256R1));
   test_ecc!(w448, Bsi, &W448, Err(BRAINPOOLP256R1));
   test_ecc!(curve25519, Bsi, &CURVE25519, Err(BRAINPOOLP256R1));
