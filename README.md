@@ -6,6 +6,7 @@ The `wardstone` project aims to create a library that can be used across differe
 
 The repository is organised as a series of the following Rust crates:
 
+- [`wardstone`](./crates/cli/)
 - [`wardstone_core`](./crates/core/)
 - [`wardstone_ffi`](./crates/ffi/)
 

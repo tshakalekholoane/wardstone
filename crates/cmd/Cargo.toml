@@ -1,0 +1,25 @@
+[package]
+name = "wardstone"
+version = "0.1.0"
+authors = [
+	"Dennis Knorr",
+	"Martin Sirringhaus",
+	"Tshaka Lekholoane <mail+cargo@tshaka.dev>",
+]
+decription = """
+A tool to scan cryptographic keys and certificates against recognized 
+standards and research publications, verifying their compliance.
+"""
+edition = "2021"
+keywords = ["compliance", "security", "ssh", "tls", "x509"]
+license = "ISC"
+readme = "README.md"
+categories = [
+	"command-line-utilities", 
+	"config", 
+	"cryptography", 
+	"development-tools",
+]
+
+[dependencies]
+clap = { version = "4.3.16", features = ["derive"] }
