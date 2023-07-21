@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generates test X.509 certificates encoded in PEM using OpenSSL."""
 
+import asyncio
 import itertools
 import logging
 import os
@@ -84,19 +85,18 @@ def _rsa_pss_opts():
     )
 
 
-def generate_certificates(opts):
+async def generate_certificate(certificates, keys, opt):
     """
-    Generate X.509 certificates using OpenSSL.
+    Generate a single X.509 certificate using OpenSSL asynchronously.
 
     Args:
-        opts: An iterable of Opts objects containing certificate
-        generation options.
+        opt: An Opts object containing certificate generation options.
 
-    The function generates X.509 certificates with the specified options
-    and saves them in the "certificates" directory. Private keys are
-    saved in the "keys" directory.
+    The function generates a single X.509 certificate with the specified
+    options and saves it in the "certificates" directory. The private
+    key is saved in the "keys" directory.
 
-    Existing keys are skipped, and only new certificates are generated.
+    An existing key is skipped, and only new certificates are generated.
 
     The function logs the progress and any errors during the generation
     process.
@@ -104,43 +104,43 @@ def generate_certificates(opts):
     Returns:
         None
     """
+    filename = f"{opt.name}.pem"
+    if (keys / filename).exists():
+        logging.debug(f"skipping: {filename}")
+        return
+    try:
+        logging.info(f"generating certificate: {filename}")
+        command = [
+            "openssl",
+            "req",
+            "-x509",
+            "-newkey",
+            opt.alg,
+            "-keyout",
+            keys / filename,
+            "-out",
+            certificates / filename,
+            "-subj",
+            "/CN=Test Common Name/O=Test Organization Name",
+            "-nodes",
+        ]
+        if opt.pkeyopt:
+            command.extend(["-pkeyopt", opt.pkeyopt])
+        proc = await asyncio.create_subprocess_exec(
+            *command, stderr=asyncio.subprocess.DEVNULL
+        )
+        await proc.communicate()
+        if proc.returncode:
+            logging.warning(f"failed to generate certificate: {filename}")
+    except subprocess.SubprocessError:
+        logging.warning(f"failed to generate certificate: {filename}")
+
+
+async def main():
     dirs = (Path("certificates"), Path("keys"))
     certificates, keys = dirs
     for dir in dirs:
         os.makedirs(dir, exist_ok=True)
-
-    # Generate certificates for each option.
-    for opt in opts:
-        filename = f"{opt.name}.pem"
-        if (keys / filename).exists():
-            logging.debug(f"skipping: {filename}")
-            continue
-        try:
-            logging.info(f"generating certificate: {filename}")
-            command = [
-                "openssl",
-                "req",
-                "-x509",
-                "-newkey",
-                opt.alg,
-                "-keyout",
-                keys / filename,
-                "-out",
-                certificates / filename,
-                "-subj",
-                "/CN=Test Common Name/O=Test Organization Name",
-                "-nodes",
-            ]
-            if opt.pkeyopt:
-                command.extend(["-pkeyopt", opt.pkeyopt])
-            subprocess.check_output(command, stderr=subprocess.DEVNULL)
-        except subprocess.CalledProcessError:
-            logging.warning(f"failed to gen-erate certificate: {filename}")
-    logging.debug("deleting test private keys")
-    shutil.rmtree(keys)
-
-
-def main():
     opts = itertools.chain(
         _dh_opts(),
         _dsa_opts(),
@@ -149,9 +149,12 @@ def main():
         _rsa_opts(),
         _rsa_pss_opts(),
     )
-    generate_certificates(opts)
+    tasks = (generate_certificate(certificates, keys, opt) for opt in opts)
+    await asyncio.gather(*tasks)
+    logging.debug("deleting test private keys")
+    shutil.rmtree(keys)
 
 
 if __name__ == "__main__":
     logging.basicConfig(format="%(levelname)s: %(message)s")
-    main()
+    asyncio.run(main())
