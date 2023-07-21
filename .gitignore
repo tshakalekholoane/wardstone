@@ -1,2 +1,5 @@
 /target
 /Cargo.lock
+
+# Test private keys.
+keys/
