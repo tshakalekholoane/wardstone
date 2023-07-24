@@ -9,8 +9,8 @@
 //!
 //! ```
 //! use wardstone_core::context::Context;
+//! use wardstone_core::primitive::hash::{SHA256, SHA384};
 //! use wardstone_core::standard::cnsa::Cnsa;
-//! use wardstone_core::standard::instances::hash::{SHA256, SHA384};
 //! use wardstone_core::standard::Standard;
 //!
 //! let ctx = Context::default();

@@ -8,17 +8,12 @@ use once_cell::sync::Lazy;
 
 use super::Standard;
 use crate::context::Context;
-use crate::primitive::ecc::Ecc;
-use crate::primitive::ffc::Ffc;
-use crate::primitive::hash::Hash;
-use crate::primitive::ifc::Ifc;
-use crate::primitive::symmetric::Symmetric;
+use crate::primitive::ecc::*;
+use crate::primitive::ffc::*;
+use crate::primitive::hash::*;
+use crate::primitive::ifc::*;
+use crate::primitive::symmetric::*;
 use crate::primitive::Primitive;
-use crate::standard::instances::ecc::*;
-use crate::standard::instances::ffc::*;
-use crate::standard::instances::hash::*;
-use crate::standard::instances::ifc::*;
-use crate::standard::instances::symmetric::*;
 
 const CUTOFF_YEAR: u16 = 2031; // See p. 59.
 const CUTOFF_YEAR_3TDEA: u16 = 2023; // See footnote on p. 54.
@@ -112,7 +107,7 @@ impl Nist {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::hash::{SHA1, SHAKE128};
+  /// use wardstone_core::primitive::hash::{SHA1, SHAKE128};
   /// use wardstone_core::standard::nist::Nist;
   /// use wardstone_core::standard::Standard;
   ///
@@ -164,7 +159,7 @@ impl Standard for Nist {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::ecc::P224;
+  /// use wardstone_core::primitive::ecc::P224;
   /// use wardstone_core::standard::nist::Nist;
   /// use wardstone_core::standard::Standard;
   ///
@@ -226,7 +221,7 @@ impl Standard for Nist {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::ffc::FFC_2048_224;
+  /// use wardstone_core::primitive::ffc::FFC_2048_224;
   /// use wardstone_core::standard::nist::Nist;
   /// use wardstone_core::standard::Standard;
   ///
@@ -292,7 +287,7 @@ impl Standard for Nist {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::hash::{SHA1, SHA224};
+  /// use wardstone_core::primitive::hash::{SHA1, SHA224};
   /// use wardstone_core::standard::nist::Nist;
   /// use wardstone_core::standard::Standard;
   ///
@@ -346,7 +341,7 @@ impl Standard for Nist {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::ifc::IFC_2048;
+  /// use wardstone_core::primitive::ifc::IFC_2048;
   /// use wardstone_core::standard::nist::Nist;
   /// use wardstone_core::standard::Standard;
   ///
@@ -394,7 +389,7 @@ impl Standard for Nist {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::symmetric::{AES128, TDEA3};
+  /// use wardstone_core::primitive::symmetric::{AES128, TDEA3};
   /// use wardstone_core::standard::nist::Nist;
   /// use wardstone_core::standard::Standard;
   ///

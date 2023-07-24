@@ -7,17 +7,12 @@
 //! bumping the security parameter may not be enough for some signature
 //! schemes such as those that use elliptic curves.
 use crate::context::Context;
-use crate::primitive::ecc::Ecc;
-use crate::primitive::ffc::Ffc;
-use crate::primitive::hash::Hash;
-use crate::primitive::ifc::Ifc;
-use crate::primitive::symmetric::Symmetric;
+use crate::primitive::ecc::*;
+use crate::primitive::ffc::*;
+use crate::primitive::hash::*;
+use crate::primitive::ifc::*;
+use crate::primitive::symmetric::*;
 use crate::primitive::Primitive;
-use crate::standard::instances::ecc::*;
-use crate::standard::instances::ffc::*;
-use crate::standard::instances::hash::*;
-use crate::standard::instances::ifc::*;
-use crate::standard::instances::symmetric::*;
 use crate::standard::Standard;
 
 /// [`Standard`](crate::standard::Standard) implementation of a mock
@@ -42,7 +37,7 @@ impl Standard for Strong {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::ecc::{ECC_NOT_SUPPORTED, EDWARDS25519};
+  /// use wardstone_core::primitive::ecc::{ECC_NOT_SUPPORTED, EDWARDS25519};
   /// use wardstone_core::standard::testing::strong::Strong;
   /// use wardstone_core::standard::Standard;
   ///
@@ -74,7 +69,7 @@ impl Standard for Strong {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::ffc::{FFC_2048_224, FFC_NOT_SUPPORTED};
+  /// use wardstone_core::primitive::ffc::{FFC_2048_224, FFC_NOT_SUPPORTED};
   /// use wardstone_core::standard::testing::strong::Strong;
   /// use wardstone_core::standard::Standard;
   ///
@@ -112,7 +107,7 @@ impl Standard for Strong {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::hash::{SHA256, SHA512};
+  /// use wardstone_core::primitive::hash::{SHA256, SHA512};
   /// use wardstone_core::standard::testing::strong::Strong;
   /// use wardstone_core::standard::Standard;
   ///
@@ -147,7 +142,7 @@ impl Standard for Strong {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::ifc::{IFC_2048, IFC_NOT_SUPPORTED};
+  /// use wardstone_core::primitive::ifc::{IFC_2048, IFC_NOT_SUPPORTED};
   /// use wardstone_core::standard::testing::strong::Strong;
   /// use wardstone_core::standard::Standard;
   ///
@@ -175,7 +170,7 @@ impl Standard for Strong {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::symmetric::{AES256, TDEA3};
+  /// use wardstone_core::primitive::symmetric::{AES256, TDEA3};
   /// use wardstone_core::standard::testing::strong::Strong;
   /// use wardstone_core::standard::Standard;
   ///
