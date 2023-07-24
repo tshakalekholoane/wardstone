@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generates test X.509 certificates encoded in PEM using OpenSSL."""
 
+import argparse
 import asyncio
 import itertools
 import logging
@@ -14,6 +15,11 @@ from pathlib import Path
 
 @dataclass
 class Opts:
+    """
+    OpenSSL command line arguments to generate private keys and
+    corresponding certificates.
+    """
+
     alg: str
     name: str
     pkeyopt: str
@@ -62,7 +68,7 @@ def _edwards_opts():
 
 
 def _rsa_opts():
-    # XXX: Sizes larger than 8192 take a while to generate.
+    # Sizes larger than 8192 take a while to generate.
     n = 4
     min_bits = 1024
     return (
@@ -72,7 +78,7 @@ def _rsa_opts():
 
 
 def _rsa_pss_opts():
-    # XXX: Sizes larger than 8192 take a while to generate.
+    # Sizes larger than 8192 take a while to generate.
     n = 4
     min_bits = 1024
     return (
@@ -137,6 +143,24 @@ async def generate_certificate(certificates, keys, opt):
 
 
 async def main():
+    parser = argparse.ArgumentParser(
+        prog="generate_certificates",
+        description="Generate test X.509 certificates encoded in PEM using OpenSSL.",
+    )
+    parser.add_argument(
+        "-l",
+        "--log-level",
+        choices=["debug", "info", "warning", "error", "critical"],
+        default=["warning"],
+        help="Set the logging level (default: warning)",
+    )
+    arguments = parser.parse_args()
+
+    numeric_level = getattr(logging, arguments.log_level.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError(f"invalid log level: {arguments.log_level}")
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=numeric_level)
+
     dirs = (Path("certificates"), Path("keys"))
     certificates, keys = dirs
     for dir in dirs:
@@ -156,5 +180,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(format="%(levelname)s: %(message)s")
     asyncio.run(main())
