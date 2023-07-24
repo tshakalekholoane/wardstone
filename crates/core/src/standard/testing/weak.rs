@@ -7,17 +7,12 @@
 //! in this crate.
 
 use crate::context::Context;
-use crate::primitive::ecc::Ecc;
-use crate::primitive::ffc::Ffc;
-use crate::primitive::hash::Hash;
-use crate::primitive::ifc::Ifc;
-use crate::primitive::symmetric::Symmetric;
+use crate::primitive::ecc::*;
+use crate::primitive::ffc::*;
+use crate::primitive::hash::*;
+use crate::primitive::ifc::*;
+use crate::primitive::symmetric::*;
 use crate::primitive::Primitive;
-use crate::standard::instances::ecc::*;
-use crate::standard::instances::ffc::*;
-use crate::standard::instances::hash::*;
-use crate::standard::instances::ifc::*;
-use crate::standard::instances::symmetric::*;
 use crate::standard::Standard;
 
 /// [`Standard`](crate::standard::Standard) implementation of a mock
@@ -42,7 +37,7 @@ impl Standard for Weak {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::ecc::EDWARDS25519;
+  /// use wardstone_core::primitive::ecc::EDWARDS25519;
   /// use wardstone_core::standard::testing::weak::Weak;
   /// use wardstone_core::standard::Standard;
   ///
@@ -81,7 +76,7 @@ impl Standard for Weak {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::ffc::{FFC_2048_224, FFC_3072_256};
+  /// use wardstone_core::primitive::ffc::{FFC_2048_224, FFC_3072_256};
   /// use wardstone_core::standard::testing::weak::Weak;
   /// use wardstone_core::standard::Standard;
   ///
@@ -124,7 +119,7 @@ impl Standard for Weak {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::hash::{SHA1, SHA256};
+  /// use wardstone_core::primitive::hash::{SHA1, SHA256};
   /// use wardstone_core::standard::testing::weak::Weak;
   /// use wardstone_core::standard::Standard;
   ///
@@ -164,7 +159,7 @@ impl Standard for Weak {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::ifc::IFC_2048;
+  /// use wardstone_core::primitive::ifc::IFC_2048;
   /// use wardstone_core::standard::testing::weak::Weak;
   /// use wardstone_core::standard::Standard;
   ///
@@ -197,7 +192,7 @@ impl Standard for Weak {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::standard::instances::symmetric::TDEA3;
+  /// use wardstone_core::primitive::symmetric::TDEA3;
   /// use wardstone_core::standard::testing::weak::Weak;
   /// use wardstone_core::standard::Standard;
   ///

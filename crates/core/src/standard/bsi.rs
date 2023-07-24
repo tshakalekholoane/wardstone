@@ -8,17 +8,12 @@ use std::collections::HashSet;
 use once_cell::sync::Lazy;
 
 use crate::context::Context;
-use crate::primitive::ecc::Ecc;
-use crate::primitive::ffc::Ffc;
-use crate::primitive::hash::Hash;
-use crate::primitive::ifc::Ifc;
-use crate::primitive::symmetric::Symmetric;
+use crate::primitive::ecc::*;
+use crate::primitive::ffc::*;
+use crate::primitive::hash::*;
+use crate::primitive::ifc::*;
+use crate::primitive::symmetric::*;
 use crate::primitive::Primitive;
-use crate::standard::instances::ecc::*;
-use crate::standard::instances::ffc::*;
-use crate::standard::instances::hash::*;
-use crate::standard::instances::ifc::*;
-use crate::standard::instances::symmetric::*;
 use crate::standard::Standard;
 
 const CUTOFF_YEAR_RSA: u16 = 2023; // See p. 17.
@@ -100,8 +95,8 @@ impl Bsi {
   ///
   /// ```
   /// use wardstone_core::context::Context;
+  /// use wardstone_core::primitive::hash::{SHA1, SHA256};
   /// use wardstone_core::standard::bsi::Bsi;
-  /// use wardstone_core::standard::instances::hash::{SHA1, SHA256};
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
@@ -149,8 +144,8 @@ impl Standard for Bsi {
   ///
   /// ```
   /// use wardstone_core::context::Context;
+  /// use wardstone_core::primitive::ecc::BRAINPOOLP256R1;
   /// use wardstone_core::standard::bsi::Bsi;
-  /// use wardstone_core::standard::instances::ecc::BRAINPOOLP256R1;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
@@ -192,8 +187,8 @@ impl Standard for Bsi {
   ///
   /// ```
   /// use wardstone_core::context::Context;
+  /// use wardstone_core::primitive::ffc::{FFC_2048_224, FFC_3072_256};
   /// use wardstone_core::standard::bsi::Bsi;
-  /// use wardstone_core::standard::instances::ffc::{FFC_2048_224, FFC_3072_256};
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
@@ -242,8 +237,8 @@ impl Standard for Bsi {
   ///
   /// ```
   /// use wardstone_core::context::Context;
+  /// use wardstone_core::primitive::hash::{SHA1, SHA256};
   /// use wardstone_core::standard::bsi::Bsi;
-  /// use wardstone_core::standard::instances::hash::{SHA1, SHA256};
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
@@ -283,8 +278,8 @@ impl Standard for Bsi {
   ///
   /// ```
   /// use wardstone_core::context::Context;
+  /// use wardstone_core::primitive::ifc::IFC_2048;
   /// use wardstone_core::standard::bsi::Bsi;
-  /// use wardstone_core::standard::instances::ifc::IFC_2048;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
@@ -331,8 +326,8 @@ impl Standard for Bsi {
   ///
   /// ```
   /// use wardstone_core::context::Context;
+  /// use wardstone_core::primitive::symmetric::{AES128, TDEA3};
   /// use wardstone_core::standard::bsi::Bsi;
-  /// use wardstone_core::standard::instances::symmetric::{AES128, TDEA3};
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();

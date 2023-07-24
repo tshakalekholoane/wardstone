@@ -3,7 +3,6 @@
 pub mod bsi;
 pub mod cnsa;
 pub mod ecrypt;
-pub mod instances;
 pub mod lenstra;
 pub mod nist;
 pub mod testing;
