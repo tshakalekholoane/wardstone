@@ -6,7 +6,7 @@ authors = [
 	"Martin Sirringhaus",
 	"Tshaka Lekholoane <mail+cargo@tshaka.dev>",
 ]
-decription = """
+description = """
 A tool to scan cryptographic keys and certificates against recognized 
 standards and research publications, verifying their compliance.
 """
