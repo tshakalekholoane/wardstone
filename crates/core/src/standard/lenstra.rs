@@ -336,13 +336,10 @@ mod tests {
   test_ecc!(p256, Lenstra, &P256, Ok(ECC_256));
   test_ecc!(p384, Lenstra, &P384, Ok(ECC_384));
   test_ecc!(p521, Lenstra, &P521, Ok(ECC_512));
-  test_ecc!(w25519, Lenstra, &W25519, Ok(ECC_256));
-  test_ecc!(w448, Lenstra, &W448, Ok(ECC_512));
-  test_ecc!(curve25519, Lenstra, &CURVE25519, Ok(ECC_256));
-  test_ecc!(curve488, Lenstra, &CURVE448, Ok(ECC_512));
-  test_ecc!(edwards25519, Lenstra, &EDWARDS25519, Ok(ECC_256));
-  test_ecc!(edwards448, Lenstra, &EDWARDS448, Ok(ECC_512));
-  test_ecc!(e448, Lenstra, &E448, Ok(ECC_512));
+  test_ecc!(ed25519, Lenstra, &ED25519, Ok(ECC_256));
+  test_ecc!(ed448, Lenstra, &ED448, Ok(ECC_512));
+  test_ecc!(x25519, Lenstra, &X25519, Ok(ECC_256));
+  test_ecc!(x448, Lenstra, &X448, Ok(ECC_512));
   test_ecc!(brainpoolp224r1, Lenstra, &BRAINPOOLP224R1, Ok(ECC_224));
   test_ecc!(brainpoolp256r1, Lenstra, &BRAINPOOLP256R1, Ok(ECC_256));
   test_ecc!(brainpoolp320r1, Lenstra, &BRAINPOOLP320R1, Ok(ECC_384));
