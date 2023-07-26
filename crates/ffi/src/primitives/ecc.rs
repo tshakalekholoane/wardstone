@@ -22,34 +22,19 @@ pub static WS_P384: Ecc = P384;
 #[no_mangle]
 pub static WS_P521: Ecc = P521;
 
-/// Represents the Weierstrass curve W-25519 over a prime field.
 #[no_mangle]
-pub static WS_W25519: Ecc = W25519;
 
-/// Represents the Weierstrass curve W-488 over a prime field.
 #[no_mangle]
-pub static WS_W448: Ecc = W448;
 
-/// Represents the Montgomery curve Curve25519 over a prime field.
 #[no_mangle]
-pub static WS_CURVE25519: Ecc = CURVE25519;
 
-/// Represents the Montgomery curve Curve488 over a prime field.
 #[no_mangle]
-pub static WS_CURVE448: Ecc = CURVE448;
 
-/// Represents the twisted Edwards curve Edwards25519 over a prime
-/// field.
 #[no_mangle]
-pub static WS_EDWARDS25519: Ecc = EDWARDS25519;
 
-/// Represents the twisted Edwards curve Edwards488 over a prime field.
 #[no_mangle]
-pub static WS_EDWARDS448: Ecc = EDWARDS448;
 
-/// Represents the Edwards curve E448 over a prime field.
 #[no_mangle]
-pub static WS_E448: Ecc = E448;
 
 /// Represents the curve brainpoolP224r1 specified in [RFC 5639].
 ///
@@ -81,11 +66,37 @@ pub static WS_BRAINPOOLP384R1: Ecc = BRAINPOOLP384R1;
 #[no_mangle]
 pub static WS_BRAINPOOLP512R1: Ecc = BRAINPOOLP512R1;
 
+
+/// Represents the Ed25519 signature algorithm as specified in the paper
+/// [High-speed high-security signatures].
+///
+/// [High-speed high-security signatures]: https://eprint.iacr.org/2011/368
+#[no_mangle]
+pub static WS_ED25519: Ecc = ED25519;
+
+/// Represents the Ed448 signature algorithm as specified in the paper
+/// [High-speed high-security signatures].
+///
+/// [High-speed high-security signatures]: https://eprint.iacr.org/2011/368
+#[no_mangle]
+pub static WS_ED448: Ecc = ED448;
 /// Represents the curve secp256k1 specified in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
 pub static WS_SECP256K1: Ecc = SECP256K1;
+
+/// Represents the X25519 algorithm as it appears in [RFC 7748].
+///
+/// [RFC 7748]: https://datatracker.ietf.org/doc/html/rfc7748
+#[no_mangle]
+pub static WS_X25519: Ecc = X25519;
+
+/// Represents the X448 algorithm as it appears in [RFC 7748].
+///
+/// [RFC 7748]: https://datatracker.ietf.org/doc/html/rfc7748
+#[no_mangle]
+pub static WS_X448: Ecc = X448;
 
 /// Generic instance that represents a choice of f = 224 for an elliptic
 /// curve primitive.

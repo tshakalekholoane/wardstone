@@ -357,13 +357,10 @@ mod tests {
   test_ecc!(p256, Bsi, &P256, Ok(BRAINPOOLP256R1));
   test_ecc!(p384, Bsi, &P384, Ok(BRAINPOOLP384R1));
   test_ecc!(p521, Bsi, &P521, Ok(BRAINPOOLP512R1));
-  test_ecc!(w25519, Bsi, &W25519, Err(BRAINPOOLP256R1));
-  test_ecc!(w448, Bsi, &W448, Err(BRAINPOOLP256R1));
-  test_ecc!(curve25519, Bsi, &CURVE25519, Err(BRAINPOOLP256R1));
-  test_ecc!(curve488, Bsi, &CURVE448, Err(BRAINPOOLP256R1));
-  test_ecc!(edwards25519, Bsi, &EDWARDS25519, Err(BRAINPOOLP256R1));
-  test_ecc!(edwards448, Bsi, &EDWARDS448, Err(BRAINPOOLP256R1));
-  test_ecc!(e448, Bsi, &E448, Err(BRAINPOOLP256R1));
+  test_ecc!(x25519, Bsi, &X25519, Err(BRAINPOOLP256R1));
+  test_ecc!(x448, Bsi, &X448, Err(BRAINPOOLP256R1));
+  test_ecc!(ed25519, Bsi, &ED25519, Err(BRAINPOOLP256R1));
+  test_ecc!(ed448, Bsi, &ED448, Err(BRAINPOOLP256R1));
   test_ecc!(brainpoolp224r1, Bsi, &BRAINPOOLP224R1, Err(BRAINPOOLP256R1));
   test_ecc!(brainpoolp256r1, Bsi, &BRAINPOOLP256R1, Ok(BRAINPOOLP256R1));
   test_ecc!(brainpoolp320r1, Bsi, &BRAINPOOLP320R1, Ok(BRAINPOOLP320R1));

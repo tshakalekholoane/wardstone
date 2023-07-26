@@ -21,17 +21,12 @@ const CUTOFF_YEAR_DSA: u16 = 2023; // See FIPS-186-5 p. 16.
 
 static SPECIFIED_CURVES: Lazy<HashSet<Ecc>> = Lazy::new(|| {
   let mut s = HashSet::new();
-  s.insert(CURVE25519);
-  s.insert(CURVE448);
-  s.insert(E448);
-  s.insert(EDWARDS25519);
-  s.insert(EDWARDS448);
+  s.insert(ED25519);
+  s.insert(ED448);
   s.insert(P224);
   s.insert(P256);
   s.insert(P384);
   s.insert(P521);
-  s.insert(W25519);
-  s.insert(W448);
   s.insert(BRAINPOOLP224R1);
   s.insert(BRAINPOOLP256R1);
   s.insert(BRAINPOOLP320R1);
@@ -433,13 +428,10 @@ mod tests {
   test_ecc!(p256, Nist, &P256, Ok(P256));
   test_ecc!(p384, Nist, &P384, Ok(P384));
   test_ecc!(p521, Nist, &P521, Ok(P521));
-  test_ecc!(w25519, Nist, &W25519, Ok(P256));
-  test_ecc!(w448, Nist, &W448, Ok(P384));
-  test_ecc!(curve25519, Nist, &CURVE25519, Ok(P256));
-  test_ecc!(curve488, Nist, &CURVE448, Ok(P384));
-  test_ecc!(edwards25519, Nist, &EDWARDS25519, Ok(P256));
-  test_ecc!(edwards448, Nist, &EDWARDS448, Ok(P384));
-  test_ecc!(e448, Nist, &E448, Ok(P384));
+  test_ecc!(ed25519, Nist, &ED25519, Ok(P256));
+  test_ecc!(ed448, Nist, &ED448, Ok(P384));
+  test_ecc!(x25519, Nist, &X25519, Err(P256));
+  test_ecc!(x448, Nist, &X448, Err(P256));
   test_ecc!(brainpoolp224r1, Nist, &BRAINPOOLP224R1, Ok(P224));
   test_ecc!(brainpoolp256r1, Nist, &BRAINPOOLP256R1, Ok(P256));
   test_ecc!(brainpoolp320r1, Nist, &BRAINPOOLP320R1, Ok(P256));

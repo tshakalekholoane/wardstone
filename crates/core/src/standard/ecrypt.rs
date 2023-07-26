@@ -314,13 +314,10 @@ mod tests {
   test_ecc!(p256, Ecrypt, &P256, Ok(ECC_256));
   test_ecc!(p384, Ecrypt, &P384, Ok(ECC_384));
   test_ecc!(p521, Ecrypt, &P521, Ok(ECC_512));
-  test_ecc!(w25519, Ecrypt, &W25519, Ok(ECC_256));
-  test_ecc!(w448, Ecrypt, &W448, Ok(ECC_512));
-  test_ecc!(curve25519, Ecrypt, &CURVE25519, Ok(ECC_256));
-  test_ecc!(curve488, Ecrypt, &CURVE448, Ok(ECC_512));
-  test_ecc!(edwards25519, Ecrypt, &EDWARDS25519, Ok(ECC_256));
-  test_ecc!(edwards448, Ecrypt, &EDWARDS448, Ok(ECC_512));
-  test_ecc!(e448, Ecrypt, &E448, Ok(ECC_512));
+  test_ecc!(ed25519, Ecrypt, &ED25519, Ok(ECC_256));
+  test_ecc!(ed448, Ecrypt, &ED448, Ok(ECC_512));
+  test_ecc!(x25519, Ecrypt, &X25519, Ok(ECC_256));
+  test_ecc!(x448, Ecrypt, &X448, Ok(ECC_512));
   test_ecc!(brainpoolp224r1, Ecrypt, &BRAINPOOLP224R1, Ok(ECC_256));
   test_ecc!(brainpoolp256r1, Ecrypt, &BRAINPOOLP256R1, Ok(ECC_256));
   test_ecc!(brainpoolp320r1, Ecrypt, &BRAINPOOLP320R1, Ok(ECC_384));

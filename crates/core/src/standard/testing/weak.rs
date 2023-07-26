@@ -37,22 +37,22 @@ impl Standard for Weak {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ecc::EDWARDS25519;
+  /// use wardstone_core::primitive::ecc::ED25519;
   /// use wardstone_core::standard::testing::weak::Weak;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// assert_eq!(Weak::validate_ecc(&ctx, &EDWARDS25519), Ok(EDWARDS25519));
+  /// assert_eq!(Weak::validate_ecc(&ctx, &ED25519), Ok(ED25519));
   /// ```
   fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
     let security = ctx.security().max(key.security());
     match security {
       ..=63 => Err(P224),
       64..=112 => Ok(P224),
-      113..=128 => Ok(EDWARDS25519),
+      113..=128 => Ok(ED25519),
       129..=160 => Ok(BRAINPOOLP320R1),
       161..=192 => Ok(P384),
-      193..=244 => Ok(EDWARDS448),
+      193..=244 => Ok(ED448),
       245..=256 => Ok(BRAINPOOLP512R1),
       257.. => Ok(P521),
     }
@@ -220,22 +220,19 @@ mod tests {
   use crate::{test_ecc, test_ffc, test_hash, test_ifc, test_symmetric};
 
   test_ecc!(p224, Weak, &P224, Ok(P224));
-  test_ecc!(p256, Weak, &P256, Ok(EDWARDS25519));
+  test_ecc!(p256, Weak, &P256, Ok(ED25519));
   test_ecc!(p384, Weak, &P384, Ok(P384));
   test_ecc!(p521, Weak, &P521, Ok(P521));
-  test_ecc!(w25519, Weak, &W25519, Ok(EDWARDS25519));
-  test_ecc!(w448, Weak, &W448, Ok(EDWARDS448));
-  test_ecc!(curve25519, Weak, &CURVE25519, Ok(EDWARDS25519));
-  test_ecc!(curve488, Weak, &CURVE448, Ok(EDWARDS448));
-  test_ecc!(edwards25519, Weak, &EDWARDS25519, Ok(EDWARDS25519));
-  test_ecc!(edwards448, Weak, &EDWARDS448, Ok(EDWARDS448));
-  test_ecc!(e448, Weak, &E448, Ok(EDWARDS448));
+  test_ecc!(ed25519, Weak, &ED25519, Ok(ED25519));
+  test_ecc!(ed488, Weak, &ED448, Ok(ED448));
+  test_ecc!(x25519, Weak, &X25519, Ok(ED25519));
+  test_ecc!(x448, Weak, &X448, Ok(ED448));
   test_ecc!(brainpoolp224r1, Weak, &BRAINPOOLP224R1, Ok(P224));
-  test_ecc!(brainpoolp256r1, Weak, &BRAINPOOLP256R1, Ok(EDWARDS25519));
+  test_ecc!(brainpoolp256r1, Weak, &BRAINPOOLP256R1, Ok(ED25519));
   test_ecc!(brainpoolp320r1, Weak, &BRAINPOOLP320R1, Ok(BRAINPOOLP320R1));
   test_ecc!(brainpoolp384r1, Weak, &BRAINPOOLP384R1, Ok(P384));
   test_ecc!(brainpoolp512r1, Weak, &BRAINPOOLP512R1, Ok(BRAINPOOLP512R1));
-  test_ecc!(secp256k1, Weak, &SECP256K1, Ok(EDWARDS25519));
+  test_ecc!(secp256k1, Weak, &SECP256K1, Ok(ED25519));
 
   test_ffc!(ffc_1024_160, Weak, &FFC_1024_160, Ok(FFC_1024_160));
   test_ffc!(ffc_2048_224, Weak, &FFC_2048_224, Ok(FFC_2048_224));

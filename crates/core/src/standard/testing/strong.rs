@@ -37,13 +37,13 @@ impl Standard for Strong {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ecc::{ECC_NOT_SUPPORTED, EDWARDS25519};
+  /// use wardstone_core::primitive::ecc::{ECC_NOT_SUPPORTED, ED25519};
   /// use wardstone_core::standard::testing::strong::Strong;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
   /// assert_eq!(
-  ///   Strong::validate_ecc(&ctx, &EDWARDS25519),
+  ///   Strong::validate_ecc(&ctx, &ED25519),
   ///   Err(ECC_NOT_SUPPORTED)
   /// );
   /// ```
@@ -195,13 +195,10 @@ mod tests {
   test_ecc!(p256, Strong, &P256, Err(ECC_NOT_SUPPORTED));
   test_ecc!(p384, Strong, &P384, Err(ECC_NOT_SUPPORTED));
   test_ecc!(p521, Strong, &P521, Err(ECC_NOT_SUPPORTED));
-  test_ecc!(w25519, Strong, &W25519, Err(ECC_NOT_SUPPORTED));
-  test_ecc!(w448, Strong, &W448, Err(ECC_NOT_SUPPORTED));
-  test_ecc!(curve25519, Strong, &CURVE25519, Err(ECC_NOT_SUPPORTED));
-  test_ecc!(curve488, Strong, &CURVE448, Err(ECC_NOT_SUPPORTED));
-  test_ecc!(edwards25519, Strong, &EDWARDS25519, Err(ECC_NOT_SUPPORTED));
-  test_ecc!(edwards448, Strong, &EDWARDS448, Err(ECC_NOT_SUPPORTED));
-  test_ecc!(e448, Strong, &E448, Err(ECC_NOT_SUPPORTED));
+  test_ecc!(ed25519, Strong, &ED25519, Err(ECC_NOT_SUPPORTED));
+  test_ecc!(ed448, Strong, &ED448, Err(ECC_NOT_SUPPORTED));
+  test_ecc!(x25519, Strong, &X25519, Err(ECC_NOT_SUPPORTED));
+  test_ecc!(x488, Strong, &X448, Err(ECC_NOT_SUPPORTED));
   test_ecc!(
     brainpoolp224r1,
     Strong,

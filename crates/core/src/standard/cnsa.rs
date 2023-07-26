@@ -228,13 +228,10 @@ mod tests {
   test_ecc!(p256, Cnsa, &P256, Err(P384));
   test_ecc!(p384, Cnsa, &P384, Ok(P384));
   test_ecc!(p521, Cnsa, &P521, Err(P384));
-  test_ecc!(w25519, Cnsa, &W25519, Err(P384));
-  test_ecc!(w448, Cnsa, &W448, Err(P384));
-  test_ecc!(curve25519, Cnsa, &CURVE25519, Err(P384));
-  test_ecc!(curve488, Cnsa, &CURVE448, Err(P384));
-  test_ecc!(edwards25519, Cnsa, &EDWARDS25519, Err(P384));
-  test_ecc!(edwards448, Cnsa, &EDWARDS448, Err(P384));
-  test_ecc!(e448, Cnsa, &E448, Err(P384));
+  test_ecc!(ed25519, Cnsa, &ED25519, Err(P384));
+  test_ecc!(ed448, Cnsa, &ED448, Err(P384));
+  test_ecc!(x25519, Cnsa, &X25519, Err(P384));
+  test_ecc!(x448, Cnsa, &X448, Err(P384));
   test_ecc!(brainpoolp224r1, Cnsa, &BRAINPOOLP224R1, Err(P384));
   test_ecc!(brainpoolp256r1, Cnsa, &BRAINPOOLP256R1, Err(P384));
   test_ecc!(brainpoolp320r1, Cnsa, &BRAINPOOLP320R1, Err(P384));
