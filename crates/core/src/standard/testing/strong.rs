@@ -42,10 +42,7 @@ impl Standard for Strong {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// assert_eq!(
-  ///   Strong::validate_ecc(&ctx, &ED25519),
-  ///   Err(ECC_NOT_SUPPORTED)
-  /// );
+  /// assert_eq!(Strong::validate_ecc(&ctx, &ED25519), Err(ECC_NOT_SUPPORTED));
   /// ```
   fn validate_ecc(_ctx: &Context, _key: &Ecc) -> Result<Ecc, Ecc> {
     Err(ECC_NOT_SUPPORTED)
