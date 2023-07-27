@@ -15,12 +15,13 @@ struct Options {
 enum Subcommands {
   /// Check an X.509 public key certificate for compliance.
   X509 {
-    /// The certificate as a DER or PEM encoded file.
-    #[arg(short, long, value_name = "FILE")]
-    path: PathBuf,
     /// Guide to assess the certificate against.
     #[arg(short, long, value_enum)]
     guide: Guide,
+    // TODO: Make positional argument to enable concurrent processing.
+    /// The certificate as a DER or PEM encoded file.
+    #[arg(short, long, value_name = "FILE")]
+    path: PathBuf,
   },
 }
 
