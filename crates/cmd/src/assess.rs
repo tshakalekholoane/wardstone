@@ -5,7 +5,6 @@ use std::path::PathBuf;
 
 use clap::ValueEnum;
 use once_cell::sync::Lazy;
-use openssl::nid::Nid;
 use openssl::pkey::Id;
 use openssl::x509::X509;
 use wardstone_core::primitive::ecc::*;
@@ -109,35 +108,66 @@ static ELLIPTIC_CURVES: Lazy<HashMap<&str, Ecc>> = Lazy::new(|| {
   m
 });
 
+#[derive(Debug)]
+enum SignatureAlgorithm {
+  Elliptic { instance: Ecc },
+}
+
+#[derive(Debug)]
 struct Certificate(X509);
 
 impl Certificate {
-  pub fn from_file(path: &PathBuf) -> Certificate {
+  pub fn extract_hash_function(&self) -> Hash {
+    let algorithms = self
+      .0
+      .signature_algorithm()
+      .object()
+      .nid()
+      .signature_algorithms()
+      .expect("algorithms");
+    let long_name = algorithms.digest.long_name().expect("long name");
+    // TODO: Get the primitive from mapping.
+    println!("debug: get {long_name} hash function");
+    SHA256
+  }
+
+  pub fn extract_signature_algorithm(&self) -> SignatureAlgorithm {
+    let public_key = self.0.public_key().expect("public key");
+    match public_key.id() {
+      Id::DH => todo!(),
+      Id::DSA => todo!(),
+      Id::EC => {
+        let key = public_key.ec_key().expect("elliptic curve key");
+        let nid = key.group().curve_name().expect("curve name");
+        let long_name = nid.long_name().expect("long name");
+        let instance = *ELLIPTIC_CURVES.get(long_name).expect("instance");
+        SignatureAlgorithm::Elliptic { instance }
+      },
+      Id::RSA => todo!(),
+      // It is not clear why these have separate Id's. One would assume
+      // they are just elliptic curves.
+      Id::ED25519 | Id::ED448 | Id::SM2 | Id::X25519 | Id::X448 => todo!(),
+      _ => unimplemented!(),
+    }
+  }
+
+  pub fn from_pem_file(path: &PathBuf) -> Certificate {
     let mut file = File::open(path).expect("open certificate");
     let mut bytes = Vec::new();
     file.read_to_end(&mut bytes).expect("read file");
     let certificate = X509::from_pem(&bytes).expect("PEM encoded X509 certificate");
     Self(certificate)
   }
-
-  // TODO: The return type could also be a generic type encompassing all
-  // supported signature algorithms.
-  pub fn key(&self) -> Option<&Ecc> {
-    let public_key = self.0.public_key().expect("public key");
-    match public_key.id() {
-      Id::EC => {
-        let key = public_key.ec_key().expect("elliptic curve key");
-        let id = key.group().curve_name().expect("curve name");
-        CORE_INSTANCES.get(&id)
-      },
-      _ => todo!(),
-    }
-  }
 }
 
-pub fn x509(path: &PathBuf, _against: &Guide) {
-  let certificate = Certificate::from_file(path);
-  let key = certificate.key();
-  // TODO: Validate.
-  println!("debug: validate key: {:?}", key)
+pub fn x509(path: &PathBuf, guide: &Guide) {
+  let certificate = Certificate::from_pem_file(path);
+  let hash_function = certificate.extract_hash_function();
+  let signature_algorithm = certificate.extract_signature_algorithm();
+  // TODO: Validate certificate primitives.
+  println!(
+    "debug: validate certificate with hash function {:?} and signature algorithm {:?} against the \
+     {:?} guide",
+    hash_function, signature_algorithm, guide
+  )
 }
