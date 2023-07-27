@@ -186,3 +186,10 @@ pub static SHAKE256: Hash = Hash { id: 25, n: 256 };
 /// The WHIRLPOOL hash function as defined in ISO/IEC 10118-3.
 #[no_mangle]
 pub static WHIRLPOOL: Hash = Hash { id: 26, n: 512 };
+
+/// Placeholder for use in where this primitive is not supported.
+#[no_mangle]
+pub static HASH_NOT_SUPPORTED: Hash = Hash {
+  id: u16::MAX,
+  n: u16::MAX,
+};
