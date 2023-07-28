@@ -151,7 +151,7 @@ async def main():
         "-l",
         "--log-level",
         choices=["debug", "info", "warning", "error", "critical"],
-        default=["warning"],
+        default="warning",
         help="Set the logging level (default: warning)",
     )
     arguments = parser.parse_args()
