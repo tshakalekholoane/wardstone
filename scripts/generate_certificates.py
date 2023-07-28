@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -148,6 +149,12 @@ async def main():
         description="Generate test X.509 certificates encoded in PEM using OpenSSL.",
     )
     parser.add_argument(
+        "-p",
+        "--path",
+        default="../crates/cmd/src/testing/",
+        help="Path to put the generated artifacts",
+    )
+    parser.add_argument(
         "-l",
         "--log-level",
         choices=["debug", "info", "warning", "error", "critical"],
@@ -161,7 +168,14 @@ async def main():
         raise ValueError(f"invalid log level: {arguments.log_level}")
     logging.basicConfig(format="%(levelname)s: %(message)s", level=numeric_level)
 
-    dirs = (Path("certificates"), Path("keys"))
+    testing_dir = Path(arguments.path)
+    if not testing_dir.is_dir():
+        print(
+            f"{parser.prog}: path supplied should be a directory: {testing_dir}",
+            file=sys.stderr,
+        )
+        quit(1)
+    dirs = (testing_dir / Path("certificates"), testing_dir / Path("keys"))
     certificates, keys = dirs
     for dir in dirs:
         os.makedirs(dir, exist_ok=True)
