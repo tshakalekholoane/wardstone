@@ -141,9 +141,9 @@ pub static C2PNB163V2: Ecc = Ecc { id: 21, f: 163 };
 #[no_mangle]
 pub static C2PNB163V3: Ecc = Ecc { id: 22, f: 163 };
 
-/// Represents the c2pnb176w1 curve as specified in ANSI x9.62.
+/// Represents the c2pnb176v1 curve as specified in ANSI x9.62.
 #[no_mangle]
-pub static C2PNB176W1: Ecc = Ecc { id: 23, f: 176 };
+pub static C2PNB176V1: Ecc = Ecc { id: 23, f: 176 };
 
 /// Represents the c2pnb208w1 curve as specified in ANSI x9.62.
 #[no_mangle]
@@ -216,38 +216,43 @@ pub static K163: Ecc = Ecc { id: 38, f: 192 };
 #[no_mangle]
 pub static K233: Ecc = Ecc { id: 39, f: 192 };
 
+/// Represents the Weierstrass curve K-283 over a prime field. Also
+/// known as sect283k1.
+#[no_mangle]
+pub static K283: Ecc = Ecc { id: 40, f: 192 };
+
 /// Represents the Weierstrass curve K-409 over a prime field.
 #[no_mangle]
-pub static K409: Ecc = Ecc { id: 40, f: 409 };
+pub static K409: Ecc = Ecc { id: 41, f: 409 };
 
 /// Represents the Weierstrass curve K-571 over a prime field.
 #[no_mangle]
-pub static K571: Ecc = Ecc { id: 41, f: 571 };
+pub static K571: Ecc = Ecc { id: 42, f: 571 };
 
 /// Represents the Weierstrass curve P-192 over a prime field. Also
 /// known as prime192v1 and secp192r1.
 #[no_mangle]
-pub static P192: Ecc = Ecc { id: 42, f: 192 };
+pub static P192: Ecc = Ecc { id: 43, f: 192 };
 
 /// Represents the Weierstrass curve P-224 over a prime field. Also
 /// known as secp224r1.
 #[no_mangle]
-pub static P224: Ecc = Ecc { id: 43, f: 224 };
+pub static P224: Ecc = Ecc { id: 44, f: 224 };
 
 /// Represents the Weierstrass curve P-256 over a prime field. Also
 /// known as secp256r1.
 #[no_mangle]
-pub static P256: Ecc = Ecc { id: 44, f: 256 };
+pub static P256: Ecc = Ecc { id: 45, f: 256 };
 
 /// Represents the Weierstrass curve P-384 over a prime field. Also
 /// known as secp384r1.
 #[no_mangle]
-pub static P384: Ecc = Ecc { id: 45, f: 384 };
+pub static P384: Ecc = Ecc { id: 46, f: 384 };
 
 /// Represents the Weierstrass curve P-521 over a prime field. Also
 /// known as secp521r1.
 #[no_mangle]
-pub static P521: Ecc = Ecc { id: 46, f: 521 };
+pub static P521: Ecc = Ecc { id: 47, f: 521 };
 
 /// Represents the prime192v1 curve as specified in ANSI x9.62. Also
 /// known as secp192r1 and P-192.
@@ -256,23 +261,23 @@ pub static PRIME192V1: Ecc = P192;
 
 /// Represents the prime192v2 curve as specified in ANSI x9.62.
 #[no_mangle]
-pub static PRIME192V2: Ecc = Ecc { id: 47, f: 192 };
+pub static PRIME192V2: Ecc = Ecc { id: 48, f: 192 };
 
 /// Represents the prime192v3 curve as specified in ANSI x9.62.
 #[no_mangle]
-pub static PRIME192V3: Ecc = Ecc { id: 48, f: 192 };
+pub static PRIME192V3: Ecc = Ecc { id: 49, f: 192 };
 
 /// Represents the prime239v1 curve as specified in ANSI x9.62.
 #[no_mangle]
-pub static PRIME239V1: Ecc = Ecc { id: 49, f: 239 };
+pub static PRIME239V1: Ecc = Ecc { id: 50, f: 239 };
 
 /// Represents the prime239v2 curve as specified in ANSI x9.62.
 #[no_mangle]
-pub static PRIME239V2: Ecc = Ecc { id: 50, f: 239 };
+pub static PRIME239V2: Ecc = Ecc { id: 51, f: 239 };
 
 /// Represents the prime239v3 curve as specified in ANSI x9.62.
 #[no_mangle]
-pub static PRIME239V3: Ecc = Ecc { id: 51, f: 239 };
+pub static PRIME239V3: Ecc = Ecc { id: 52, f: 239 };
 
 /// Represents the prime256v1 curve as specified in ANSI x9.62. Also
 /// known as P-256 and secp256r1.
@@ -284,38 +289,44 @@ pub static PRIME256V1: Ecc = P256;
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
-pub static SECP112R1: Ecc = Ecc { id: 52, f: 112 };
+pub static SECP112R1: Ecc = Ecc { id: 53, f: 112 };
 
 /// Represents the secp112r2 curve as defined in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
-pub static SECP112R2: Ecc = Ecc { id: 53, f: 112 };
+pub static SECP112R2: Ecc = Ecc { id: 54, f: 112 };
 
 /// Represents the secp128r1 curve as defined in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
-pub static SECP128R1: Ecc = Ecc { id: 54, f: 128 };
+pub static SECP128R1: Ecc = Ecc { id: 55, f: 128 };
 
 /// Represents the secp128r2 curve as defined in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
-pub static SECP128R2: Ecc = Ecc { id: 55, f: 128 };
+pub static SECP128R2: Ecc = Ecc { id: 56, f: 128 };
 
 /// Represents the secp160r1 curve as defined in [SEC 2]. Also known as
 /// wap-wsg-idm-ecid-wtls7.
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
-pub static SECP160R1: Ecc = Ecc { id: 56, f: 160 };
+pub static SECP160R1: Ecc = Ecc { id: 57, f: 160 };
+
+/// Represents the secp160k1 curve as defined in [SEC 2].
+///
+/// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
+#[no_mangle]
+pub static SECP160K1: Ecc = Ecc { id: 58, f: 160 };
 
 /// Represents the secp160r2 curve as defined in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
-pub static SECP160R2: Ecc = Ecc { id: 57, f: 160 };
+pub static SECP160R2: Ecc = Ecc { id: 59, f: 160 };
 
 /// Represents the secp192r1 curve as defined in [SEC 2]. Also known as
 /// prime192v1 and P-192.
@@ -328,7 +339,7 @@ pub static SECP192R1: Ecc = P192;
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECP192K1: Ecc = Ecc { id: 58, f: 192 };
+pub static SECP192K1: Ecc = Ecc { id: 60, f: 192 };
 
 /// Represents the secp224r1 curve as defined in [SEC 2]. Also known as
 /// P-224 and wap-wsg-idm-ecid-wtls12.
@@ -341,13 +352,13 @@ pub static SECP224R1: Ecc = P224;
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECP224K1: Ecc = Ecc { id: 59, f: 224 };
+pub static SECP224K1: Ecc = Ecc { id: 61, f: 224 };
 
 /// Represents the curve secp256k1 specified in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECP256K1: Ecc = Ecc { id: 60, f: 256 };
+pub static SECP256K1: Ecc = Ecc { id: 62, f: 256 };
 
 /// Represents the secp256r1 curve as defined in [SEC 2]. Also known as
 /// prime256v1 and P-256.
@@ -375,25 +386,25 @@ pub static SECP521R1: Ecc = P521;
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
-pub static SECT113R1: Ecc = Ecc { id: 61, f: 113 };
+pub static SECT113R1: Ecc = Ecc { id: 63, f: 113 };
 
 /// Represents the sect113r2 curve as defined in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
-pub static SECT113R2: Ecc = Ecc { id: 62, f: 113 };
+pub static SECT113R2: Ecc = Ecc { id: 64, f: 113 };
 
 /// Represents the sect131r1 curve as defined in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
-pub static SECT131R1: Ecc = Ecc { id: 63, f: 131 };
+pub static SECT131R1: Ecc = Ecc { id: 65, f: 131 };
 
 /// Represents the sect131r2 curve as defined in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
-pub static SECT131R2: Ecc = Ecc { id: 64, f: 131 };
+pub static SECT131R2: Ecc = Ecc { id: 66, f: 131 };
 
 /// Represents the sect163k1 curve as defined in [SEC 2]. Also known as
 /// K-163 and wap-wsg-idm-ecid-wtls3.
@@ -406,7 +417,7 @@ pub static SECT163K1: Ecc = K163;
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT163R1: Ecc = Ecc { id: 65, f: 163 };
+pub static SECT163R1: Ecc = Ecc { id: 67, f: 163 };
 
 /// Represents the sect163r2 curve as defined in [SEC 2]. Also known as
 /// B-163.
@@ -419,13 +430,13 @@ pub static SECT163R2: Ecc = B163;
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT193R1: Ecc = Ecc { id: 66, f: 193 };
+pub static SECT193R1: Ecc = Ecc { id: 68, f: 193 };
 
 /// Represents the sect193r2 curve as defined in [SEC 2].
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT193R2: Ecc = Ecc { id: 67, f: 193 };
+pub static SECT193R2: Ecc = Ecc { id: 69, f: 193 };
 
 /// Represents the sect233k1 curve as defined in [SEC 2]. Also known as
 /// K-233 and wap-wsg-idm-ecid-wtls10.
@@ -445,7 +456,7 @@ pub static SECT233R1: Ecc = B233;
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT239K1: Ecc = Ecc { id: 68, f: 239 };
+pub static SECT239K1: Ecc = Ecc { id: 70, f: 239 };
 
 /// Represents the sect283r1 curve as defined in [SEC 2]. Also known as
 /// B-283.
@@ -453,6 +464,13 @@ pub static SECT239K1: Ecc = Ecc { id: 68, f: 239 };
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
 pub static SECT283R1: Ecc = B283;
+
+/// Represents the sect283k1 curve as defined in [SEC 2]. Also known as
+/// K-283.
+///
+/// [SEC 2]: https://www.secg.org/sec2-v2.pdf
+#[no_mangle]
+pub static SECT283K1: Ecc = K283;
 
 /// Represents the sect409k1 curve as defined in [SEC 2]. Also known as
 /// K-409.
@@ -487,14 +505,14 @@ pub static SECT571R1: Ecc = B571;
 ///
 /// [draft-shen-sm2-ecdsa-02]: https://datatracker.ietf.org/doc/html/draft-shen-sm2-ecdsa-02
 #[no_mangle]
-pub static SM2: Ecc = Ecc { id: 69, f: 256 };
+pub static SM2: Ecc = Ecc { id: 71, f: 256 };
 
 /// Represents the wap-wsg-idm-ecid-wtls1 curve as specified in
 /// [WAP-WTLS curves].
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS1: Ecc = Ecc { id: 70, f: 113 };
+pub static WAP_WSG_IDM_ECID_WTLS1: Ecc = Ecc { id: 72, f: 113 };
 
 /// Represents the wap-wsg-idm-ecid-wtls3 curve as specified in
 /// [WAP-WTLS curves]. Also known as sect163k1.
@@ -536,14 +554,14 @@ pub static WAP_WSG_IDM_ECID_WTLS7: Ecc = SECP160R1;
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS8: Ecc = Ecc { id: 71, f: 112 };
+pub static WAP_WSG_IDM_ECID_WTLS8: Ecc = Ecc { id: 73, f: 112 };
 
 /// Represents the wap-wsg-idm-ecid-wtls9 curve as specified in
 /// [WAP-WTLS curves].
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS9: Ecc = Ecc { id: 72, f: 160 };
+pub static WAP_WSG_IDM_ECID_WTLS9: Ecc = Ecc { id: 74, f: 160 };
 
 /// Represents the wap-wsg-idm-ecid-wtls10 curve as specified in
 /// [WAP-WTLS curves]. Also known as K-233 and sect233k1.
@@ -570,13 +588,13 @@ pub static WAP_WSG_IDM_ECID_WTLS12: Ecc = P224;
 ///
 /// [RFC 7748]: https://datatracker.ietf.org/doc/html/rfc7748
 #[no_mangle]
-pub static X25519: Ecc = Ecc { id: 73, f: 256 };
+pub static X25519: Ecc = Ecc { id: 75, f: 256 };
 
 /// Represents the X448 algorithm as it appears in [RFC 7748].
 ///
 /// [RFC 7748]: https://datatracker.ietf.org/doc/html/rfc7748
 #[no_mangle]
-pub static X448: Ecc = Ecc { id: 74, f: 448 };
+pub static X448: Ecc = Ecc { id: 76, f: 448 };
 
 /// Generic instance that represents a choice of f = 224 for an elliptic
 /// curve primitive.

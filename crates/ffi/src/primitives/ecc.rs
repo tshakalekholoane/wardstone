@@ -124,9 +124,9 @@ pub static WS_C2PNB163V2: Ecc = C2PNB163V2;
 #[no_mangle]
 pub static WS_C2PNB163V3: Ecc = C2PNB163V3;
 
-/// Represents the c2pnb176w1 curve as specified in ANSI x9.62.
+/// Represents the c2pnb176v1 curve as specified in ANSI x9.62.
 #[no_mangle]
-pub static WS_C2PNB176W1: Ecc = C2PNB176W1;
+pub static WS_C2PNB176V1: Ecc = C2PNB176V1;
 
 /// Represents the c2pnb208w1 curve as specified in ANSI x9.62.
 #[no_mangle]
