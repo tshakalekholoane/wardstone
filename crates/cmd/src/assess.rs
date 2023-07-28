@@ -38,8 +38,7 @@ static ELLIPTIC_CURVES: Lazy<HashMap<&str, Ecc>> = Lazy::new(|| {
   m.insert("c2pnb163v1", C2PNB163V1);
   m.insert("c2pnb163v2", C2PNB163V2);
   m.insert("c2pnb163v3", C2PNB163V3);
-  // TODO:
-  // m.insert("c2pnb176v1", C2PNB176V1);
+  m.insert("c2pnb176v1", C2PNB176V1);
   m.insert("c2pnb208w1", C2PNB208W1);
   m.insert("c2pnb272w1", C2PNB272W1);
   m.insert("c2pnb304w1", C2PNB304W1);
@@ -65,8 +64,7 @@ static ELLIPTIC_CURVES: Lazy<HashMap<&str, Ecc>> = Lazy::new(|| {
   m.insert("secp112r2", SECP112R2);
   m.insert("secp128r1", SECP128R1);
   m.insert("secp128r2", SECP128R2);
-  // TODO:
-  // m.insert("secp160k1", SECP160K1);
+  m.insert("secp160k1", SECP160K1);
   m.insert("secp160r1", SECP160R1);
   m.insert("secp160r2", SECP160R2);
   m.insert("secp192k1", SECP192K1);
@@ -87,8 +85,7 @@ static ELLIPTIC_CURVES: Lazy<HashMap<&str, Ecc>> = Lazy::new(|| {
   m.insert("sect233k1", SECT233K1);
   m.insert("sect233r1", SECT233R1);
   m.insert("sect239k1", SECT239K1);
-  // TODO:
-  // m.insert("sect283k1", SECT283K1);
+  m.insert("sect283k1", SECT283K1);
   m.insert("sect283r1", SECT283R1);
   m.insert("sect409k1", SECT409K1);
   m.insert("sect409r1", SECT409R1);
