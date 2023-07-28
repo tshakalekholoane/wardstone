@@ -111,7 +111,7 @@ async def generate_certificate(certificates, keys, opt):
         None
     """
     filename = f"{opt.name}.pem"
-    if (keys / filename).exists():
+    if (certificates / filename).exists():
         logging.debug(f"skipping: {filename}")
         return
     try:
