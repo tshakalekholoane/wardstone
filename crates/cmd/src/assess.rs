@@ -1,25 +1,26 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
+use std::process;
 
+use bimap::BiMap;
 use clap::ValueEnum;
 use once_cell::sync::Lazy;
 use openssl::pkey::Id;
+use openssl::pkey::PKey;
+use openssl::pkey::Public;
 use openssl::x509::X509;
+use wardstone_core::context::Context;
 use wardstone_core::primitive::ecc::*;
 use wardstone_core::primitive::hash::*;
+use wardstone_core::standard::bsi::Bsi;
+use wardstone_core::standard::Standard;
 
-#[derive(Clone, Copy, Debug, ValueEnum)]
-pub enum Guide {
-  /// The BSI TR-02102 series of technical guidelines.
-  Bsi,
-}
+// The following map OpenSSL string name identifiers to instances in the
+// core crate.
 
-// Maintains a mapping of identifiers and their wardstone_core
-// equivalents.
-static ELLIPTIC_CURVES: Lazy<HashMap<&str, Ecc>> = Lazy::new(|| {
-  let mut m = HashMap::new();
+static ELLIPTIC_CURVES: Lazy<BiMap<&str, Ecc>> = Lazy::new(|| {
+  let mut m = BiMap::new();
   m.insert("SM2", SM2);
   m.insert("brainpoolP160r1", BRAINPOOLP160R1);
   m.insert("brainpoolP160t1", BRAINPOOLP160T1);
@@ -105,15 +106,29 @@ static ELLIPTIC_CURVES: Lazy<HashMap<&str, Ecc>> = Lazy::new(|| {
   m
 });
 
+static HASH_FUNCTIONS: Lazy<BiMap<&str, Hash>> = Lazy::new(|| {
+  let mut m = BiMap::new();
+  m.insert("sha256", SHA256);
+  m
+});
+
 #[derive(Debug)]
 enum SignatureAlgorithm {
-  Elliptic { instance: Ecc },
+  Ecc(Ecc),
 }
 
 #[derive(Debug)]
 struct Certificate(X509);
 
 impl Certificate {
+  fn extract_ecc_instance(pkey: &PKey<Public>) -> SignatureAlgorithm {
+    let key = pkey.ec_key().expect("elliptic curve key");
+    let nid = key.group().curve_name().expect("curve name");
+    let long_name = nid.long_name().expect("long name");
+    let instance = *ELLIPTIC_CURVES.get_by_left(long_name).expect("instance");
+    SignatureAlgorithm::Ecc(instance)
+  }
+
   pub fn extract_hash_function(&self) -> Hash {
     let algorithms = self
       .0
@@ -123,9 +138,8 @@ impl Certificate {
       .signature_algorithms()
       .expect("algorithms");
     let long_name = algorithms.digest.long_name().expect("long name");
-    // TODO: Get the primitive from mapping.
-    println!("debug: get {long_name} hash function");
-    SHA256
+    let instance = *HASH_FUNCTIONS.get_by_left(long_name).expect("instance");
+    instance
   }
 
   pub fn extract_signature_algorithm(&self) -> SignatureAlgorithm {
@@ -133,13 +147,7 @@ impl Certificate {
     match public_key.id() {
       Id::DH => todo!(),
       Id::DSA => todo!(),
-      Id::EC => {
-        let key = public_key.ec_key().expect("elliptic curve key");
-        let nid = key.group().curve_name().expect("curve name");
-        let long_name = nid.long_name().expect("long name");
-        let instance = *ELLIPTIC_CURVES.get(long_name).expect("instance");
-        SignatureAlgorithm::Elliptic { instance }
-      },
+      Id::EC => Self::extract_ecc_instance(&public_key),
       Id::RSA => todo!(),
       // It is not clear why these have separate Id's. One would assume
       // they are just elliptic curves.
@@ -157,14 +165,70 @@ impl Certificate {
   }
 }
 
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub enum Guide {
+  /// The BSI TR-02102 series of technical guidelines.
+  Bsi,
+}
+
+impl Guide {
+  fn report<T: Eq + PartialEq + std::hash::Hash>(
+    got: &T,
+    result: Result<T, T>,
+    lookup: &Lazy<BiMap<&str, T>>,
+    status: &mut i32,
+  ) {
+    let got_str = lookup.get_by_right(got).expect("got string");
+    match result {
+      Err(want) => {
+        *status = 1;
+        let want_str = lookup.get_by_right(&want).expect("want string");
+        println!("[-] got={got_str} want={want_str}")
+      },
+      Ok(want) => {
+        let want_str = lookup.get_by_right(&want).expect("hash function string");
+        println!("[+] got={got_str} want={want_str}")
+      },
+    }
+  }
+
+  fn validate_certificate(&self, ctx: &Context, certificate: &Certificate) {
+    let hash_function = certificate.extract_hash_function();
+    let signature_algorithm = certificate.extract_signature_algorithm();
+
+    // Select validation functions and appropriate lookup tables.
+    let validate_hash_function = match self {
+      Self::Bsi => Bsi::validate_hash,
+    };
+    let (validate_signature_algorithm, signature_algorithm, signature_lookup) = match self {
+      Self::Bsi => match signature_algorithm {
+        SignatureAlgorithm::Ecc(instance) => (Bsi::validate_ecc, instance, &ELLIPTIC_CURVES),
+      },
+    };
+
+    // Validate the signature algorithm and its associated algorithm and
+    // report the outcomes.
+    let mut status = 0;
+    Self::report(
+      &hash_function,
+      validate_hash_function(ctx, &hash_function),
+      &HASH_FUNCTIONS,
+      &mut status,
+    );
+    Self::report(
+      &signature_algorithm,
+      validate_signature_algorithm(ctx, &signature_algorithm),
+      signature_lookup,
+      &mut status,
+    );
+    process::exit(status)
+  }
+}
+
 pub fn x509(path: &PathBuf, guide: &Guide) {
   let certificate = Certificate::from_pem_file(path);
-  let hash_function = certificate.extract_hash_function();
-  let signature_algorithm = certificate.extract_signature_algorithm();
-  // TODO: Validate certificate primitives.
-  println!(
-    "debug: validate certificate with hash function {:?} and signature algorithm {:?} against the \
-     {:?} guide",
-    hash_function, signature_algorithm, guide
-  )
+  let ctx = Context::default();
+  match guide {
+    Guide::Bsi => guide.validate_certificate(&ctx, &certificate),
+  }
 }
