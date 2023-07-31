@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Read;
+use std::ops::Deref;
 use std::path::PathBuf;
 use std::process;
 
@@ -165,6 +166,22 @@ impl Certificate {
   }
 }
 
+enum Exit {
+  Failure,
+  Success,
+}
+
+impl Deref for Exit {
+  type Target = i32;
+
+  fn deref(&self) -> &Self::Target {
+    match self {
+      Exit::Success => &0,
+      Exit::Failure => &1,
+    }
+  }
+}
+
 #[derive(Clone, Copy, Debug, ValueEnum)]
 pub enum Guide {
   /// The BSI TR-02102 series of technical guidelines.
@@ -173,26 +190,27 @@ pub enum Guide {
 
 impl Guide {
   fn report<T: Eq + PartialEq + std::hash::Hash>(
+    prefix: &'static str,
     got: &T,
     result: Result<T, T>,
     lookup: &Lazy<BiMap<&str, T>>,
-    status: &mut i32,
+    status: &mut Exit,
   ) {
     let got_str = lookup.get_by_right(got).expect("got string");
     match result {
       Err(want) => {
-        *status = 1;
+        *status = Exit::Failure;
         let want_str = lookup.get_by_right(&want).expect("want string");
-        println!("[-] got={got_str} want={want_str}")
+        println!("{prefix}: got: {got_str}, want: {want_str}");
       },
       Ok(want) => {
-        let want_str = lookup.get_by_right(&want).expect("hash function string");
-        println!("[+] got={got_str} want={want_str}")
+        // TODO: Only print when verbose output is enabled.
+        let _ = lookup.get_by_right(&want).expect("hash function string");
       },
     }
   }
 
-  fn validate_certificate(&self, ctx: &Context, certificate: &Certificate) {
+  fn validate_certificate(&self, ctx: &Context, certificate: &Certificate) -> Exit {
     let hash_function = certificate.extract_hash_function();
     let signature_algorithm = certificate.extract_signature_algorithm();
 
@@ -206,29 +224,38 @@ impl Guide {
       },
     };
 
-    // Validate the signature algorithm and its associated algorithm and
-    // report the outcomes.
-    let mut status = 0;
+    // Validate the signature algorithm along with its associated hash
+    // function and report the outcomes.
+    let mut status = Exit::Success;
     Self::report(
+      "hash function",
       &hash_function,
       validate_hash_function(ctx, &hash_function),
       &HASH_FUNCTIONS,
       &mut status,
     );
     Self::report(
+      "signature algorithm",
       &signature_algorithm,
       validate_signature_algorithm(ctx, &signature_algorithm),
       signature_lookup,
       &mut status,
     );
-    process::exit(status)
+    status
   }
 }
 
 pub fn x509(path: &PathBuf, guide: &Guide) {
   let certificate = Certificate::from_pem_file(path);
   let ctx = Context::default();
-  match guide {
+  let status = match guide {
     Guide::Bsi => guide.validate_certificate(&ctx, &certificate),
+  };
+  match status {
+    Exit::Failure => {
+      println!("fail: {}", path.display());
+      process::exit(*status)
+    },
+    Exit::Success => println!("ok: {}", path.display()),
   }
 }
