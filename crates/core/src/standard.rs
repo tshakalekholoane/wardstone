@@ -20,9 +20,12 @@ use crate::primitive::symmetric::Symmetric;
 /// The functions are used to assess the validity of various
 /// cryptographic primitives against the standard.
 pub trait Standard {
-  fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc>;
-  fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc>;
-  fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc>;
-  fn validate_hash(ctx: &Context, key: &Hash) -> Result<Hash, Hash>;
-  fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric>;
+  fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<&'static Ecc, &'static Ecc>;
+  fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<&'static Ffc, &'static Ffc>;
+  fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<&'static Ifc, &'static Ifc>;
+  fn validate_hash(ctx: &Context, key: &Hash) -> Result<&'static Hash, &'static Hash>;
+  fn validate_symmetric(
+    ctx: &Context,
+    key: &Symmetric,
+  ) -> Result<&'static Symmetric, &'static Symmetric>;
 }

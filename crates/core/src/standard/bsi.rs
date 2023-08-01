@@ -18,37 +18,37 @@ use crate::standard::Standard;
 
 const CUTOFF_YEAR_RSA: u16 = 2023; // See p. 17.
 
-static SPECIFIED_CURVES: Lazy<HashSet<Ecc>> = Lazy::new(|| {
+static SPECIFIED_CURVES: Lazy<HashSet<&Ecc>> = Lazy::new(|| {
   let mut s = HashSet::new();
-  s.insert(P256);
-  s.insert(P384);
-  s.insert(P521);
-  s.insert(BRAINPOOLP256R1);
-  s.insert(BRAINPOOLP320R1);
-  s.insert(BRAINPOOLP384R1);
-  s.insert(BRAINPOOLP512R1);
+  s.insert(&P256);
+  s.insert(&P384);
+  s.insert(&P521);
+  s.insert(&BRAINPOOLP256R1);
+  s.insert(&BRAINPOOLP320R1);
+  s.insert(&BRAINPOOLP384R1);
+  s.insert(&BRAINPOOLP512R1);
   s
 });
 
-static SPECIFIED_HASH_FUNCTIONS: Lazy<HashSet<Hash>> = Lazy::new(|| {
+static SPECIFIED_HASH_FUNCTIONS: Lazy<HashSet<&Hash>> = Lazy::new(|| {
   let mut s = HashSet::new();
-  s.insert(SHA256);
-  s.insert(SHA384);
-  s.insert(SHA3_256);
-  s.insert(SHA3_384);
-  s.insert(SHA3_512);
-  s.insert(SHA512);
-  s.insert(SHA512_256);
+  s.insert(&SHA256);
+  s.insert(&SHA384);
+  s.insert(&SHA3_256);
+  s.insert(&SHA3_384);
+  s.insert(&SHA3_512);
+  s.insert(&SHA512);
+  s.insert(&SHA512_256);
   s
 });
 
 // "The present version of this Technical Guideline does not recommend
 // any other block ciphers besides AES" (2023, p. 24).
-static SPECIFIED_SYMMETRIC_KEYS: Lazy<HashSet<Symmetric>> = Lazy::new(|| {
+static SPECIFIED_SYMMETRIC_KEYS: Lazy<HashSet<&Symmetric>> = Lazy::new(|| {
   let mut s = HashSet::new();
-  s.insert(AES128);
-  s.insert(AES192);
-  s.insert(AES256);
+  s.insert(&AES128);
+  s.insert(&AES192);
+  s.insert(&AES256);
   s
 });
 
@@ -104,18 +104,18 @@ impl Bsi {
   /// let hmac_sha256 = SHA256;
   /// assert_eq!(Bsi::validate_hash_based(&ctx, &hmac_sha1), Err(hmac_sha256));
   /// ```
-  pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
+  pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<&'static Hash, &'static Hash> {
     if SPECIFIED_HASH_FUNCTIONS.contains(hash) {
       let pre_image_resistance = hash.security() << 1;
       let security = ctx.security().max(pre_image_resistance);
       match security {
-        ..=127 => Err(SHA256),
-        128..=256 => Ok(SHA256),
-        257..=384 => Ok(SHA384),
-        385.. => Ok(SHA512),
+        ..=127 => Err(&SHA256),
+        128..=256 => Ok(&SHA256),
+        257..=384 => Ok(&SHA384),
+        385.. => Ok(&SHA512),
       }
     } else {
-      Err(SHA256)
+      Err(&SHA256)
     }
   }
 }
@@ -154,18 +154,18 @@ impl Standard for Bsi {
   ///   Ok(BRAINPOOLP256R1)
   /// );
   /// ```
-  fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
+  fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<&'static Ecc, &'static Ecc> {
     if SPECIFIED_CURVES.contains(key) {
       let security = ctx.security().max(key.security());
       match security {
-        ..=124 => Err(BRAINPOOLP256R1),
-        125..=128 => Ok(BRAINPOOLP256R1),
-        129..=160 => Ok(BRAINPOOLP320R1),
-        161..=192 => Ok(BRAINPOOLP384R1),
-        193.. => Ok(BRAINPOOLP512R1),
+        ..=124 => Err(&BRAINPOOLP256R1),
+        125..=128 => Ok(&BRAINPOOLP256R1),
+        129..=160 => Ok(&BRAINPOOLP320R1),
+        161..=192 => Ok(&BRAINPOOLP384R1),
+        193.. => Ok(&BRAINPOOLP512R1),
       }
     } else {
-      Err(BRAINPOOLP256R1)
+      Err(&BRAINPOOLP256R1)
     }
   }
 
@@ -196,14 +196,14 @@ impl Standard for Bsi {
   /// let dsa_3072 = FFC_3072_256;
   /// assert_eq!(Bsi::validate_ffc(&ctx, &dsa_2048), Err(dsa_3072));
   /// ```
-  fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
+  fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<&'static Ffc, &'static Ffc> {
     let security = ctx.security().max(key.security());
     match security {
       // Page 48 says q > 2²⁵⁰.
-      ..=124 => Err(FFC_3072_256),
-      125..=128 => Ok(FFC_3072_256),
-      129..=192 => Ok(FFC_7680_384),
-      193.. => Ok(FFC_15360_512),
+      ..=124 => Err(&FFC_3072_256),
+      125..=128 => Ok(&FFC_3072_256),
+      129..=192 => Ok(&FFC_7680_384),
+      193.. => Ok(&FFC_15360_512),
     }
   }
 
@@ -244,17 +244,17 @@ impl Standard for Bsi {
   /// let ctx = Context::default();
   /// assert_eq!(Bsi::validate_hash(&ctx, &SHA1), Err(SHA256));
   /// ```
-  fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
+  fn validate_hash(ctx: &Context, hash: &Hash) -> Result<&'static Hash, &'static Hash> {
     if SPECIFIED_HASH_FUNCTIONS.contains(hash) {
       let security = ctx.security().max(hash.security());
       match security {
-        ..=119 => Err(SHA256),
-        120..=128 => Ok(SHA256),
-        129..=192 => Ok(SHA384),
-        193.. => Ok(SHA512),
+        ..=119 => Err(&SHA256),
+        120..=128 => Ok(&SHA256),
+        129..=192 => Ok(&SHA384),
+        193.. => Ok(&SHA512),
       }
     } else {
-      Err(SHA256)
+      Err(&SHA256)
     }
   }
 
@@ -286,26 +286,26 @@ impl Standard for Bsi {
   /// let rsa_2048 = IFC_2048;
   /// assert_eq!(Bsi::validate_ifc(&ctx, &rsa_2048), Ok(rsa_2048));
   /// ```
-  fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
+  fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<&'static Ifc, &'static Ifc> {
     let security = ctx.security().max(key.security());
     match security {
       ..=111 => {
         if ctx.year() > CUTOFF_YEAR_RSA {
-          Err(IFC_3072)
+          Err(&IFC_3072)
         } else {
-          Err(IFC_2048)
+          Err(&IFC_2048)
         }
       },
       112..=127 => {
         if ctx.year() > CUTOFF_YEAR_RSA {
-          Err(IFC_3072)
+          Err(&IFC_3072)
         } else {
-          Ok(IFC_2048)
+          Ok(&IFC_2048)
         }
       },
-      128..=191 => Ok(IFC_3072),
-      192..=255 => Ok(IFC_7680),
-      256.. => Ok(IFC_15360),
+      128..=191 => Ok(&IFC_3072),
+      192..=255 => Ok(&IFC_7680),
+      256.. => Ok(&IFC_15360),
     }
   }
 
@@ -333,17 +333,20 @@ impl Standard for Bsi {
   /// let ctx = Context::default();
   /// assert_eq!(Bsi::validate_symmetric(&ctx, &TDEA3), Err(AES128));
   /// ```
-  fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
+  fn validate_symmetric(
+    ctx: &Context,
+    key: &Symmetric,
+  ) -> Result<&'static Symmetric, &'static Symmetric> {
     if SPECIFIED_SYMMETRIC_KEYS.contains(key) {
       let security = ctx.security().max(key.security());
       match security {
-        ..=119 => Err(AES128),
-        120..=128 => Ok(AES128),
-        129..=192 => Ok(AES192),
-        193.. => Ok(AES256),
+        ..=119 => Err(&AES128),
+        120..=128 => Ok(&AES128),
+        129..=192 => Ok(&AES192),
+        193.. => Ok(&AES256),
       }
     } else {
-      Err(AES128)
+      Err(&AES128)
     }
   }
 }

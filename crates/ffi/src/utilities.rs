@@ -4,8 +4,8 @@ use wardstone_core::context::Context;
 
 /// A utility function that abstracts a call to a Rust function `f` and
 /// returns a result following C error handling conventions.
-pub(crate) unsafe fn c_call<T>(
-  f: fn(&Context, &T) -> Result<T, T>,
+pub(crate) unsafe fn c_call<T: Clone>(
+  f: fn(&Context, &T) -> Result<&'static T, &'static T>,
   ctx: *const Context,
   primitive: *const T,
   alternative: *mut T,
@@ -20,7 +20,7 @@ pub(crate) unsafe fn c_call<T>(
   };
 
   if !alternative.is_null() {
-    *alternative = recommendation;
+    *alternative = recommendation.clone();
   }
 
   is_compliant as c_int
