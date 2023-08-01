@@ -107,7 +107,7 @@ impl Standard for Ecrypt {
         if ctx.year() > CUTOFF_YEAR {
           Err(&ECC_256)
         } else {
-          Ok(&&ECC_256)
+          Ok(&ECC_256)
         }
       },
       128 => Ok(&ECC_256),
