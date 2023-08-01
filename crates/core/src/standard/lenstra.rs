@@ -22,26 +22,26 @@ pub enum ValidationError {
 const BASE_YEAR: u16 = 1982;
 const BASE_SECURITY: u16 = 56;
 
-static SPECIFIED_HASH_FUNCTIONS: Lazy<HashSet<Hash>> = Lazy::new(|| {
+static SPECIFIED_HASH_FUNCTIONS: Lazy<HashSet<&Hash>> = Lazy::new(|| {
   let mut s = HashSet::new();
-  s.insert(RIPEMD160);
-  s.insert(SHA1);
-  s.insert(SHA256);
-  s.insert(SHA384);
-  s.insert(SHA512);
+  s.insert(&RIPEMD160);
+  s.insert(&SHA1);
+  s.insert(&SHA256);
+  s.insert(&SHA384);
+  s.insert(&SHA512);
   s
 });
 
-static SPECIFIED_SYMMETRIC_KEYS: Lazy<HashSet<Symmetric>> = Lazy::new(|| {
+static SPECIFIED_SYMMETRIC_KEYS: Lazy<HashSet<&Symmetric>> = Lazy::new(|| {
   let mut s = HashSet::new();
-  s.insert(AES128);
-  s.insert(AES192);
-  s.insert(AES256);
-  s.insert(DES);
-  s.insert(DESX);
-  s.insert(IDEA);
-  s.insert(TDEA2);
-  s.insert(TDEA3);
+  s.insert(&AES128);
+  s.insert(&AES192);
+  s.insert(&AES256);
+  s.insert(&DES);
+  s.insert(&DESX);
+  s.insert(&IDEA);
+  s.insert(&TDEA2);
+  s.insert(&TDEA3);
   s
 });
 
@@ -87,20 +87,20 @@ impl Standard for Lenstra {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// assert_eq!(Lenstra::validate_ecc(&ctx, &BRAINPOOLP256R1), Ok(ECC_256));
+  /// assert_eq!(Lenstra::validate_ecc(&ctx, &BRAINPOOLP256R1), Ok(&ECC_256));
   /// ```
-  fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
+  fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<&'static Ecc, &'static Ecc> {
     let implied_security = ctx.security().max(key.security());
     let min_security = match Lenstra::calculate_security(ctx.year()) {
       Ok(security) => security,
-      Err(_) => return Err(ECC_NOT_SUPPORTED),
+      Err(_) => return Err(&ECC_NOT_SUPPORTED),
     };
     let recommendation = match implied_security.max(min_security) {
-      ..=111 => ECC_NOT_SUPPORTED,
-      112 => ECC_224,
-      113..=128 => ECC_256,
-      129..=192 => ECC_384,
-      193.. => ECC_512,
+      ..=111 => &ECC_NOT_SUPPORTED,
+      112 => &ECC_224,
+      113..=128 => &ECC_256,
+      129..=192 => &ECC_384,
+      193.. => &ECC_512,
     };
     if implied_security < min_security {
       Err(recommendation)
@@ -133,21 +133,21 @@ impl Standard for Lenstra {
   ///
   /// let ctx = Context::default();
   /// let dsa_3072 = FFC_3072_256;
-  /// assert_eq!(Lenstra::validate_ffc(&ctx, &dsa_3072), Ok(dsa_3072));
+  /// assert_eq!(Lenstra::validate_ffc(&ctx, &dsa_3072), Ok(&dsa_3072));
   /// ```
-  fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
+  fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<&'static Ffc, &'static Ffc> {
     let implied_security = ctx.security().max(key.security());
     let min_security = match Lenstra::calculate_security(ctx.year()) {
       Ok(security) => security,
-      Err(_) => return Err(FFC_NOT_SUPPORTED),
+      Err(_) => return Err(&FFC_NOT_SUPPORTED),
     };
     let recommendation = match implied_security.max(min_security) {
-      ..=79 => FFC_NOT_SUPPORTED,
-      80 => FFC_1024_160,
-      81..=112 => FFC_2048_224,
-      113..=128 => FFC_3072_256,
-      129..=192 => FFC_7680_384,
-      193.. => FFC_15360_512,
+      ..=79 => &FFC_NOT_SUPPORTED,
+      80 => &FFC_1024_160,
+      81..=112 => &FFC_2048_224,
+      113..=128 => &FFC_3072_256,
+      129..=192 => &FFC_7680_384,
+      193.. => &FFC_15360_512,
     };
     if implied_security < min_security {
       Err(recommendation)
@@ -190,22 +190,22 @@ impl Standard for Lenstra {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// assert_eq!(Lenstra::validate_hash(&ctx, &SHA1), Err(SHA256));
+  /// assert_eq!(Lenstra::validate_hash(&ctx, &SHA1), Err(&SHA256));
   /// ```
-  fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
+  fn validate_hash(ctx: &Context, hash: &Hash) -> Result<&'static Hash, &'static Hash> {
     if SPECIFIED_HASH_FUNCTIONS.contains(hash) {
       let implied_security = ctx.security().max(hash.security());
       let min_security = match Lenstra::calculate_security(ctx.year()) {
         Ok(security) => security,
-        Err(_) => return Err(SHA256),
+        Err(_) => return Err(&SHA256),
       };
       let recommendation = match implied_security.max(min_security) {
         // SHA1 and RIPEMD-160 offer less security than their digest
         // length so they are omitted even though they might cover the
         // range ..=80.
-        ..=128 => SHA256,
-        129..=192 => SHA384,
-        193.. => SHA512,
+        ..=128 => &SHA256,
+        129..=192 => &SHA384,
+        193.. => &SHA512,
       };
       if implied_security < min_security {
         Err(recommendation)
@@ -213,7 +213,7 @@ impl Standard for Lenstra {
         Ok(recommendation)
       }
     } else {
-      Err(SHA256)
+      Err(&SHA256)
     }
   }
 
@@ -244,9 +244,9 @@ impl Standard for Lenstra {
   ///
   /// let ctx = Context::default();
   /// let rsa_2048 = IFC_2048;
-  /// assert_eq!(Lenstra::validate_ifc(&ctx, &rsa_2048), Ok(rsa_2048));
+  /// assert_eq!(Lenstra::validate_ifc(&ctx, &rsa_2048), Ok(&rsa_2048));
   /// ```
-  fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
+  fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<&'static Ifc, &'static Ifc> {
     // Per Table 4 on page 25.
     let (implied_year, implied_security) = match key.k {
     ..=1023 => (u16::MIN, u16::MIN),
@@ -261,13 +261,13 @@ impl Standard for Lenstra {
 
     let year = implied_year.max(ctx.year());
     let (security_range, recommendation) = match year {
-    ..=2006 => (0..=72, IFC_1024),
-    2007..=2014 => (73..=78, IFC_1280),
-    2015..=2020 => (79..=82, IFC_1536),
-    2021..=2030 => (83..=88, IFC_2048),
-    2031..=2046 => (89..=99, IFC_3072),
-    2047..=2060 => (100..=108, IFC_4096),
-    2061.. /* =2100 */ => (109..=135 /* technically u16::MAX */, IFC_8192),
+    ..=2006 => (0..=72, &IFC_1024),
+    2007..=2014 => (73..=78, &IFC_1280),
+    2015..=2020 => (79..=82, &IFC_1536),
+    2021..=2030 => (83..=88, &IFC_2048),
+    2031..=2046 => (89..=99, &IFC_3072),
+    2047..=2060 => (100..=108, &IFC_4096),
+    2061.. /* =2100 */ => (109..=135 /* technically u16::MAX */, &IFC_8192),
   };
 
     let security = ctx.security().max(implied_security);
@@ -299,22 +299,25 @@ impl Standard for Lenstra {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// assert_eq!(Lenstra::validate_symmetric(&ctx, &TDEA3), Ok(TDEA3));
+  /// assert_eq!(Lenstra::validate_symmetric(&ctx, &TDEA3), Ok(&TDEA3));
   /// ```
-  fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
+  fn validate_symmetric(
+    ctx: &Context,
+    key: &Symmetric,
+  ) -> Result<&'static Symmetric, &'static Symmetric> {
     if SPECIFIED_SYMMETRIC_KEYS.contains(key) {
       let implied_security = ctx.security().max(key.security());
       let min_security = match Lenstra::calculate_security(ctx.year()) {
         Ok(security) => security,
-        Err(_) => return Err(AES128),
+        Err(_) => return Err(&AES128),
       };
       let recommendation = match implied_security.max(min_security) {
-        ..=95 => TDEA2,
-        96..=112 => TDEA3,
-        113..=120 => DESX,
-        121..=128 => AES128,
-        129..=192 => AES192,
-        193.. => AES256,
+        ..=95 => &TDEA2,
+        96..=112 => &TDEA3,
+        113..=120 => &DESX,
+        121..=128 => &AES128,
+        129..=192 => &AES192,
+        193.. => &AES256,
       };
       if implied_security < min_security {
         Err(recommendation)
@@ -322,7 +325,7 @@ impl Standard for Lenstra {
         Ok(recommendation)
       }
     } else {
-      Err(AES128)
+      Err(&AES128)
     }
   }
 }
@@ -332,75 +335,75 @@ mod tests {
   use super::*;
   use crate::{test_ecc, test_ffc, test_hash, test_ifc, test_symmetric};
 
-  test_ecc!(p224, Lenstra, &P224, Ok(ECC_224));
-  test_ecc!(p256, Lenstra, &P256, Ok(ECC_256));
-  test_ecc!(p384, Lenstra, &P384, Ok(ECC_384));
-  test_ecc!(p521, Lenstra, &P521, Ok(ECC_512));
-  test_ecc!(ed25519, Lenstra, &ED25519, Ok(ECC_256));
-  test_ecc!(ed448, Lenstra, &ED448, Ok(ECC_512));
-  test_ecc!(x25519, Lenstra, &X25519, Ok(ECC_256));
-  test_ecc!(x448, Lenstra, &X448, Ok(ECC_512));
-  test_ecc!(brainpoolp224r1, Lenstra, &BRAINPOOLP224R1, Ok(ECC_224));
-  test_ecc!(brainpoolp256r1, Lenstra, &BRAINPOOLP256R1, Ok(ECC_256));
-  test_ecc!(brainpoolp320r1, Lenstra, &BRAINPOOLP320R1, Ok(ECC_384));
-  test_ecc!(brainpoolp384r1, Lenstra, &BRAINPOOLP384R1, Ok(ECC_384));
-  test_ecc!(brainpoolp512r1, Lenstra, &BRAINPOOLP512R1, Ok(ECC_512));
-  test_ecc!(secp256k1, Lenstra, &SECP256K1, Ok(ECC_256));
+  test_ecc!(p224, Lenstra, &P224, Ok(&ECC_224));
+  test_ecc!(p256, Lenstra, &P256, Ok(&ECC_256));
+  test_ecc!(p384, Lenstra, &P384, Ok(&ECC_384));
+  test_ecc!(p521, Lenstra, &P521, Ok(&ECC_512));
+  test_ecc!(ed25519, Lenstra, &ED25519, Ok(&ECC_256));
+  test_ecc!(ed448, Lenstra, &ED448, Ok(&ECC_512));
+  test_ecc!(x25519, Lenstra, &X25519, Ok(&ECC_256));
+  test_ecc!(x448, Lenstra, &X448, Ok(&ECC_512));
+  test_ecc!(brainpoolp224r1, Lenstra, &BRAINPOOLP224R1, Ok(&ECC_224));
+  test_ecc!(brainpoolp256r1, Lenstra, &BRAINPOOLP256R1, Ok(&ECC_256));
+  test_ecc!(brainpoolp320r1, Lenstra, &BRAINPOOLP320R1, Ok(&ECC_384));
+  test_ecc!(brainpoolp384r1, Lenstra, &BRAINPOOLP384R1, Ok(&ECC_384));
+  test_ecc!(brainpoolp512r1, Lenstra, &BRAINPOOLP512R1, Ok(&ECC_512));
+  test_ecc!(secp256k1, Lenstra, &SECP256K1, Ok(&ECC_256));
 
-  test_ffc!(ffc_1024_160, Lenstra, &FFC_1024_160, Err(FFC_2048_224));
-  test_ffc!(ffc_2048_224, Lenstra, &FFC_2048_224, Ok(FFC_2048_224));
-  test_ffc!(ffc_3072_256, Lenstra, &FFC_3072_256, Ok(FFC_3072_256));
-  test_ffc!(ffc_7680_384, Lenstra, &FFC_7680_384, Ok(FFC_7680_384));
-  test_ffc!(ffc_15360_512, Lenstra, &FFC_15360_512, Ok(FFC_15360_512));
+  test_ffc!(ffc_1024_160, Lenstra, &FFC_1024_160, Err(&FFC_2048_224));
+  test_ffc!(ffc_2048_224, Lenstra, &FFC_2048_224, Ok(&FFC_2048_224));
+  test_ffc!(ffc_3072_256, Lenstra, &FFC_3072_256, Ok(&FFC_3072_256));
+  test_ffc!(ffc_7680_384, Lenstra, &FFC_7680_384, Ok(&FFC_7680_384));
+  test_ffc!(ffc_15360_512, Lenstra, &FFC_15360_512, Ok(&FFC_15360_512));
 
-  test_ifc!(ifc_1024, Lenstra, &IFC_1024, Err(IFC_2048));
-  test_ifc!(ifc_1280, Lenstra, &IFC_1280, Err(IFC_2048));
-  test_ifc!(ifc_1536, Lenstra, &IFC_1536, Err(IFC_2048));
-  test_ifc!(ifc_2048, Lenstra, &IFC_2048, Ok(IFC_2048));
-  test_ifc!(ifc_3072, Lenstra, &IFC_3072, Ok(IFC_3072));
-  test_ifc!(ifc_4096, Lenstra, &IFC_4096, Ok(IFC_4096));
-  test_ifc!(ifc_7680, Lenstra, &IFC_7680, Ok(IFC_8192));
-  test_ifc!(ifc_8192, Lenstra, &IFC_8192, Ok(IFC_8192));
-  test_ifc!(ifc_15360, Lenstra, &IFC_15360, Ok(IFC_8192));
+  test_ifc!(ifc_1024, Lenstra, &IFC_1024, Err(&IFC_2048));
+  test_ifc!(ifc_1280, Lenstra, &IFC_1280, Err(&IFC_2048));
+  test_ifc!(ifc_1536, Lenstra, &IFC_1536, Err(&IFC_2048));
+  test_ifc!(ifc_2048, Lenstra, &IFC_2048, Ok(&IFC_2048));
+  test_ifc!(ifc_3072, Lenstra, &IFC_3072, Ok(&IFC_3072));
+  test_ifc!(ifc_4096, Lenstra, &IFC_4096, Ok(&IFC_4096));
+  test_ifc!(ifc_7680, Lenstra, &IFC_7680, Ok(&IFC_8192));
+  test_ifc!(ifc_8192, Lenstra, &IFC_8192, Ok(&IFC_8192));
+  test_ifc!(ifc_15360, Lenstra, &IFC_15360, Ok(&IFC_8192));
 
-  test_hash!(blake_224, Lenstra, &BLAKE_224, Err(SHA256));
-  test_hash!(blake_256, Lenstra, &BLAKE_256, Err(SHA256));
-  test_hash!(blake_384, Lenstra, &BLAKE_384, Err(SHA256));
-  test_hash!(blake_512, Lenstra, &BLAKE_512, Err(SHA256));
-  test_hash!(blake2b_256, Lenstra, &BLAKE2B_256, Err(SHA256));
-  test_hash!(blake2b_384, Lenstra, &BLAKE2B_384, Err(SHA256));
-  test_hash!(blake2b_512, Lenstra, &BLAKE2B_512, Err(SHA256));
-  test_hash!(blake2s_256, Lenstra, &BLAKE2S_256, Err(SHA256));
-  test_hash!(md4, Lenstra, &MD4, Err(SHA256));
-  test_hash!(md5, Lenstra, &MD5, Err(SHA256));
-  test_hash!(ripemd160, Lenstra, &RIPEMD160, Err(SHA256));
-  test_hash!(sha1, Lenstra, &SHA1, Err(SHA256));
-  test_hash!(sha224, Lenstra, &SHA224, Err(SHA256));
-  test_hash!(sha256, Lenstra, &SHA256, Ok(SHA256));
-  test_hash!(sha384, Lenstra, &SHA384, Ok(SHA384));
-  test_hash!(sha3_224, Lenstra, &SHA3_224, Err(SHA256));
-  test_hash!(sha3_256, Lenstra, &SHA3_256, Err(SHA256));
-  test_hash!(sha3_384, Lenstra, &SHA3_384, Err(SHA256));
-  test_hash!(sha3_512, Lenstra, &SHA3_512, Err(SHA256));
-  test_hash!(sha512, Lenstra, &SHA512, Ok(SHA512));
-  test_hash!(sha512_224, Lenstra, &SHA512_224, Err(SHA256));
-  test_hash!(sha512_256, Lenstra, &SHA512_256, Err(SHA256));
-  test_hash!(shake128, Lenstra, &SHAKE128, Err(SHA256));
-  test_hash!(shake256, Lenstra, &SHAKE256, Err(SHA256));
-  test_hash!(whirlpool, Lenstra, &WHIRLPOOL, Err(SHA256));
+  test_hash!(blake_224, Lenstra, &BLAKE_224, Err(&SHA256));
+  test_hash!(blake_256, Lenstra, &BLAKE_256, Err(&SHA256));
+  test_hash!(blake_384, Lenstra, &BLAKE_384, Err(&SHA256));
+  test_hash!(blake_512, Lenstra, &BLAKE_512, Err(&SHA256));
+  test_hash!(blake2b_256, Lenstra, &BLAKE2B_256, Err(&SHA256));
+  test_hash!(blake2b_384, Lenstra, &BLAKE2B_384, Err(&SHA256));
+  test_hash!(blake2b_512, Lenstra, &BLAKE2B_512, Err(&SHA256));
+  test_hash!(blake2s_256, Lenstra, &BLAKE2S_256, Err(&SHA256));
+  test_hash!(md4, Lenstra, &MD4, Err(&SHA256));
+  test_hash!(md5, Lenstra, &MD5, Err(&SHA256));
+  test_hash!(ripemd160, Lenstra, &RIPEMD160, Err(&SHA256));
+  test_hash!(sha1, Lenstra, &SHA1, Err(&SHA256));
+  test_hash!(sha224, Lenstra, &SHA224, Err(&SHA256));
+  test_hash!(sha256, Lenstra, &SHA256, Ok(&SHA256));
+  test_hash!(sha384, Lenstra, &SHA384, Ok(&SHA384));
+  test_hash!(sha3_224, Lenstra, &SHA3_224, Err(&SHA256));
+  test_hash!(sha3_256, Lenstra, &SHA3_256, Err(&SHA256));
+  test_hash!(sha3_384, Lenstra, &SHA3_384, Err(&SHA256));
+  test_hash!(sha3_512, Lenstra, &SHA3_512, Err(&SHA256));
+  test_hash!(sha512, Lenstra, &SHA512, Ok(&SHA512));
+  test_hash!(sha512_224, Lenstra, &SHA512_224, Err(&SHA256));
+  test_hash!(sha512_256, Lenstra, &SHA512_256, Err(&SHA256));
+  test_hash!(shake128, Lenstra, &SHAKE128, Err(&SHA256));
+  test_hash!(shake256, Lenstra, &SHAKE256, Err(&SHA256));
+  test_hash!(whirlpool, Lenstra, &WHIRLPOOL, Err(&SHA256));
 
-  test_symmetric!(aes128, Lenstra, &AES128, Ok(AES128));
-  test_symmetric!(aes192, Lenstra, &AES192, Ok(AES192));
-  test_symmetric!(aes256, Lenstra, &AES256, Ok(AES256));
-  test_symmetric!(camellia128, Lenstra, &CAMELLIA128, Err(AES128));
-  test_symmetric!(camellia192, Lenstra, &CAMELLIA192, Err(AES128));
-  test_symmetric!(camellia256, Lenstra, &CAMELLIA256, Err(AES128));
-  test_symmetric!(des, Lenstra, &DES, Err(TDEA2));
-  test_symmetric!(desx, Lenstra, &DESX, Ok(DESX));
-  test_symmetric!(idea, Lenstra, &IDEA, Ok(AES128));
-  test_symmetric!(serpent128, Lenstra, &SERPENT128, Err(AES128));
-  test_symmetric!(serpent192, Lenstra, &SERPENT192, Err(AES128));
-  test_symmetric!(serpent256, Lenstra, &SERPENT256, Err(AES128));
-  test_symmetric!(three_key_tdea, Lenstra, &TDEA3, Ok(TDEA3));
-  test_symmetric!(two_key_tdea, Lenstra, &TDEA2, Ok(TDEA2));
+  test_symmetric!(aes128, Lenstra, &AES128, Ok(&AES128));
+  test_symmetric!(aes192, Lenstra, &AES192, Ok(&AES192));
+  test_symmetric!(aes256, Lenstra, &AES256, Ok(&AES256));
+  test_symmetric!(camellia128, Lenstra, &CAMELLIA128, Err(&AES128));
+  test_symmetric!(camellia192, Lenstra, &CAMELLIA192, Err(&AES128));
+  test_symmetric!(camellia256, Lenstra, &CAMELLIA256, Err(&AES128));
+  test_symmetric!(des, Lenstra, &DES, Err(&TDEA2));
+  test_symmetric!(desx, Lenstra, &DESX, Ok(&DESX));
+  test_symmetric!(idea, Lenstra, &IDEA, Ok(&AES128));
+  test_symmetric!(serpent128, Lenstra, &SERPENT128, Err(&AES128));
+  test_symmetric!(serpent192, Lenstra, &SERPENT192, Err(&AES128));
+  test_symmetric!(serpent256, Lenstra, &SERPENT256, Err(&AES128));
+  test_symmetric!(three_key_tdea, Lenstra, &TDEA3, Ok(&TDEA3));
+  test_symmetric!(two_key_tdea, Lenstra, &TDEA2, Ok(&TDEA2));
 }

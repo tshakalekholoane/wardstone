@@ -42,19 +42,19 @@ impl Standard for Weak {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// assert_eq!(Weak::validate_ecc(&ctx, &ED25519), Ok(ED25519));
+  /// assert_eq!(Weak::validate_ecc(&ctx, &ED25519), Ok(&ED25519));
   /// ```
-  fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<Ecc, Ecc> {
+  fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<&'static Ecc, &'static Ecc> {
     let security = ctx.security().max(key.security());
     match security {
-      ..=63 => Err(P224),
-      64..=112 => Ok(P224),
-      113..=128 => Ok(ED25519),
-      129..=160 => Ok(BRAINPOOLP320R1),
-      161..=192 => Ok(P384),
-      193..=244 => Ok(ED448),
-      245..=256 => Ok(BRAINPOOLP512R1),
-      257.. => Ok(P521),
+      ..=63 => Err(&P224),
+      64..=112 => Ok(&P224),
+      113..=128 => Ok(&ED25519),
+      129..=160 => Ok(&BRAINPOOLP320R1),
+      161..=192 => Ok(&P384),
+      193..=244 => Ok(&ED448),
+      245..=256 => Ok(&BRAINPOOLP512R1),
+      257.. => Ok(&P521),
     }
   }
 
@@ -82,17 +82,17 @@ impl Standard for Weak {
   ///
   /// let ctx = Context::default();
   /// let dsa_2048 = FFC_2048_224;
-  /// assert_eq!(Weak::validate_ffc(&ctx, &dsa_2048), Ok(dsa_2048));
+  /// assert_eq!(Weak::validate_ffc(&ctx, &dsa_2048), Ok(&dsa_2048));
   /// ```
-  fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<Ffc, Ffc> {
+  fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<&'static Ffc, &'static Ffc> {
     let security = ctx.security().max(key.security());
     match security {
-      ..=63 => Err(FFC_1024_160),
-      64..=80 => Ok(FFC_1024_160),
-      81..=112 => Ok(FFC_2048_224),
-      113..=128 => Ok(FFC_3072_256),
-      129..=192 => Ok(FFC_7680_384),
-      193.. => Ok(FFC_15360_512),
+      ..=63 => Err(&FFC_1024_160),
+      64..=80 => Ok(&FFC_1024_160),
+      81..=112 => Ok(&FFC_2048_224),
+      113..=128 => Ok(&FFC_3072_256),
+      129..=192 => Ok(&FFC_7680_384),
+      193.. => Ok(&FFC_15360_512),
     }
   }
 
@@ -124,18 +124,18 @@ impl Standard for Weak {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// assert_eq!(Weak::validate_hash(&ctx, &SHA1), Ok(SHA1));
+  /// assert_eq!(Weak::validate_hash(&ctx, &SHA1), Ok(&SHA1));
   /// ```
-  fn validate_hash(ctx: &Context, hash: &Hash) -> Result<Hash, Hash> {
+  fn validate_hash(ctx: &Context, hash: &Hash) -> Result<&'static Hash, &'static Hash> {
     let security = ctx.security().max(hash.security());
     match security {
-      ..=63 => Err(SHAKE128),
-      64 => Ok(SHAKE128),
-      65..=80 => Ok(SHA1),
-      81..=112 => Ok(SHA224),
-      113..=128 => Ok(BLAKE3),
-      129..=192 => Ok(BLAKE2B_384),
-      193.. => Ok(BLAKE2B_512),
+      ..=63 => Err(&SHAKE128),
+      64 => Ok(&SHAKE128),
+      65..=80 => Ok(&SHA1),
+      81..=112 => Ok(&SHA224),
+      113..=128 => Ok(&BLAKE3),
+      129..=192 => Ok(&BLAKE2B_384),
+      193.. => Ok(&BLAKE2B_512),
     }
   }
 
@@ -165,17 +165,17 @@ impl Standard for Weak {
   ///
   /// let ctx = Context::default();
   /// let rsa_2048 = IFC_2048;
-  /// assert_eq!(Weak::validate_ifc(&ctx, &rsa_2048), Ok(rsa_2048));
+  /// assert_eq!(Weak::validate_ifc(&ctx, &rsa_2048), Ok(&rsa_2048));
   /// ```
-  fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<Ifc, Ifc> {
+  fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<&'static Ifc, &'static Ifc> {
     let security = ctx.security().max(key.security());
     match security {
-      ..=63 => Err(IFC_1024),
-      64..=80 => Ok(IFC_1024),
-      81..=112 => Ok(IFC_2048),
-      113..=128 => Ok(IFC_3072),
-      129..=192 => Ok(IFC_7680),
-      193.. => Ok(IFC_15360),
+      ..=63 => Err(&IFC_1024),
+      64..=80 => Ok(&IFC_1024),
+      81..=112 => Ok(&IFC_2048),
+      113..=128 => Ok(&IFC_3072),
+      129..=192 => Ok(&IFC_7680),
+      193.. => Ok(&IFC_15360),
     }
   }
 
@@ -197,19 +197,22 @@ impl Standard for Weak {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// assert_eq!(Weak::validate_symmetric(&ctx, &TDEA3), Ok(TDEA3));
+  /// assert_eq!(Weak::validate_symmetric(&ctx, &TDEA3), Ok(&TDEA3));
   /// ```
-  fn validate_symmetric(ctx: &Context, key: &Symmetric) -> Result<Symmetric, Symmetric> {
+  fn validate_symmetric(
+    ctx: &Context,
+    key: &Symmetric,
+  ) -> Result<&'static Symmetric, &'static Symmetric> {
     let security = ctx.security().max(key.security());
     match security {
-      ..=63 => Err(TDEA2),
-      64..=95 => Ok(TDEA2),
-      96..=112 => Ok(TDEA3),
-      113..=120 => Ok(DESX),
-      121..=126 => Ok(IDEA),
-      127..=128 => Ok(AES128),
-      129..=192 => Ok(AES192),
-      193.. => Ok(AES256),
+      ..=63 => Err(&TDEA2),
+      64..=95 => Ok(&TDEA2),
+      96..=112 => Ok(&TDEA3),
+      113..=120 => Ok(&DESX),
+      121..=126 => Ok(&IDEA),
+      127..=128 => Ok(&AES128),
+      129..=192 => Ok(&AES192),
+      193.. => Ok(&AES256),
     }
   }
 }
@@ -219,75 +222,85 @@ mod tests {
   use super::*;
   use crate::{test_ecc, test_ffc, test_hash, test_ifc, test_symmetric};
 
-  test_ecc!(p224, Weak, &P224, Ok(P224));
-  test_ecc!(p256, Weak, &P256, Ok(ED25519));
-  test_ecc!(p384, Weak, &P384, Ok(P384));
-  test_ecc!(p521, Weak, &P521, Ok(P521));
-  test_ecc!(ed25519, Weak, &ED25519, Ok(ED25519));
-  test_ecc!(ed488, Weak, &ED448, Ok(ED448));
-  test_ecc!(x25519, Weak, &X25519, Ok(ED25519));
-  test_ecc!(x448, Weak, &X448, Ok(ED448));
-  test_ecc!(brainpoolp224r1, Weak, &BRAINPOOLP224R1, Ok(P224));
-  test_ecc!(brainpoolp256r1, Weak, &BRAINPOOLP256R1, Ok(ED25519));
-  test_ecc!(brainpoolp320r1, Weak, &BRAINPOOLP320R1, Ok(BRAINPOOLP320R1));
-  test_ecc!(brainpoolp384r1, Weak, &BRAINPOOLP384R1, Ok(P384));
-  test_ecc!(brainpoolp512r1, Weak, &BRAINPOOLP512R1, Ok(BRAINPOOLP512R1));
-  test_ecc!(secp256k1, Weak, &SECP256K1, Ok(ED25519));
+  test_ecc!(p224, Weak, &P224, Ok(&P224));
+  test_ecc!(p256, Weak, &P256, Ok(&ED25519));
+  test_ecc!(p384, Weak, &P384, Ok(&P384));
+  test_ecc!(p521, Weak, &P521, Ok(&P521));
+  test_ecc!(ed25519, Weak, &ED25519, Ok(&ED25519));
+  test_ecc!(ed488, Weak, &ED448, Ok(&ED448));
+  test_ecc!(x25519, Weak, &X25519, Ok(&ED25519));
+  test_ecc!(x448, Weak, &X448, Ok(&ED448));
+  test_ecc!(brainpoolp224r1, Weak, &BRAINPOOLP224R1, Ok(&P224));
+  test_ecc!(brainpoolp256r1, Weak, &BRAINPOOLP256R1, Ok(&ED25519));
+  test_ecc!(
+    brainpoolp320r1,
+    Weak,
+    &BRAINPOOLP320R1,
+    Ok(&BRAINPOOLP320R1)
+  );
+  test_ecc!(brainpoolp384r1, Weak, &BRAINPOOLP384R1, Ok(&P384));
+  test_ecc!(
+    brainpoolp512r1,
+    Weak,
+    &BRAINPOOLP512R1,
+    Ok(&BRAINPOOLP512R1)
+  );
+  test_ecc!(secp256k1, Weak, &SECP256K1, Ok(&ED25519));
 
-  test_ffc!(ffc_1024_160, Weak, &FFC_1024_160, Ok(FFC_1024_160));
-  test_ffc!(ffc_2048_224, Weak, &FFC_2048_224, Ok(FFC_2048_224));
-  test_ffc!(ffc_3072_256, Weak, &FFC_3072_256, Ok(FFC_3072_256));
-  test_ffc!(ffc_7680_384, Weak, &FFC_7680_384, Ok(FFC_7680_384));
-  test_ffc!(ffc_15360_512, Weak, &FFC_15360_512, Ok(FFC_15360_512));
+  test_ffc!(ffc_1024_160, Weak, &FFC_1024_160, Ok(&FFC_1024_160));
+  test_ffc!(ffc_2048_224, Weak, &FFC_2048_224, Ok(&FFC_2048_224));
+  test_ffc!(ffc_3072_256, Weak, &FFC_3072_256, Ok(&FFC_3072_256));
+  test_ffc!(ffc_7680_384, Weak, &FFC_7680_384, Ok(&FFC_7680_384));
+  test_ffc!(ffc_15360_512, Weak, &FFC_15360_512, Ok(&FFC_15360_512));
 
-  test_ifc!(ifc_1024, Weak, &IFC_1024, Ok(IFC_1024));
-  test_ifc!(ifc_1280, Weak, &IFC_1280, Ok(IFC_1024));
-  test_ifc!(ifc_1536, Weak, &IFC_1536, Ok(IFC_1024));
-  test_ifc!(ifc_2048, Weak, &IFC_2048, Ok(IFC_2048));
-  test_ifc!(ifc_3072, Weak, &IFC_3072, Ok(IFC_3072));
-  test_ifc!(ifc_4096, Weak, &IFC_4096, Ok(IFC_3072));
-  test_ifc!(ifc_7680, Weak, &IFC_7680, Ok(IFC_7680));
-  test_ifc!(ifc_8192, Weak, &IFC_8192, Ok(IFC_7680));
-  test_ifc!(ifc_15360, Weak, &IFC_15360, Ok(IFC_15360));
+  test_ifc!(ifc_1024, Weak, &IFC_1024, Ok(&IFC_1024));
+  test_ifc!(ifc_1280, Weak, &IFC_1280, Ok(&IFC_1024));
+  test_ifc!(ifc_1536, Weak, &IFC_1536, Ok(&IFC_1024));
+  test_ifc!(ifc_2048, Weak, &IFC_2048, Ok(&IFC_2048));
+  test_ifc!(ifc_3072, Weak, &IFC_3072, Ok(&IFC_3072));
+  test_ifc!(ifc_4096, Weak, &IFC_4096, Ok(&IFC_3072));
+  test_ifc!(ifc_7680, Weak, &IFC_7680, Ok(&IFC_7680));
+  test_ifc!(ifc_8192, Weak, &IFC_8192, Ok(&IFC_7680));
+  test_ifc!(ifc_15360, Weak, &IFC_15360, Ok(&IFC_15360));
 
-  test_hash!(blake_224, Weak, &BLAKE_224, Ok(SHA224));
-  test_hash!(blake_256, Weak, &BLAKE_256, Ok(BLAKE3));
-  test_hash!(blake_384, Weak, &BLAKE_384, Ok(BLAKE2B_384));
-  test_hash!(blake_512, Weak, &BLAKE_512, Ok(BLAKE2B_512));
-  test_hash!(blake2b_256, Weak, &BLAKE2B_256, Ok(BLAKE3));
-  test_hash!(blake2b_384, Weak, &BLAKE2B_384, Ok(BLAKE2B_384));
-  test_hash!(blake2b_512, Weak, &BLAKE2B_512, Ok(BLAKE2B_512));
-  test_hash!(blake2s_256, Weak, &BLAKE2S_256, Ok(BLAKE3));
-  test_hash!(md4, Weak, &MD4, Ok(SHAKE128));
-  test_hash!(md5, Weak, &MD5, Ok(SHAKE128));
-  test_hash!(ripemd160, Weak, &RIPEMD160, Ok(SHA1));
-  test_hash!(sha1, Weak, &SHA1, Ok(SHA1));
-  test_hash!(sha224, Weak, &SHA224, Ok(SHA224));
-  test_hash!(sha256, Weak, &SHA256, Ok(BLAKE3));
-  test_hash!(sha384, Weak, &SHA384, Ok(BLAKE2B_384));
-  test_hash!(sha3_224, Weak, &SHA3_224, Ok(SHA224));
-  test_hash!(sha3_256, Weak, &SHA3_256, Ok(BLAKE3));
-  test_hash!(sha3_384, Weak, &SHA3_384, Ok(BLAKE2B_384));
-  test_hash!(sha3_512, Weak, &SHA3_512, Ok(BLAKE2B_512));
-  test_hash!(sha512, Weak, &SHA512, Ok(BLAKE2B_512));
-  test_hash!(sha512_224, Weak, &SHA512_224, Ok(SHA224));
-  test_hash!(sha512_256, Weak, &SHA512_256, Ok(BLAKE3));
-  test_hash!(shake128, Weak, &SHAKE128, Ok(SHAKE128));
-  test_hash!(shake256, Weak, &SHAKE256, Ok(BLAKE3));
-  test_hash!(whirlpool, Weak, &WHIRLPOOL, Ok(BLAKE2B_512));
+  test_hash!(blake_224, Weak, &BLAKE_224, Ok(&SHA224));
+  test_hash!(blake_256, Weak, &BLAKE_256, Ok(&BLAKE3));
+  test_hash!(blake_384, Weak, &BLAKE_384, Ok(&BLAKE2B_384));
+  test_hash!(blake_512, Weak, &BLAKE_512, Ok(&BLAKE2B_512));
+  test_hash!(blake2b_256, Weak, &BLAKE2B_256, Ok(&BLAKE3));
+  test_hash!(blake2b_384, Weak, &BLAKE2B_384, Ok(&BLAKE2B_384));
+  test_hash!(blake2b_512, Weak, &BLAKE2B_512, Ok(&BLAKE2B_512));
+  test_hash!(blake2s_256, Weak, &BLAKE2S_256, Ok(&BLAKE3));
+  test_hash!(md4, Weak, &MD4, Ok(&SHAKE128));
+  test_hash!(md5, Weak, &MD5, Ok(&SHAKE128));
+  test_hash!(ripemd160, Weak, &RIPEMD160, Ok(&SHA1));
+  test_hash!(sha1, Weak, &SHA1, Ok(&SHA1));
+  test_hash!(sha224, Weak, &SHA224, Ok(&SHA224));
+  test_hash!(sha256, Weak, &SHA256, Ok(&BLAKE3));
+  test_hash!(sha384, Weak, &SHA384, Ok(&BLAKE2B_384));
+  test_hash!(sha3_224, Weak, &SHA3_224, Ok(&SHA224));
+  test_hash!(sha3_256, Weak, &SHA3_256, Ok(&BLAKE3));
+  test_hash!(sha3_384, Weak, &SHA3_384, Ok(&BLAKE2B_384));
+  test_hash!(sha3_512, Weak, &SHA3_512, Ok(&BLAKE2B_512));
+  test_hash!(sha512, Weak, &SHA512, Ok(&BLAKE2B_512));
+  test_hash!(sha512_224, Weak, &SHA512_224, Ok(&SHA224));
+  test_hash!(sha512_256, Weak, &SHA512_256, Ok(&BLAKE3));
+  test_hash!(shake128, Weak, &SHAKE128, Ok(&SHAKE128));
+  test_hash!(shake256, Weak, &SHAKE256, Ok(&BLAKE3));
+  test_hash!(whirlpool, Weak, &WHIRLPOOL, Ok(&BLAKE2B_512));
 
-  test_symmetric!(aes128, Weak, &AES128, Ok(AES128));
-  test_symmetric!(aes192, Weak, &AES192, Ok(AES192));
-  test_symmetric!(aes256, Weak, &AES256, Ok(AES256));
-  test_symmetric!(camellia128, Weak, &CAMELLIA128, Ok(AES128));
-  test_symmetric!(camellia192, Weak, &CAMELLIA192, Ok(AES192));
-  test_symmetric!(camellia256, Weak, &CAMELLIA256, Ok(AES256));
-  test_symmetric!(des, Weak, &DES, Err(TDEA2));
-  test_symmetric!(desx, Weak, &DESX, Ok(DESX));
-  test_symmetric!(idea, Weak, &IDEA, Ok(IDEA));
-  test_symmetric!(serpent128, Weak, &SERPENT128, Ok(AES128));
-  test_symmetric!(serpent192, Weak, &SERPENT192, Ok(AES192));
-  test_symmetric!(serpent256, Weak, &SERPENT256, Ok(AES256));
-  test_symmetric!(three_key_tdea, Weak, &TDEA3, Ok(TDEA3));
-  test_symmetric!(two_key_tdea, Weak, &TDEA2, Ok(TDEA2));
+  test_symmetric!(aes128, Weak, &AES128, Ok(&AES128));
+  test_symmetric!(aes192, Weak, &AES192, Ok(&AES192));
+  test_symmetric!(aes256, Weak, &AES256, Ok(&AES256));
+  test_symmetric!(camellia128, Weak, &CAMELLIA128, Ok(&AES128));
+  test_symmetric!(camellia192, Weak, &CAMELLIA192, Ok(&AES192));
+  test_symmetric!(camellia256, Weak, &CAMELLIA256, Ok(&AES256));
+  test_symmetric!(des, Weak, &DES, Err(&TDEA2));
+  test_symmetric!(desx, Weak, &DESX, Ok(&DESX));
+  test_symmetric!(idea, Weak, &IDEA, Ok(&IDEA));
+  test_symmetric!(serpent128, Weak, &SERPENT128, Ok(&AES128));
+  test_symmetric!(serpent192, Weak, &SERPENT192, Ok(&AES192));
+  test_symmetric!(serpent256, Weak, &SERPENT256, Ok(&AES256));
+  test_symmetric!(three_key_tdea, Weak, &TDEA3, Ok(&TDEA3));
+  test_symmetric!(two_key_tdea, Weak, &TDEA2, Ok(&TDEA2));
 }
