@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 use wardstone::assess::{self, Guide};
+use wardstone_core::context::Context;
 
 /// Assess cryptographic keys for compliance.
 #[derive(Parser)]
@@ -20,14 +21,23 @@ enum Subcommands {
     guide: Guide,
     // TODO: Make positional argument to enable concurrent processing.
     /// The certificate as a DER or PEM encoded file.
-    #[arg(short, long, value_name = "FILE")]
+    #[arg(short, long)]
     path: PathBuf,
+    /// Verbose output.
+    #[arg(short, long)]
+    verbose: bool,
   },
 }
 
-fn main() {
+fn main() -> Result<(), ()> {
+  // TODO: Allow the user to set context variables.
+  let ctx = Context::default();
   let options = Options::parse();
   match &options.subcommands {
-    Subcommands::X509 { guide, path } => assess::x509(path, guide),
+    Subcommands::X509 {
+      guide,
+      path: certificate,
+      verbose,
+    } => assess::x509(&ctx, certificate, guide, verbose),
   }
 }
