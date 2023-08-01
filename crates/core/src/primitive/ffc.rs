@@ -43,6 +43,14 @@ impl fmt::Display for Ffc {
   }
 }
 
+impl PartialEq for Ffc {
+  fn eq(&self, other: &Self) -> bool {
+    self.id == other.id
+  }
+}
+
+impl Eq for Ffc {}
+
 impl Ffc {
   pub const fn new(id: u16, l: u16, n: u16, name: &'static [u8]) -> Self {
     Self {

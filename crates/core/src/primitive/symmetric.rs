@@ -36,6 +36,14 @@ impl fmt::Display for Symmetric {
   }
 }
 
+impl PartialEq for Symmetric {
+  fn eq(&self, other: &Self) -> bool {
+    self.id == other.id
+  }
+}
+
+impl Eq for Symmetric {}
+
 /// The Advanced Encryption Standard algorithm as defined in [FIPS 197].
 ///
 /// [FIPS 197]: https://doi.org/10.6028/NIST.FIPS.197
