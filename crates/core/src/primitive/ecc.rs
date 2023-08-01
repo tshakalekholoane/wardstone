@@ -39,6 +39,14 @@ impl fmt::Display for Ecc {
   }
 }
 
+impl PartialEq for Ecc {
+  fn eq(&self, other: &Self) -> bool {
+    self.id == other.id
+  }
+}
+
+impl Eq for Ecc {}
+
 /// Represents the Weierstrass curve B-163 over a prime field. Also
 /// known as sect163r2.
 #[no_mangle]

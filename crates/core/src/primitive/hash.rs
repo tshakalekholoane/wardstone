@@ -45,6 +45,14 @@ impl fmt::Display for Hash {
   }
 }
 
+impl PartialEq for Hash {
+  fn eq(&self, other: &Self) -> bool {
+    self.id == other.id
+  }
+}
+
+impl Eq for Hash {}
+
 /// The BLAKE-224 hash function.
 #[no_mangle]
 pub static BLAKE_224: Hash = Hash::new(1, 224, b"blake224\0");

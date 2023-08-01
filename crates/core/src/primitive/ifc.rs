@@ -46,6 +46,14 @@ impl fmt::Display for Ifc {
   }
 }
 
+impl PartialEq for Ifc {
+  fn eq(&self, other: &Self) -> bool {
+    self.id == other.id
+  }
+}
+
+impl Eq for Ifc {}
+
 /// Generic instance that represents a choice of k = 1024 for an integer
 /// factorisation cryptography primitive.
 #[no_mangle]
