@@ -1,136 +1,189 @@
+use core::fmt;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
-use std::ops::Deref;
 use std::path::PathBuf;
-use std::process;
 
-use bimap::BiMap;
 use clap::ValueEnum;
 use once_cell::sync::Lazy;
 use openssl::pkey::Id;
-use openssl::pkey::PKey;
-use openssl::pkey::Public;
 use openssl::x509::X509;
 use wardstone_core::context::Context;
 use wardstone_core::primitive::ecc::*;
 use wardstone_core::primitive::hash::*;
+use wardstone_core::primitive::ifc::Ifc;
 use wardstone_core::standard::bsi::Bsi;
+use wardstone_core::standard::cnsa::Cnsa;
 use wardstone_core::standard::Standard;
 
 // The following map OpenSSL string name identifiers to instances in the
 // core crate.
 
-static ELLIPTIC_CURVES: Lazy<BiMap<&str, Ecc>> = Lazy::new(|| {
-  let mut m = BiMap::new();
-  m.insert("SM2", SM2);
-  m.insert("brainpoolP160r1", BRAINPOOLP160R1);
-  m.insert("brainpoolP160t1", BRAINPOOLP160T1);
-  m.insert("brainpoolP192r1", BRAINPOOLP192R1);
-  m.insert("brainpoolP192t1", BRAINPOOLP192T1);
-  m.insert("brainpoolP224r1", BRAINPOOLP224R1);
-  m.insert("brainpoolP224t1", BRAINPOOLP224T1);
-  m.insert("brainpoolP256r1", BRAINPOOLP256R1);
-  m.insert("brainpoolP256t1", BRAINPOOLP256T1);
-  m.insert("brainpoolP320r1", BRAINPOOLP320R1);
-  m.insert("brainpoolP320t1", BRAINPOOLP320T1);
-  m.insert("brainpoolP384r1", BRAINPOOLP384R1);
-  m.insert("brainpoolP384t1", BRAINPOOLP384T1);
-  m.insert("brainpoolP512r1", BRAINPOOLP512R1);
-  m.insert("brainpoolP512t1", BRAINPOOLP512T1);
-  m.insert("c2pnb163v1", C2PNB163V1);
-  m.insert("c2pnb163v2", C2PNB163V2);
-  m.insert("c2pnb163v3", C2PNB163V3);
-  m.insert("c2pnb176v1", C2PNB176V1);
-  m.insert("c2pnb208w1", C2PNB208W1);
-  m.insert("c2pnb272w1", C2PNB272W1);
-  m.insert("c2pnb304w1", C2PNB304W1);
-  m.insert("c2pnb368w1", C2PNB368W1);
-  m.insert("c2tnb191v1", C2TNB191V1);
-  m.insert("c2tnb191v2", C2TNB191V2);
-  m.insert("c2tnb191v3", C2TNB191V3);
-  m.insert("c2tnb239v1", C2TNB239V1);
-  m.insert("c2tnb239v2", C2TNB239V2);
-  m.insert("c2tnb239v3", C2TNB239V3);
-  m.insert("c2tnb359v1", C2TNB359V1);
-  m.insert("c2tnb431r1", C2TNB431R1);
-  m.insert("ed25519", ED25519);
-  m.insert("ed448", ED448);
-  m.insert("prime192v1", PRIME192V1);
-  m.insert("prime192v2", PRIME192V2);
-  m.insert("prime192v3", PRIME192V3);
-  m.insert("prime239v1", PRIME239V1);
-  m.insert("prime239v2", PRIME239V2);
-  m.insert("prime239v3", PRIME239V3);
-  m.insert("prime256v1", PRIME256V1);
-  m.insert("secp112r1", SECP112R1);
-  m.insert("secp112r2", SECP112R2);
-  m.insert("secp128r1", SECP128R1);
-  m.insert("secp128r2", SECP128R2);
-  m.insert("secp160k1", SECP160K1);
-  m.insert("secp160r1", SECP160R1);
-  m.insert("secp160r2", SECP160R2);
-  m.insert("secp192k1", SECP192K1);
-  m.insert("secp224k1", SECP224K1);
-  m.insert("secp224r1", SECP224R1);
-  m.insert("secp256k1", SECP256K1);
-  m.insert("secp384r1", SECP384R1);
-  m.insert("secp521r1", SECP521R1);
-  m.insert("sect113r1", SECT113R1);
-  m.insert("sect113r2", SECT113R2);
-  m.insert("sect131r1", SECT131R1);
-  m.insert("sect131r2", SECT131R2);
-  m.insert("sect163k1", SECT163K1);
-  m.insert("sect163r1", SECT163R1);
-  m.insert("sect163r2", SECT163R2);
-  m.insert("sect193r1", SECT193R1);
-  m.insert("sect193r2", SECT193R2);
-  m.insert("sect233k1", SECT233K1);
-  m.insert("sect233r1", SECT233R1);
-  m.insert("sect239k1", SECT239K1);
-  m.insert("sect283k1", SECT283K1);
-  m.insert("sect283r1", SECT283R1);
-  m.insert("sect409k1", SECT409K1);
-  m.insert("sect409r1", SECT409R1);
-  m.insert("sect571k1", SECT571K1);
-  m.insert("sect571r1", SECT571R1);
-  m.insert("wap-wsg-idm-ecid-wtls1", WAP_WSG_IDM_ECID_WTLS1);
-  m.insert("wap-wsg-idm-ecid-wtls10", WAP_WSG_IDM_ECID_WTLS10);
-  m.insert("wap-wsg-idm-ecid-wtls11", WAP_WSG_IDM_ECID_WTLS11);
-  m.insert("wap-wsg-idm-ecid-wtls12", WAP_WSG_IDM_ECID_WTLS12);
-  m.insert("wap-wsg-idm-ecid-wtls3", WAP_WSG_IDM_ECID_WTLS3);
-  m.insert("wap-wsg-idm-ecid-wtls4", WAP_WSG_IDM_ECID_WTLS4);
-  m.insert("wap-wsg-idm-ecid-wtls5", WAP_WSG_IDM_ECID_WTLS5);
-  m.insert("wap-wsg-idm-ecid-wtls6", WAP_WSG_IDM_ECID_WTLS6);
-  m.insert("wap-wsg-idm-ecid-wtls7", WAP_WSG_IDM_ECID_WTLS7);
-  m.insert("wap-wsg-idm-ecid-wtls8", WAP_WSG_IDM_ECID_WTLS8);
-  m.insert("wap-wsg-idm-ecid-wtls9", WAP_WSG_IDM_ECID_WTLS9);
+static SIGNATURE_ALGORITHMS: Lazy<HashMap<&str, SignatureAlgorithm>> = Lazy::new(|| {
+  let mut m = HashMap::new();
+  m.insert("SM2", SignatureAlgorithm::Ecc(&SM2));
+  m.insert("brainpoolP160r1", SignatureAlgorithm::Ecc(&BRAINPOOLP160R1));
+  m.insert("brainpoolP160t1", SignatureAlgorithm::Ecc(&BRAINPOOLP160T1));
+  m.insert("brainpoolP192r1", SignatureAlgorithm::Ecc(&BRAINPOOLP192R1));
+  m.insert("brainpoolP192t1", SignatureAlgorithm::Ecc(&BRAINPOOLP192T1));
+  m.insert("brainpoolP224r1", SignatureAlgorithm::Ecc(&BRAINPOOLP224R1));
+  m.insert("brainpoolP224t1", SignatureAlgorithm::Ecc(&BRAINPOOLP224T1));
+  m.insert("brainpoolP256r1", SignatureAlgorithm::Ecc(&BRAINPOOLP256R1));
+  m.insert("brainpoolP256t1", SignatureAlgorithm::Ecc(&BRAINPOOLP256T1));
+  m.insert("brainpoolP320r1", SignatureAlgorithm::Ecc(&BRAINPOOLP320R1));
+  m.insert("brainpoolP320t1", SignatureAlgorithm::Ecc(&BRAINPOOLP320T1));
+  m.insert("brainpoolP384r1", SignatureAlgorithm::Ecc(&BRAINPOOLP384R1));
+  m.insert("brainpoolP384t1", SignatureAlgorithm::Ecc(&BRAINPOOLP384T1));
+  m.insert("brainpoolP512r1", SignatureAlgorithm::Ecc(&BRAINPOOLP512R1));
+  m.insert("brainpoolP512t1", SignatureAlgorithm::Ecc(&BRAINPOOLP512T1));
+  m.insert("c2pnb163v1", SignatureAlgorithm::Ecc(&C2PNB163V1));
+  m.insert("c2pnb163v2", SignatureAlgorithm::Ecc(&C2PNB163V2));
+  m.insert("c2pnb163v3", SignatureAlgorithm::Ecc(&C2PNB163V3));
+  m.insert("c2pnb176v1", SignatureAlgorithm::Ecc(&C2PNB176V1));
+  m.insert("c2pnb208w1", SignatureAlgorithm::Ecc(&C2PNB208W1));
+  m.insert("c2pnb272w1", SignatureAlgorithm::Ecc(&C2PNB272W1));
+  m.insert("c2pnb304w1", SignatureAlgorithm::Ecc(&C2PNB304W1));
+  m.insert("c2pnb368w1", SignatureAlgorithm::Ecc(&C2PNB368W1));
+  m.insert("c2tnb191v1", SignatureAlgorithm::Ecc(&C2TNB191V1));
+  m.insert("c2tnb191v2", SignatureAlgorithm::Ecc(&C2TNB191V2));
+  m.insert("c2tnb191v3", SignatureAlgorithm::Ecc(&C2TNB191V3));
+  m.insert("c2tnb239v1", SignatureAlgorithm::Ecc(&C2TNB239V1));
+  m.insert("c2tnb239v2", SignatureAlgorithm::Ecc(&C2TNB239V2));
+  m.insert("c2tnb239v3", SignatureAlgorithm::Ecc(&C2TNB239V3));
+  m.insert("c2tnb359v1", SignatureAlgorithm::Ecc(&C2TNB359V1));
+  m.insert("c2tnb431r1", SignatureAlgorithm::Ecc(&C2TNB431R1));
+  m.insert("ed25519", SignatureAlgorithm::Ecc(&ED25519));
+  m.insert("ed448", SignatureAlgorithm::Ecc(&ED448));
+  m.insert("prime192v1", SignatureAlgorithm::Ecc(&PRIME192V1));
+  m.insert("prime192v2", SignatureAlgorithm::Ecc(&PRIME192V2));
+  m.insert("prime192v3", SignatureAlgorithm::Ecc(&PRIME192V3));
+  m.insert("prime239v1", SignatureAlgorithm::Ecc(&PRIME239V1));
+  m.insert("prime239v2", SignatureAlgorithm::Ecc(&PRIME239V2));
+  m.insert("prime239v3", SignatureAlgorithm::Ecc(&PRIME239V3));
+  m.insert("prime256v1", SignatureAlgorithm::Ecc(&PRIME256V1));
+  m.insert("secp112r1", SignatureAlgorithm::Ecc(&SECP112R1));
+  m.insert("secp112r2", SignatureAlgorithm::Ecc(&SECP112R2));
+  m.insert("secp128r1", SignatureAlgorithm::Ecc(&SECP128R1));
+  m.insert("secp128r2", SignatureAlgorithm::Ecc(&SECP128R2));
+  m.insert("secp160k1", SignatureAlgorithm::Ecc(&SECP160K1));
+  m.insert("secp160r1", SignatureAlgorithm::Ecc(&SECP160R1));
+  m.insert("secp160r2", SignatureAlgorithm::Ecc(&SECP160R2));
+  m.insert("secp192k1", SignatureAlgorithm::Ecc(&SECP192K1));
+  m.insert("secp224k1", SignatureAlgorithm::Ecc(&SECP224K1));
+  m.insert("secp224r1", SignatureAlgorithm::Ecc(&SECP224R1));
+  m.insert("secp256k1", SignatureAlgorithm::Ecc(&SECP256K1));
+  m.insert("secp384r1", SignatureAlgorithm::Ecc(&SECP384R1));
+  m.insert("secp521r1", SignatureAlgorithm::Ecc(&SECP521R1));
+  m.insert("sect113r1", SignatureAlgorithm::Ecc(&SECT113R1));
+  m.insert("sect113r2", SignatureAlgorithm::Ecc(&SECT113R2));
+  m.insert("sect131r1", SignatureAlgorithm::Ecc(&SECT131R1));
+  m.insert("sect131r2", SignatureAlgorithm::Ecc(&SECT131R2));
+  m.insert("sect163k1", SignatureAlgorithm::Ecc(&SECT163K1));
+  m.insert("sect163r1", SignatureAlgorithm::Ecc(&SECT163R1));
+  m.insert("sect163r2", SignatureAlgorithm::Ecc(&SECT163R2));
+  m.insert("sect193r1", SignatureAlgorithm::Ecc(&SECT193R1));
+  m.insert("sect193r2", SignatureAlgorithm::Ecc(&SECT193R2));
+  m.insert("sect233k1", SignatureAlgorithm::Ecc(&SECT233K1));
+  m.insert("sect233r1", SignatureAlgorithm::Ecc(&SECT233R1));
+  m.insert("sect239k1", SignatureAlgorithm::Ecc(&SECT239K1));
+  m.insert("sect283k1", SignatureAlgorithm::Ecc(&SECT283K1));
+  m.insert("sect283r1", SignatureAlgorithm::Ecc(&SECT283R1));
+  m.insert("sect409k1", SignatureAlgorithm::Ecc(&SECT409K1));
+  m.insert("sect409r1", SignatureAlgorithm::Ecc(&SECT409R1));
+  m.insert("sect571k1", SignatureAlgorithm::Ecc(&SECT571K1));
+  m.insert("sect571r1", SignatureAlgorithm::Ecc(&SECT571R1));
+  m.insert(
+    "wap-wsg-idm-ecid-wtls1",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS1),
+  );
+  m.insert(
+    "wap-wsg-idm-ecid-wtls10",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS10),
+  );
+  m.insert(
+    "wap-wsg-idm-ecid-wtls11",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS11),
+  );
+  m.insert(
+    "wap-wsg-idm-ecid-wtls12",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS12),
+  );
+  m.insert(
+    "wap-wsg-idm-ecid-wtls3",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS3),
+  );
+  m.insert(
+    "wap-wsg-idm-ecid-wtls4",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS4),
+  );
+  m.insert(
+    "wap-wsg-idm-ecid-wtls5",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS5),
+  );
+  m.insert(
+    "wap-wsg-idm-ecid-wtls6",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS6),
+  );
+  m.insert(
+    "wap-wsg-idm-ecid-wtls7",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS7),
+  );
+  m.insert(
+    "wap-wsg-idm-ecid-wtls8",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS8),
+  );
+  m.insert(
+    "wap-wsg-idm-ecid-wtls9",
+    SignatureAlgorithm::Ecc(&WAP_WSG_IDM_ECID_WTLS9),
+  );
   m
 });
 
-static HASH_FUNCTIONS: Lazy<BiMap<&str, Hash>> = Lazy::new(|| {
-  let mut m = BiMap::new();
-  m.insert("sha256", SHA256);
+static HASH_FUNCTIONS: Lazy<HashMap<&str, &Hash>> = Lazy::new(|| {
+  let mut m = HashMap::new();
+  m.insert("sha256", &SHA256);
   m
 });
 
-#[derive(Debug)]
+pub struct State {
+  ctx: Context,
+  verbose: bool,
+}
+
+impl State {
+  pub fn new(ctx: Context, verbose: bool) -> Self {
+    Self { ctx, verbose }
+  }
+
+  pub fn verbose(&self) -> &bool {
+    &self.verbose
+  }
+
+  pub fn ctx(&self) -> &Context {
+    &self.ctx
+  }
+}
+
+#[derive(Eq, Hash, PartialEq)]
 enum SignatureAlgorithm {
-  Ecc(Ecc),
+  Ecc(&'static Ecc),
+  Ifc(&'static Ifc),
+}
+
+impl fmt::Display for SignatureAlgorithm {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      SignatureAlgorithm::Ecc(instance) => instance.fmt(f),
+      SignatureAlgorithm::Ifc(instance) => instance.fmt(f),
+    }
+  }
 }
 
 #[derive(Debug)]
 struct Certificate(X509);
 
 impl Certificate {
-  fn extract_ecc_instance(pkey: &PKey<Public>) -> SignatureAlgorithm {
-    let key = pkey.ec_key().expect("elliptic curve key");
-    let nid = key.group().curve_name().expect("curve name");
-    let long_name = nid.long_name().expect("long name");
-    let instance = *ELLIPTIC_CURVES.get_by_left(long_name).expect("instance");
-    SignatureAlgorithm::Ecc(instance)
-  }
-
-  pub fn extract_hash_function(&self) -> Hash {
+  pub fn extract_hash_function(&self) -> &Hash {
     let algorithms = self
       .0
       .signature_algorithm()
@@ -139,20 +192,28 @@ impl Certificate {
       .signature_algorithms()
       .expect("algorithms");
     let long_name = algorithms.digest.long_name().expect("long name");
-    let instance = *HASH_FUNCTIONS.get_by_left(long_name).expect("instance");
+    let instance = HASH_FUNCTIONS.get(long_name).expect("instance");
     instance
   }
 
-  pub fn extract_signature_algorithm(&self) -> SignatureAlgorithm {
+  pub fn extract_signature_algorithm(&self) -> &SignatureAlgorithm {
     let public_key = self.0.public_key().expect("public key");
     match public_key.id() {
-      Id::DH => todo!(),
-      Id::DSA => todo!(),
-      Id::EC => Self::extract_ecc_instance(&public_key),
-      Id::RSA => todo!(),
-      // It is not clear why these have separate Id's. One would assume
-      // they are just elliptic curves.
-      Id::ED25519 | Id::ED448 | Id::SM2 | Id::X25519 | Id::X448 => todo!(),
+      Id::DH
+      | Id::DSA
+      | Id::EC
+      | Id::RSA
+      | Id::ED25519
+      | Id::ED448
+      | Id::SM2
+      | Id::X25519
+      | Id::X448 => {
+        let key = public_key.ec_key().expect("elliptic curve key");
+        let nid = key.group().curve_name().expect("curve name");
+        let long_name = nid.long_name().expect("long name");
+        let instance = SIGNATURE_ALGORITHMS.get(long_name).expect("instance");
+        instance
+      },
       _ => unimplemented!(),
     }
   }
@@ -166,96 +227,95 @@ impl Certificate {
   }
 }
 
-enum Exit {
-  Failure,
-  Success,
-}
-
-impl Deref for Exit {
-  type Target = i32;
-
-  fn deref(&self) -> &Self::Target {
-    match self {
-      Exit::Success => &0,
-      Exit::Failure => &1,
-    }
-  }
-}
-
 #[derive(Clone, Copy, Debug, ValueEnum)]
 pub enum Guide {
   /// The BSI TR-02102 series of technical guidelines.
   Bsi,
+  Cnsa,
 }
 
 impl Guide {
-  fn report<T: Eq + PartialEq + std::hash::Hash>(
-    prefix: &'static str,
-    got: &T,
-    result: Result<T, T>,
-    lookup: &Lazy<BiMap<&str, T>>,
-    status: &mut Exit,
-  ) {
-    let got_str = lookup.get_by_right(got).expect("got string");
-    match result {
-      Err(want) => {
-        *status = Exit::Failure;
-        let want_str = lookup.get_by_right(&want).expect("want string");
-        println!("{prefix}: got: {got_str}, want: {want_str}");
+  fn validate_hash_function(
+    &self,
+    ctx: &Context,
+    hash: &Hash,
+  ) -> Result<&'static Hash, &'static Hash> {
+    match self {
+      Self::Bsi => Bsi::validate_hash(ctx, hash),
+      Self::Cnsa => Cnsa::validate_hash(ctx, hash),
+    }
+  }
+
+  fn validate_signature_algorithm(
+    &self,
+    ctx: &Context,
+    algorithm: &SignatureAlgorithm,
+  ) -> Result<SignatureAlgorithm, SignatureAlgorithm> {
+    match self {
+      Self::Bsi => match algorithm {
+        SignatureAlgorithm::Ecc(instance) => match Bsi::validate_ecc(ctx, instance) {
+          Ok(instance) => Ok(SignatureAlgorithm::Ecc(instance)),
+          Err(instance) => Err(SignatureAlgorithm::Ecc(instance)),
+        },
+        SignatureAlgorithm::Ifc(instance) => match Bsi::validate_ifc(ctx, instance) {
+          Ok(instance) => Ok(SignatureAlgorithm::Ifc(instance)),
+          Err(instance) => Err(SignatureAlgorithm::Ifc(instance)),
+        },
       },
-      Ok(want) => {
-        // TODO: Only print when verbose output is enabled.
-        let _ = lookup.get_by_right(&want).expect("hash function string");
+      Self::Cnsa => match algorithm {
+        SignatureAlgorithm::Ecc(instance) => match Cnsa::validate_ecc(ctx, instance) {
+          Ok(instance) => Ok(SignatureAlgorithm::Ecc(instance)),
+          Err(instance) => Err(SignatureAlgorithm::Ecc(instance)),
+        },
+        SignatureAlgorithm::Ifc(instance) => match Cnsa::validate_ifc(ctx, instance) {
+          Ok(instance) => Ok(SignatureAlgorithm::Ifc(instance)),
+          Err(instance) => Err(SignatureAlgorithm::Ifc(instance)),
+        },
       },
     }
   }
 
-  fn validate_certificate(&self, ctx: &Context, certificate: &Certificate) -> Exit {
-    let hash_function = certificate.extract_hash_function();
-    let signature_algorithm = certificate.extract_signature_algorithm();
-
-    // Select validation functions and appropriate lookup tables.
-    let validate_hash_function = match self {
-      Self::Bsi => Bsi::validate_hash,
-    };
-    let (validate_signature_algorithm, signature_algorithm, signature_lookup) = match self {
-      Self::Bsi => match signature_algorithm {
-        SignatureAlgorithm::Ecc(instance) => (Bsi::validate_ecc, instance, &ELLIPTIC_CURVES),
+  fn validate_certificate(&self, state: &State, certificate: &Certificate) -> Result<(), ()> {
+    let mut pass = Ok(());
+    let got = certificate.extract_hash_function();
+    let result = self.validate_hash_function(state.ctx(), got);
+    match result {
+      Ok(want) => {
+        if state.verbose {
+          println!("hash function: got: {}, want: {}", got, want)
+        }
       },
-    };
+      Err(want) => {
+        pass = Err(());
+        println!("hash function: got: {}, want: {}", got, want);
+      },
+    }
 
-    // Validate the signature algorithm along with its associated hash
-    // function and report the outcomes.
-    let mut status = Exit::Success;
-    Self::report(
-      "hash function",
-      &hash_function,
-      validate_hash_function(ctx, &hash_function),
-      &HASH_FUNCTIONS,
-      &mut status,
-    );
-    Self::report(
-      "signature algorithm",
-      &signature_algorithm,
-      validate_signature_algorithm(ctx, &signature_algorithm),
-      signature_lookup,
-      &mut status,
-    );
-    status
+    let got = certificate.extract_signature_algorithm();
+    let result = self.validate_signature_algorithm(state.ctx(), got);
+    match result {
+      Ok(want) => {
+        if state.verbose {
+          println!("signature algorithm: got: {}, want: {}", got, want)
+        }
+      },
+      Err(want) => {
+        pass = Err(());
+        println!("signature algorithm: got: {}, want: {}", got, want);
+      },
+    }
+
+    pass
   }
 }
 
-pub fn x509(path: &PathBuf, guide: &Guide) {
+pub fn x509(ctx: &Context, path: &PathBuf, guide: &Guide, verbose: &bool) -> Result<(), ()> {
+  let state = State::new(*ctx, *verbose);
   let certificate = Certificate::from_pem_file(path);
-  let ctx = Context::default();
-  let status = match guide {
-    Guide::Bsi => guide.validate_certificate(&ctx, &certificate),
+  let result = guide.validate_certificate(&state, &certificate);
+  match result {
+    Err(_) => println!("fail: {}", path.display()),
+    Ok(_) => println!("ok: {}", path.display()),
   };
-  match status {
-    Exit::Failure => {
-      println!("fail: {}", path.display());
-      process::exit(*status)
-    },
-    Exit::Success => println!("ok: {}", path.display()),
-  }
+  result
 }
