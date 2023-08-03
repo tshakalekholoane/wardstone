@@ -19,7 +19,6 @@ enum Subcommands {
     /// Guide to assess the certificate against.
     #[arg(short, long, value_enum)]
     guide: Guide,
-    // TODO: Make positional argument to enable concurrent processing.
     /// The certificate as a DER or PEM encoded file.
     #[arg(short, long)]
     path: PathBuf,
@@ -29,15 +28,20 @@ enum Subcommands {
   },
 }
 
+impl Subcommands {
+  pub fn run(&self, ctx: &Context) -> Result<(), ()> {
+    match self {
+      Self::X509 {
+        guide,
+        path,
+        verbose,
+      } => assess::x509(ctx, path, guide, verbose),
+    }
+  }
+}
+
 fn main() -> Result<(), ()> {
-  // TODO: Allow the user to set context variables.
   let ctx = Context::default();
   let options = Options::parse();
-  match &options.subcommands {
-    Subcommands::X509 {
-      guide,
-      path: certificate,
-      verbose,
-    } => assess::x509(&ctx, certificate, guide, verbose),
-  }
+  options.subcommands.run(&ctx)
 }
