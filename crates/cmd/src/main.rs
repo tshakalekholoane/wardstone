@@ -66,24 +66,20 @@ impl Guide {
   ) -> Result<Asymmetric, Asymmetric> {
     match self {
       Self::Bsi => match algorithm {
-        Asymmetric::Ecc(instance) => match Bsi::validate_ecc(ctx, instance) {
-          Ok(instance) => Ok(Asymmetric::Ecc(instance)),
-          Err(instance) => Err(Asymmetric::Ecc(instance)),
-        },
-        Asymmetric::Ifc(instance) => match Bsi::validate_ifc(ctx, instance) {
-          Ok(instance) => Ok(Asymmetric::Ifc(instance)),
-          Err(instance) => Err(Asymmetric::Ifc(instance)),
-        },
+        Asymmetric::Ecc(instance) => Bsi::validate_ecc(ctx, instance)
+          .map(Asymmetric::Ecc)
+          .map_err(Asymmetric::Ecc),
+        Asymmetric::Ifc(instance) => Bsi::validate_ifc(ctx, instance)
+          .map(Asymmetric::Ifc)
+          .map_err(Asymmetric::Ifc),
       },
       Self::Cnsa => match algorithm {
-        Asymmetric::Ecc(instance) => match Cnsa::validate_ecc(ctx, instance) {
-          Ok(instance) => Ok(Asymmetric::Ecc(instance)),
-          Err(instance) => Err(Asymmetric::Ecc(instance)),
-        },
-        Asymmetric::Ifc(instance) => match Cnsa::validate_ifc(ctx, instance) {
-          Ok(instance) => Ok(Asymmetric::Ifc(instance)),
-          Err(instance) => Err(Asymmetric::Ifc(instance)),
-        },
+        Asymmetric::Ecc(instance) => Cnsa::validate_ecc(ctx, instance)
+          .map(Asymmetric::Ecc)
+          .map_err(Asymmetric::Ecc),
+        Asymmetric::Ifc(instance) => Cnsa::validate_ifc(ctx, instance)
+          .map(Asymmetric::Ifc)
+          .map_err(Asymmetric::Ifc),
       },
     }
   }
