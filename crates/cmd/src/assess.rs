@@ -9,7 +9,7 @@ use wardstone_core::standard::bsi::Bsi;
 use wardstone_core::standard::cnsa::Cnsa;
 use wardstone_core::standard::Standard;
 
-use crate::adapter::SignatureAlgorithm;
+use crate::adapter::Asymmetric;
 use crate::key::certificate::Certificate;
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -34,27 +34,27 @@ impl Guide {
   fn validate_signature_algorithm(
     &self,
     ctx: &Context,
-    algorithm: &SignatureAlgorithm,
-  ) -> Result<SignatureAlgorithm, SignatureAlgorithm> {
+    algorithm: &Asymmetric,
+  ) -> Result<Asymmetric, Asymmetric> {
     match self {
       Self::Bsi => match algorithm {
-        SignatureAlgorithm::Ecc(instance) => match Bsi::validate_ecc(ctx, instance) {
-          Ok(instance) => Ok(SignatureAlgorithm::Ecc(instance)),
-          Err(instance) => Err(SignatureAlgorithm::Ecc(instance)),
+        Asymmetric::Ecc(instance) => match Bsi::validate_ecc(ctx, instance) {
+          Ok(instance) => Ok(Asymmetric::Ecc(instance)),
+          Err(instance) => Err(Asymmetric::Ecc(instance)),
         },
-        SignatureAlgorithm::Ifc(instance) => match Bsi::validate_ifc(ctx, instance) {
-          Ok(instance) => Ok(SignatureAlgorithm::Ifc(instance)),
-          Err(instance) => Err(SignatureAlgorithm::Ifc(instance)),
+        Asymmetric::Ifc(instance) => match Bsi::validate_ifc(ctx, instance) {
+          Ok(instance) => Ok(Asymmetric::Ifc(instance)),
+          Err(instance) => Err(Asymmetric::Ifc(instance)),
         },
       },
       Self::Cnsa => match algorithm {
-        SignatureAlgorithm::Ecc(instance) => match Cnsa::validate_ecc(ctx, instance) {
-          Ok(instance) => Ok(SignatureAlgorithm::Ecc(instance)),
-          Err(instance) => Err(SignatureAlgorithm::Ecc(instance)),
+        Asymmetric::Ecc(instance) => match Cnsa::validate_ecc(ctx, instance) {
+          Ok(instance) => Ok(Asymmetric::Ecc(instance)),
+          Err(instance) => Err(Asymmetric::Ecc(instance)),
         },
-        SignatureAlgorithm::Ifc(instance) => match Cnsa::validate_ifc(ctx, instance) {
-          Ok(instance) => Ok(SignatureAlgorithm::Ifc(instance)),
-          Err(instance) => Err(SignatureAlgorithm::Ifc(instance)),
+        Asymmetric::Ifc(instance) => match Cnsa::validate_ifc(ctx, instance) {
+          Ok(instance) => Ok(Asymmetric::Ifc(instance)),
+          Err(instance) => Err(Asymmetric::Ifc(instance)),
         },
       },
     }
