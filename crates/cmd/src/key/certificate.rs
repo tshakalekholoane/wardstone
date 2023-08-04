@@ -6,7 +6,7 @@ use openssl::pkey::Id;
 use openssl::x509::X509;
 use wardstone_core::primitive::hash::Hash;
 
-use crate::adapter::{SignatureAlgorithm, HASH_FUNCTIONS, SIGNATURE_ALGORITHMS};
+use crate::adapter::{Asymmetric, HASH_FUNCTIONS, SIGNATURE_ALGORITHMS};
 use crate::key::KeyError;
 
 /// Represents a TLS certificate.
