@@ -134,12 +134,12 @@ pub static SIGNATURE_ALGORITHMS: Lazy<HashMap<&str, Asymmetric>> = Lazy::new(|| 
 });
 
 #[derive(Eq, Hash, PartialEq)]
-pub enum Asymmetric {
-  Ecc(&'static Ecc),
-  Ifc(&'static Ifc),
+pub enum Asymmetric<'a> {
+  Ecc(&'a Ecc),
+  Ifc(&'a Ifc),
 }
 
-impl fmt::Display for Asymmetric {
+impl fmt::Display for Asymmetric<'_> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
       Asymmetric::Ecc(instance) => instance.fmt(f),
