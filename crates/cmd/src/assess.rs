@@ -1,4 +1,6 @@
+use core::fmt;
 use std::path::PathBuf;
+use std::process::{ExitCode, Termination};
 
 use clap::ValueEnum;
 use wardstone_core::context::Context;
@@ -59,38 +61,73 @@ impl Guide {
   }
 }
 
-pub fn x509(ctx: &Context, path: &PathBuf, guide: &Guide, verbose: &bool) -> Result<(), ()> {
-  let mut pass = Ok(());
-  let certificate = Certificate::from_pem_file(path);
-  let got = certificate.extract_hash_function();
-  match guide.validate_hash_function(ctx, got) {
-    Ok(want) => {
-      if *verbose {
-        println!("hash function: got: {}, want: {}", got, want)
-      }
+pub enum Status {
+  Ok(PathBuf),
+  Fail(PathBuf),
+}
+
+impl Termination for Status {
+  fn report(self) -> std::process::ExitCode {
+    match self {
+      Self::Ok(_) => {
+        println!("{}", &self);
+        ExitCode::SUCCESS
+      },
+      Self::Fail(_) => {
+        eprintln!("{}", &self);
+        ExitCode::FAILURE
+      },
+    }
+  }
+}
+
+impl fmt::Display for Status {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match &self {
+      Self::Ok(path) => write!(f, "ok: {}", path.display()),
+      Self::Fail(path) => write!(f, "fail: {}", path.display()),
+    }
+  }
+}
+
+pub fn x509(ctx: &Context, path: &PathBuf, guide: &Guide, verbose: &bool) -> Status {
+  let certificate = match Certificate::from_pem_file(path) {
+    Ok(got) => got,
+    Err(err) => {
+      eprintln!("{}", err.to_string());
+      return Status::Fail(path.to_path_buf());
     },
-    Err(want) => {
-      pass = Err(());
-      println!("hash function: got: {}, want: {}", got, want);
-    },
+  };
+
+  let mut pass = Status::Ok(path.to_path_buf());
+
+  if let Some(got) = certificate.extract_hash_function() {
+    match guide.validate_hash_function(ctx, got) {
+      Ok(want) => {
+        if *verbose {
+          println!("hash function: got: {}, want: {}", got, want)
+        }
+      },
+      Err(want) => {
+        pass = Status::Fail(path.to_path_buf());
+        eprintln!("hash function: got: {}, want: {}", got, want);
+      },
+    }
   }
 
-  let got = certificate.extract_signature_algorithm();
-  match guide.validate_signature_algorithm(ctx, got) {
-    Ok(want) => {
-      if *verbose {
-        println!("signature algorithm: got: {}, want: {}", got, want)
-      }
-    },
-    Err(want) => {
-      pass = Err(());
-      println!("signature algorithm: got: {}, want: {}", got, want);
-    },
+  if let Some(got) = certificate.extract_signature_algorithm() {
+    match guide.validate_signature_algorithm(ctx, got) {
+      Ok(want) => {
+        if *verbose {
+          println!("signature algorithm: got: {}, want: {}", got, want)
+        }
+      },
+      Err(want) => {
+        pass = Status::Fail(path.to_path_buf());
+        eprintln!("signature algorithm: got: {}, want: {}", got, want);
+      },
+    }
   }
-  // TODO: The following could probably be done as an error.
-  match pass {
-    Err(_) => println!("fail: {}", path.display()),
-    Ok(_) => println!("ok: {}", path.display()),
-  };
+
   pass
 }
