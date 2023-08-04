@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use wardstone::assess::{self, Guide};
+use wardstone::assess::{self, Guide, Status};
 use wardstone_core::context::Context;
 
 /// Assess cryptographic keys for compliance.
@@ -29,18 +29,18 @@ enum Subcommands {
 }
 
 impl Subcommands {
-  pub fn run(&self, ctx: &Context) -> Result<(), ()> {
+  pub fn run(&self, &ctx: &Context) -> Status {
     match self {
       Self::X509 {
         guide,
         path,
         verbose,
-      } => assess::x509(ctx, path, guide, verbose),
+      } => assess::x509(&ctx, path, guide, verbose),
     }
   }
 }
 
-fn main() -> Result<(), ()> {
+fn main() -> Status {
   let ctx = Context::default();
   let options = Options::parse();
   options.subcommands.run(&ctx)
