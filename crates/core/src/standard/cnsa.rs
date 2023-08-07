@@ -96,8 +96,8 @@ impl Standard for Cnsa {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_7680 = FFC_7680_384;
-  /// assert_eq!(Cnsa::validate_ffc(&ctx, &dsa_7680), Err(&FFC_NOT_SUPPORTED));
+  /// let dsa_7680 = &FFC_7680_384;
+  /// assert_eq!(Cnsa::validate_ffc(&ctx, dsa_7680), Err(&FFC_NOT_SUPPORTED));
   /// ```
   fn validate_ffc(_ctx: &Context, _key: &Ffc) -> Result<&'static Ffc, &'static Ffc> {
     Err(&FFC_NOT_SUPPORTED)
@@ -170,9 +170,9 @@ impl Standard for Cnsa {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// let rsa_3072 = IFC_3072;
-  /// assert_eq!(Cnsa::validate_ifc(&ctx, &rsa_2048), Err(&rsa_3072));
+  /// let rsa_2048 = &IFC_2048;
+  /// let rsa_3072 = &IFC_3072;
+  /// assert_eq!(Cnsa::validate_ifc(&ctx, rsa_2048), Err(rsa_3072));
   /// ```
   fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<&'static Ifc, &'static Ifc> {
     if ctx.year() > CUTOFF_YEAR {

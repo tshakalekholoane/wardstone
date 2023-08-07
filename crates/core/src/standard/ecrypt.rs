@@ -141,9 +141,9 @@ impl Standard for Ecrypt {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_2048 = FFC_2048_224;
-  /// let dsa_3072 = FFC_3072_256;
-  /// assert_eq!(Ecrypt::validate_ffc(&ctx, &dsa_2048), Ok(&dsa_3072));
+  /// let dsa_2048 = &FFC_2048_224;
+  /// let dsa_3072 = &FFC_3072_256;
+  /// assert_eq!(Ecrypt::validate_ffc(&ctx, dsa_2048), Ok(dsa_3072));
   /// ```
   fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<&'static Ffc, &'static Ffc> {
     let security = ctx.security().max(key.security());
@@ -239,9 +239,9 @@ impl Standard for Ecrypt {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// let rsa_3072 = IFC_3072;
-  /// assert_eq!(Ecrypt::validate_ifc(&ctx, &rsa_2048), Ok(&rsa_3072));
+  /// let rsa_2048 = &IFC_2048;
+  /// let rsa_3072 = &IFC_3072;
+  /// assert_eq!(Ecrypt::validate_ifc(&ctx, rsa_2048), Ok(rsa_3072));
   /// ```
   fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<&'static Ifc, &'static Ifc> {
     let security = ctx.security().max(key.security());
