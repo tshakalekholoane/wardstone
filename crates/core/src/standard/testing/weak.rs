@@ -81,8 +81,8 @@ impl Standard for Weak {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_2048 = FFC_2048_224;
-  /// assert_eq!(Weak::validate_ffc(&ctx, &dsa_2048), Ok(&dsa_2048));
+  /// let dsa_2048 = &FFC_2048_224;
+  /// assert_eq!(Weak::validate_ffc(&ctx, dsa_2048), Ok(dsa_2048));
   /// ```
   fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<&'static Ffc, &'static Ffc> {
     let security = ctx.security().max(key.security());
@@ -164,8 +164,8 @@ impl Standard for Weak {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// assert_eq!(Weak::validate_ifc(&ctx, &rsa_2048), Ok(&rsa_2048));
+  /// let rsa_2048 = &IFC_2048;
+  /// assert_eq!(Weak::validate_ifc(&ctx, rsa_2048), Ok(rsa_2048));
   /// ```
   fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<&'static Ifc, &'static Ifc> {
     let security = ctx.security().max(key.security());

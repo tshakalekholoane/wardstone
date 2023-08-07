@@ -107,8 +107,8 @@ impl Nist {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let hmac_sha1 = SHA1;
-  /// assert_eq!(Nist::validate_hash_based(&ctx, &hmac_sha1), Ok(&hmac_sha1));
+  /// let hmac_sha1 = &SHA1;
+  /// assert_eq!(Nist::validate_hash_based(&ctx, hmac_sha1), Ok(hmac_sha1));
   /// ```
   pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<&'static Hash, &'static Hash> {
     if SPECIFIED_HASH_FUNCTIONS.contains(hash) {
@@ -221,8 +221,8 @@ impl Standard for Nist {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_2048 = FFC_2048_224;
-  /// assert_eq!(Nist::validate_ffc(&ctx, &dsa_2048), Ok(&dsa_2048));
+  /// let dsa_2048 = &FFC_2048_224;
+  /// assert_eq!(Nist::validate_ffc(&ctx, dsa_2048), Ok(dsa_2048));
   /// ```
   fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<&'static Ffc, &'static Ffc> {
     if ctx.year() > CUTOFF_YEAR_DSA {
@@ -341,8 +341,8 @@ impl Standard for Nist {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// assert_eq!(Nist::validate_ifc(&ctx, &rsa_2048), Ok(&rsa_2048));
+  /// let rsa_2048 = &IFC_2048;
+  /// assert_eq!(Nist::validate_ifc(&ctx, rsa_2048), Ok(rsa_2048));
   /// ```
   fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<&'static Ifc, &'static Ifc> {
     let security = ctx.security().max(key.security());

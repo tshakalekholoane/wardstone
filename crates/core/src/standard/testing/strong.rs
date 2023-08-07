@@ -74,9 +74,9 @@ impl Standard for Strong {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_2048 = FFC_2048_224;
+  /// let dsa_2048 = &FFC_2048_224;
   /// assert_eq!(
-  ///   Strong::validate_ffc(&ctx, &dsa_2048),
+  ///   Strong::validate_ffc(&ctx, dsa_2048),
   ///   Err(&FFC_NOT_SUPPORTED)
   /// );
   /// ```
@@ -147,9 +147,9 @@ impl Standard for Strong {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
+  /// let rsa_2048 = &IFC_2048;
   /// assert_eq!(
-  ///   Strong::validate_ifc(&ctx, &rsa_2048),
+  ///   Strong::validate_ifc(&ctx, rsa_2048),
   ///   Err(&IFC_NOT_SUPPORTED)
   /// );
   /// ```

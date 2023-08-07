@@ -100,9 +100,9 @@ impl Bsi {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let hmac_sha1 = SHA1;
-  /// let hmac_sha256 = SHA256;
-  /// assert_eq!(Bsi::validate_hash_based(&ctx, &hmac_sha1), Err(hmac_sha256));
+  /// let hmac_sha1 = &SHA1;
+  /// let hmac_sha256 = &SHA256;
+  /// assert_eq!(Bsi::validate_hash_based(&ctx, hmac_sha1), Err(hmac_sha256));
   /// ```
   pub fn validate_hash_based(ctx: &Context, hash: &Hash) -> Result<&'static Hash, &'static Hash> {
     if SPECIFIED_HASH_FUNCTIONS.contains(hash) {
@@ -151,7 +151,7 @@ impl Standard for Bsi {
   /// let ctx = Context::default();
   /// assert_eq!(
   ///   Bsi::validate_ecc(&ctx, &BRAINPOOLP256R1),
-  ///   Ok(BRAINPOOLP256R1)
+  ///   Ok(&BRAINPOOLP256R1)
   /// );
   /// ```
   fn validate_ecc(ctx: &Context, key: &Ecc) -> Result<&'static Ecc, &'static Ecc> {
@@ -192,9 +192,9 @@ impl Standard for Bsi {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_2048 = FFC_2048_224;
-  /// let dsa_3072 = FFC_3072_256;
-  /// assert_eq!(Bsi::validate_ffc(&ctx, &dsa_2048), Err(dsa_3072));
+  /// let dsa_2048 = &FFC_2048_224;
+  /// let dsa_3072 = &FFC_3072_256;
+  /// assert_eq!(Bsi::validate_ffc(&ctx, dsa_2048), Err(dsa_3072));
   /// ```
   fn validate_ffc(ctx: &Context, key: &Ffc) -> Result<&'static Ffc, &'static Ffc> {
     let security = ctx.security().max(key.security());
@@ -242,7 +242,7 @@ impl Standard for Bsi {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// assert_eq!(Bsi::validate_hash(&ctx, &SHA1), Err(SHA256));
+  /// assert_eq!(Bsi::validate_hash(&ctx, &SHA1), Err(&SHA256));
   /// ```
   fn validate_hash(ctx: &Context, hash: &Hash) -> Result<&'static Hash, &'static Hash> {
     if SPECIFIED_HASH_FUNCTIONS.contains(hash) {
@@ -283,8 +283,8 @@ impl Standard for Bsi {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// assert_eq!(Bsi::validate_ifc(&ctx, &rsa_2048), Ok(rsa_2048));
+  /// let rsa_2048 = &IFC_2048;
+  /// assert_eq!(Bsi::validate_ifc(&ctx, rsa_2048), Ok(rsa_2048));
   /// ```
   fn validate_ifc(ctx: &Context, key: &Ifc) -> Result<&'static Ifc, &'static Ifc> {
     let security = ctx.security().max(key.security());
@@ -331,7 +331,7 @@ impl Standard for Bsi {
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// assert_eq!(Bsi::validate_symmetric(&ctx, &TDEA3), Err(AES128));
+  /// assert_eq!(Bsi::validate_symmetric(&ctx, &TDEA3), Err(&AES128));
   /// ```
   fn validate_symmetric(
     ctx: &Context,
@@ -356,138 +356,153 @@ mod tests {
   use super::*;
   use crate::{test_ecc, test_ffc, test_hash, test_hash_based, test_ifc, test_symmetric};
 
-  test_ecc!(p224, Bsi, &P224, Err(BRAINPOOLP256R1));
-  test_ecc!(p256, Bsi, &P256, Ok(BRAINPOOLP256R1));
-  test_ecc!(p384, Bsi, &P384, Ok(BRAINPOOLP384R1));
-  test_ecc!(p521, Bsi, &P521, Ok(BRAINPOOLP512R1));
-  test_ecc!(x25519, Bsi, &X25519, Err(BRAINPOOLP256R1));
-  test_ecc!(x448, Bsi, &X448, Err(BRAINPOOLP256R1));
-  test_ecc!(ed25519, Bsi, &ED25519, Err(BRAINPOOLP256R1));
-  test_ecc!(ed448, Bsi, &ED448, Err(BRAINPOOLP256R1));
-  test_ecc!(brainpoolp224r1, Bsi, &BRAINPOOLP224R1, Err(BRAINPOOLP256R1));
-  test_ecc!(brainpoolp256r1, Bsi, &BRAINPOOLP256R1, Ok(BRAINPOOLP256R1));
-  test_ecc!(brainpoolp320r1, Bsi, &BRAINPOOLP320R1, Ok(BRAINPOOLP320R1));
-  test_ecc!(brainpoolp384r1, Bsi, &BRAINPOOLP384R1, Ok(BRAINPOOLP384R1));
-  test_ecc!(brainpoolp512r1, Bsi, &BRAINPOOLP512R1, Ok(BRAINPOOLP512R1));
-  test_ecc!(secp256k1, Bsi, &SECP256K1, Err(BRAINPOOLP256R1));
+  test_ecc!(p224, Bsi, &P224, Err(&BRAINPOOLP256R1));
+  test_ecc!(p256, Bsi, &P256, Ok(&BRAINPOOLP256R1));
+  test_ecc!(p384, Bsi, &P384, Ok(&BRAINPOOLP384R1));
+  test_ecc!(p521, Bsi, &P521, Ok(&BRAINPOOLP512R1));
+  test_ecc!(x25519, Bsi, &X25519, Err(&BRAINPOOLP256R1));
+  test_ecc!(x448, Bsi, &X448, Err(&BRAINPOOLP256R1));
+  test_ecc!(ed25519, Bsi, &ED25519, Err(&BRAINPOOLP256R1));
+  test_ecc!(ed448, Bsi, &ED448, Err(&BRAINPOOLP256R1));
+  test_ecc!(
+    brainpoolp224r1,
+    Bsi,
+    &BRAINPOOLP224R1,
+    Err(&BRAINPOOLP256R1)
+  );
+  test_ecc!(brainpoolp256r1, Bsi, &BRAINPOOLP256R1, Ok(&BRAINPOOLP256R1));
+  test_ecc!(brainpoolp320r1, Bsi, &BRAINPOOLP320R1, Ok(&BRAINPOOLP320R1));
+  test_ecc!(brainpoolp384r1, Bsi, &BRAINPOOLP384R1, Ok(&BRAINPOOLP384R1));
+  test_ecc!(brainpoolp512r1, Bsi, &BRAINPOOLP512R1, Ok(&BRAINPOOLP512R1));
+  test_ecc!(secp256k1, Bsi, &SECP256K1, Err(&BRAINPOOLP256R1));
 
-  test_ffc!(ffc_1024_160, Bsi, &FFC_1024_160, Err(FFC_3072_256));
-  test_ffc!(ffc_2048_224, Bsi, &FFC_2048_224, Err(FFC_3072_256));
-  test_ffc!(ffc_3072_256, Bsi, &FFC_3072_256, Ok(FFC_3072_256));
-  test_ffc!(ffc_7680_384, Bsi, &FFC_7680_384, Ok(FFC_7680_384));
-  test_ffc!(ffc_15360_512, Bsi, &FFC_15360_512, Ok(FFC_15360_512));
+  test_ffc!(ffc_1024_160, Bsi, &FFC_1024_160, Err(&FFC_3072_256));
+  test_ffc!(ffc_2048_224, Bsi, &FFC_2048_224, Err(&FFC_3072_256));
+  test_ffc!(ffc_3072_256, Bsi, &FFC_3072_256, Ok(&FFC_3072_256));
+  test_ffc!(ffc_7680_384, Bsi, &FFC_7680_384, Ok(&FFC_7680_384));
+  test_ffc!(ffc_15360_512, Bsi, &FFC_15360_512, Ok(&FFC_15360_512));
 
-  test_ifc!(ifc_1024, Bsi, &IFC_1024, Err(IFC_2048));
-  test_ifc!(ifc_2048, Bsi, &IFC_2048, Ok(IFC_2048));
-  test_ifc!(ifc_3072, Bsi, &IFC_3072, Ok(IFC_3072));
-  test_ifc!(ifc_7680, Bsi, &IFC_7680, Ok(IFC_7680));
-  test_ifc!(ifc_15360, Bsi, &IFC_15360, Ok(IFC_15360));
+  test_ifc!(ifc_1024, Bsi, &IFC_1024, Err(&IFC_2048));
+  test_ifc!(ifc_2048, Bsi, &IFC_2048, Ok(&IFC_2048));
+  test_ifc!(ifc_3072, Bsi, &IFC_3072, Ok(&IFC_3072));
+  test_ifc!(ifc_7680, Bsi, &IFC_7680, Ok(&IFC_7680));
+  test_ifc!(ifc_15360, Bsi, &IFC_15360, Ok(&IFC_15360));
 
   test_hash!(
     blake2b_256_collision_resistance,
     Bsi,
     &BLAKE2B_256,
-    Err(SHA256)
+    Err(&SHA256)
   );
   test_hash!(
     blake2b_384_collision_resistance,
     Bsi,
     &BLAKE2B_384,
-    Err(SHA256)
+    Err(&SHA256)
   );
   test_hash!(
     blake2b_512_collision_resistance,
     Bsi,
     &BLAKE2B_512,
-    Err(SHA256)
+    Err(&SHA256)
   );
   test_hash!(
     blake2s_256_collision_resistance,
     Bsi,
     &BLAKE2S_256,
-    Err(SHA256)
+    Err(&SHA256)
   );
-  test_hash!(md4_collision_resistance, Bsi, &MD4, Err(SHA256));
-  test_hash!(md5_collision_resistance, Bsi, &MD5, Err(SHA256));
-  test_hash!(ripemd160_collision_resistance, Bsi, &RIPEMD160, Err(SHA256));
-  test_hash!(sha1_collision_resistance, Bsi, &SHA1, Err(SHA256));
-  test_hash!(sha224_collision_resistance, Bsi, &SHA224, Err(SHA256));
-  test_hash!(sha256_collision_resistance, Bsi, &SHA256, Ok(SHA256));
-  test_hash!(sha384_collision_resistance, Bsi, &SHA384, Ok(SHA384));
-  test_hash!(sha3_224_collision_resistance, Bsi, &SHA3_224, Err(SHA256));
-  test_hash!(sha3_256_collision_resistance, Bsi, &SHA3_256, Ok(SHA256));
-  test_hash!(sha3_384_collision_resistance, Bsi, &SHA3_384, Ok(SHA384));
-  test_hash!(sha3_512_collision_resistance, Bsi, &SHA3_512, Ok(SHA512));
-  test_hash!(sha512_collision_resistance, Bsi, &SHA512, Ok(SHA512));
+  test_hash!(md4_collision_resistance, Bsi, &MD4, Err(&SHA256));
+  test_hash!(md5_collision_resistance, Bsi, &MD5, Err(&SHA256));
+  test_hash!(
+    ripemd160_collision_resistance,
+    Bsi,
+    &RIPEMD160,
+    Err(&SHA256)
+  );
+  test_hash!(sha1_collision_resistance, Bsi, &SHA1, Err(&SHA256));
+  test_hash!(sha224_collision_resistance, Bsi, &SHA224, Err(&SHA256));
+  test_hash!(sha256_collision_resistance, Bsi, &SHA256, Ok(&SHA256));
+  test_hash!(sha384_collision_resistance, Bsi, &SHA384, Ok(&SHA384));
+  test_hash!(sha3_224_collision_resistance, Bsi, &SHA3_224, Err(&SHA256));
+  test_hash!(sha3_256_collision_resistance, Bsi, &SHA3_256, Ok(&SHA256));
+  test_hash!(sha3_384_collision_resistance, Bsi, &SHA3_384, Ok(&SHA384));
+  test_hash!(sha3_512_collision_resistance, Bsi, &SHA3_512, Ok(&SHA512));
+  test_hash!(sha512_collision_resistance, Bsi, &SHA512, Ok(&SHA512));
   test_hash!(
     sha512_224_collision_resistance,
     Bsi,
     &SHA512_224,
-    Err(SHA256)
+    Err(&SHA256)
   );
   test_hash!(
     sha512_256_collision_resistance,
     Bsi,
     &SHA512_256,
-    Ok(SHA256)
+    Ok(&SHA256)
   );
-  test_hash!(shake128_collision_resistance, Bsi, &SHAKE128, Err(SHA256));
-  test_hash!(shake256_collision_resistance, Bsi, &SHAKE256, Err(SHA256));
+  test_hash!(shake128_collision_resistance, Bsi, &SHAKE128, Err(&SHA256));
+  test_hash!(shake256_collision_resistance, Bsi, &SHAKE256, Err(&SHA256));
 
   test_hash_based!(
     blake2b_256_pre_image_resistance,
     Bsi,
     &BLAKE2B_256,
-    Err(SHA256)
+    Err(&SHA256)
   );
   test_hash_based!(
     blake2b_384_pre_image_resistance,
     Bsi,
     &BLAKE2B_384,
-    Err(SHA256)
+    Err(&SHA256)
   );
   test_hash_based!(
     blake2b_512_pre_image_resistance,
     Bsi,
     &BLAKE2B_512,
-    Err(SHA256)
+    Err(&SHA256)
   );
   test_hash_based!(
     blake2s_256_pre_image_resistance,
     Bsi,
     &BLAKE2S_256,
-    Err(SHA256)
+    Err(&SHA256)
   );
-  test_hash_based!(md4_pre_image_resistance, Bsi, &MD4, Err(SHA256));
-  test_hash_based!(md5_pre_image_resistance, Bsi, &MD5, Err(SHA256));
-  test_hash_based!(ripemd160_pre_image_resistance, Bsi, &RIPEMD160, Err(SHA256));
-  test_hash_based!(sha1_pre_image_resistance, Bsi, &SHA1, Err(SHA256));
-  test_hash_based!(sha224_pre_image_resistance, Bsi, &SHA224, Err(SHA256));
-  test_hash_based!(sha256_pre_image_resistance, Bsi, &SHA256, Ok(SHA256));
-  test_hash_based!(sha384_pre_image_resistance, Bsi, &SHA384, Ok(SHA384));
-  test_hash_based!(sha3_224_pre_image_resistance, Bsi, &SHA3_224, Err(SHA256));
-  test_hash_based!(sha3_256_pre_image_resistance, Bsi, &SHA3_256, Ok(SHA256));
-  test_hash_based!(sha3_384_pre_image_resistance, Bsi, &SHA3_384, Ok(SHA384));
-  test_hash_based!(sha3_512_pre_image_resistance, Bsi, &SHA3_512, Ok(SHA512));
-  test_hash_based!(sha512_pre_image_resistance, Bsi, &SHA512, Ok(SHA512));
+  test_hash_based!(md4_pre_image_resistance, Bsi, &MD4, Err(&SHA256));
+  test_hash_based!(md5_pre_image_resistance, Bsi, &MD5, Err(&SHA256));
+  test_hash_based!(
+    ripemd160_pre_image_resistance,
+    Bsi,
+    &RIPEMD160,
+    Err(&SHA256)
+  );
+  test_hash_based!(sha1_pre_image_resistance, Bsi, &SHA1, Err(&SHA256));
+  test_hash_based!(sha224_pre_image_resistance, Bsi, &SHA224, Err(&SHA256));
+  test_hash_based!(sha256_pre_image_resistance, Bsi, &SHA256, Ok(&SHA256));
+  test_hash_based!(sha384_pre_image_resistance, Bsi, &SHA384, Ok(&SHA384));
+  test_hash_based!(sha3_224_pre_image_resistance, Bsi, &SHA3_224, Err(&SHA256));
+  test_hash_based!(sha3_256_pre_image_resistance, Bsi, &SHA3_256, Ok(&SHA256));
+  test_hash_based!(sha3_384_pre_image_resistance, Bsi, &SHA3_384, Ok(&SHA384));
+  test_hash_based!(sha3_512_pre_image_resistance, Bsi, &SHA3_512, Ok(&SHA512));
+  test_hash_based!(sha512_pre_image_resistance, Bsi, &SHA512, Ok(&SHA512));
   test_hash_based!(
     sha512_224_pre_image_resistance,
     Bsi,
     &SHA512_224,
-    Err(SHA256)
+    Err(&SHA256)
   );
   test_hash_based!(
     sha512_256_pre_image_resistance,
     Bsi,
     &SHA512_256,
-    Ok(SHA256)
+    Ok(&SHA256)
   );
-  test_hash_based!(shake128_pre_image_resistance, Bsi, &SHAKE128, Err(SHA256));
-  test_hash_based!(shake256_pre_image_resistance, Bsi, &SHAKE256, Err(SHA256));
+  test_hash_based!(shake128_pre_image_resistance, Bsi, &SHAKE128, Err(&SHA256));
+  test_hash_based!(shake256_pre_image_resistance, Bsi, &SHAKE256, Err(&SHA256));
 
-  test_symmetric!(two_key_tdea, Bsi, &TDEA2, Err(AES128));
-  test_symmetric!(three_key_tdea, Bsi, &TDEA3, Err(AES128));
-  test_symmetric!(aes128, Bsi, &AES128, Ok(AES128));
-  test_symmetric!(aes192, Bsi, &AES192, Ok(AES192));
-  test_symmetric!(aes256, Bsi, &AES256, Ok(AES256));
+  test_symmetric!(two_key_tdea, Bsi, &TDEA2, Err(&AES128));
+  test_symmetric!(three_key_tdea, Bsi, &TDEA3, Err(&AES128));
+  test_symmetric!(aes128, Bsi, &AES128, Ok(&AES128));
+  test_symmetric!(aes192, Bsi, &AES192, Ok(&AES192));
+  test_symmetric!(aes256, Bsi, &AES256, Ok(&AES256));
 }
