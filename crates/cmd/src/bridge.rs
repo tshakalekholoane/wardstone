@@ -147,3 +147,15 @@ impl fmt::Display for Asymmetric<'_> {
     }
   }
 }
+
+impl From<&'static Ecc> for Asymmetric<'static> {
+  fn from(ecc: &'static Ecc) -> Self {
+    Asymmetric::Ecc(ecc)
+  }
+}
+
+impl From<&'static Ifc> for Asymmetric<'static> {
+  fn from(ifc: &'static Ifc) -> Self {
+    Asymmetric::Ifc(ifc)
+  }
+}
