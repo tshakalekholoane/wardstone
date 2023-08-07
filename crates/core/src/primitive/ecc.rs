@@ -1,6 +1,7 @@
 //! Elliptic curve primitive and some common instances.
 use core::fmt;
 use std::ffi::CStr;
+use std::hash::{Hash, Hasher};
 
 use crate::primitive::{Primitive, Security};
 
@@ -8,7 +9,7 @@ use crate::primitive::{Primitive, Security};
 /// signatures and key establishment where f is the key size (the size
 /// of n, where n is the order of the base point G).
 #[repr(C)]
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct Ecc {
   pub id: u16,
   pub f: u16,
@@ -22,6 +23,13 @@ impl Ecc {
       f,
       name: unsafe { CStr::from_bytes_with_nul_unchecked(name) },
     }
+  }
+}
+
+impl Hash for Ecc {
+  fn hash<H: Hasher>(&self, state: &mut H) {
+    self.id.hash(state);
+    self.f.hash(state);
   }
 }
 
@@ -41,7 +49,7 @@ impl fmt::Display for Ecc {
 
 impl PartialEq for Ecc {
   fn eq(&self, other: &Self) -> bool {
-    self.id == other.id
+    self.id == other.id && self.f == other.f
   }
 }
 

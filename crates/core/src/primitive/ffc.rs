@@ -1,6 +1,7 @@
 //! Finite field primitive and some common instances.
 use core::fmt;
 use std::ffi::CStr;
+use std::hash::{Hash, Hasher};
 
 use crate::primitive::{Primitive, Security};
 
@@ -14,12 +15,20 @@ use crate::primitive::{Primitive, Security};
 /// signature algorithms such as DSA and key establishment algorithms
 /// such as Diffie-Hellman and MQV.
 #[repr(C)]
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct Ffc {
   pub id: u16,
   pub l: u16,
   pub n: u16,
   pub name: &'static CStr,
+}
+
+impl Hash for Ffc {
+  fn hash<H: Hasher>(&self, state: &mut H) {
+    self.id.hash(state);
+    self.l.hash(state);
+    self.n.hash(state);
+  }
 }
 
 impl Primitive for Ffc {
@@ -45,7 +54,7 @@ impl fmt::Display for Ffc {
 
 impl PartialEq for Ffc {
   fn eq(&self, other: &Self) -> bool {
-    self.id == other.id
+    self.id == other.id && self.l == other.l && self.n == other.n
   }
 }
 

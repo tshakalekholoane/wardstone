@@ -1,13 +1,14 @@
 //! Hash function primitive and some common instances.
 use core::fmt;
 use std::ffi::CStr;
+use std::hash::Hasher;
 
 use crate::primitive::{Primitive, Security};
 
 /// Represents a hash or hash-based function cryptographic primitive
 /// where `id` is a unique identifier and `n` the digest length.
 #[repr(C)]
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct Hash {
   pub id: u16,
   pub n: u16,
@@ -21,6 +22,13 @@ impl Hash {
       n,
       name: unsafe { CStr::from_bytes_with_nul_unchecked(name) },
     }
+  }
+}
+
+impl std::hash::Hash for Hash {
+  fn hash<H: Hasher>(&self, state: &mut H) {
+    self.id.hash(state);
+    self.n.hash(state);
   }
 }
 
@@ -47,7 +55,7 @@ impl fmt::Display for Hash {
 
 impl PartialEq for Hash {
   fn eq(&self, other: &Self) -> bool {
-    self.id == other.id
+    self.id == other.id && self.n == other.n
   }
 }
 
