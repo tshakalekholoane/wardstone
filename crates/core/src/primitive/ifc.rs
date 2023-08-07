@@ -1,6 +1,7 @@
 //! Integer factorisation primitive and some common instances.
 use core::fmt;
 use std::ffi::CStr;
+use std::hash::{Hash, Hasher};
 
 use crate::primitive::{Primitive, Security};
 
@@ -8,7 +9,7 @@ use crate::primitive::{Primitive, Security};
 /// common of which is the RSA signature algorithm where k indicates the
 /// key size.
 #[repr(C)]
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct Ifc {
   pub id: u16,
   pub k: u16,
@@ -22,6 +23,13 @@ impl Ifc {
       k,
       name: unsafe { CStr::from_bytes_with_nul_unchecked(name) },
     }
+  }
+}
+
+impl Hash for Ifc {
+  fn hash<H: Hasher>(&self, state: &mut H) {
+    self.id.hash(state);
+    self.k.hash(state);
   }
 }
 
@@ -48,7 +56,7 @@ impl fmt::Display for Ifc {
 
 impl PartialEq for Ifc {
   fn eq(&self, other: &Self) -> bool {
-    self.id == other.id
+    self.id == other.id && self.k == other.k
   }
 }
 

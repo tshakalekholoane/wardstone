@@ -1,12 +1,13 @@
 //! Symmetric key primitive and some common instances.
 use core::fmt;
 use std::ffi::CStr;
+use std::hash::{Hash, Hasher};
 
 use crate::primitive::{Primitive, Security};
 
 /// Represents a symmetric key cryptography primitive.
 #[repr(C)]
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct Symmetric {
   pub id: u16,
   pub security: u16,
@@ -20,6 +21,13 @@ impl Symmetric {
       security,
       name: unsafe { CStr::from_bytes_with_nul_unchecked(name) },
     }
+  }
+}
+
+impl Hash for Symmetric {
+  fn hash<H: Hasher>(&self, state: &mut H) {
+    self.id.hash(state);
+    self.security.hash(state);
   }
 }
 
@@ -38,7 +46,7 @@ impl fmt::Display for Symmetric {
 
 impl PartialEq for Symmetric {
   fn eq(&self, other: &Self) -> bool {
-    self.id == other.id
+    self.id == other.id && self.security == other.security
   }
 }
 
