@@ -33,8 +33,8 @@ use crate::utilities;
 /// See crate documentation for comment on safety.
 #[no_mangle]
 pub unsafe extern "C" fn ws_lenstra_validate_ecc(
-  ctx: *const Context,
-  key: *const Ecc,
+  ctx: Context,
+  key: Ecc,
   alternative: *mut Ecc,
 ) -> c_int {
   utilities::c_call(Lenstra::validate_ecc, ctx, key, alternative)
@@ -64,8 +64,8 @@ pub unsafe extern "C" fn ws_lenstra_validate_ecc(
 /// See crate documentation for comment on safety.
 #[no_mangle]
 pub unsafe extern "C" fn ws_lenstra_validate_ffc(
-  ctx: *const Context,
-  key: *const Ffc,
+  ctx: Context,
+  key: Ffc,
   alternative: *mut Ffc,
 ) -> c_int {
   utilities::c_call(Lenstra::validate_ffc, ctx, key, alternative)
@@ -97,8 +97,8 @@ pub unsafe extern "C" fn ws_lenstra_validate_ffc(
 /// See crate documentation for comment on safety.
 #[no_mangle]
 pub unsafe extern "C" fn ws_lenstra_validate_hash(
-  ctx: *const Context,
-  hash: *const Hash,
+  ctx: Context,
+  hash: Hash,
   alternative: *mut Hash,
 ) -> c_int {
   utilities::c_call(Lenstra::validate_hash, ctx, hash, alternative)
@@ -127,8 +127,8 @@ pub unsafe extern "C" fn ws_lenstra_validate_hash(
 /// See crate documentation for comment on safety.
 #[no_mangle]
 pub unsafe extern "C" fn ws_lenstra_validate_ifc(
-  ctx: *const Context,
-  key: *const Ifc,
+  ctx: Context,
+  key: Ifc,
   alternative: *mut Ifc,
 ) -> c_int {
   utilities::c_call(Lenstra::validate_ifc, ctx, key, alternative)
@@ -153,8 +153,8 @@ pub unsafe extern "C" fn ws_lenstra_validate_ifc(
 /// See crate documentation for comment on safety.
 #[no_mangle]
 pub unsafe extern "C" fn ws_lenstra_validate_symmetric(
-  ctx: *const Context,
-  key: *const Symmetric,
+  ctx: Context,
+  key: Symmetric,
   alternative: *mut Symmetric,
 ) -> c_int {
   utilities::c_call(Lenstra::validate_symmetric, ctx, key, alternative)
