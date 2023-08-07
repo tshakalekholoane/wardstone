@@ -14,7 +14,7 @@
 //! use wardstone_core::standard::Standard;
 //!
 //! let ctx = Context::default();
-//! assert_eq!(Cnsa::validate_hash(&ctx, &SHA256), Err(&SHA384));
+//! assert_eq!(Cnsa::validate_hash(ctx, SHA256), Err(SHA384));
 //! ```
 //!
 //! Since the NSA no longer recommends the use of the SHA-256 algorithm,

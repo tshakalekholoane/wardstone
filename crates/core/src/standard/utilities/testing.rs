@@ -8,7 +8,7 @@ macro_rules! test_ecc {
     fn $name() {
       use $crate::context::Context;
       let ctx = Context::default();
-      assert_eq!($standard::validate_ecc(&ctx, $input), $want);
+      assert_eq!($standard::validate_ecc(ctx, $input), $want);
     }
   };
 }
@@ -21,7 +21,7 @@ macro_rules! test_ffc {
     fn $name() {
       use $crate::context::Context;
       let ctx = Context::default();
-      assert_eq!($standard::validate_ffc(&ctx, $input), $want);
+      assert_eq!($standard::validate_ffc(ctx, $input), $want);
     }
   };
 }
@@ -34,7 +34,7 @@ macro_rules! test_ifc {
     fn $name() {
       use $crate::context::Context;
       let ctx = Context::default();
-      assert_eq!($standard::validate_ifc(&ctx, $input), $want);
+      assert_eq!($standard::validate_ifc(ctx, $input), $want);
     }
   };
 }
@@ -47,7 +47,7 @@ macro_rules! test_hash {
     fn $name() {
       use $crate::context::Context;
       let ctx = Context::default();
-      assert_eq!($standard::validate_hash(&ctx, $input), $want);
+      assert_eq!($standard::validate_hash(ctx, $input), $want);
     }
   };
 }
@@ -60,7 +60,7 @@ macro_rules! test_hash_based {
     fn $name() {
       use $crate::context::Context;
       let ctx = Context::default();
-      assert_eq!($standard::validate_hash_based(&ctx, $input), $want);
+      assert_eq!($standard::validate_hash_based(ctx, $input), $want);
     }
   };
 }
@@ -73,7 +73,7 @@ macro_rules! test_symmetric {
     fn $name() {
       use $crate::context::Context;
       let ctx = Context::default();
-      assert_eq!($standard::validate_symmetric(&ctx, $input), $want);
+      assert_eq!($standard::validate_symmetric(ctx, $input), $want);
     }
   };
 }

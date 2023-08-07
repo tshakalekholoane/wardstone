@@ -15,7 +15,6 @@ fn main() {
     .rename_item("Ifc", "ws_ifc")
     .rename_item("Security", "ws_security")
     .rename_item("Symmetric", "ws_symmetric")
-    .rename_item("CStr", "void")
     .with_cpp_compat(true)
     .with_crate(crate_dir)
     .with_parse_deps(true)

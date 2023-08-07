@@ -3,10 +3,10 @@ use std::path::PathBuf;
 use std::process::{ExitCode, Termination};
 
 use clap::{Parser, Subcommand, ValueEnum};
-use wardstone::bridge::Asymmetric;
-use wardstone::key::Certificate;
+use wardstone::key::certificate::Certificate;
+use wardstone::primitive::asymmetric::Asymmetric;
+use wardstone::primitive::hash::HashFunc;
 use wardstone_core::context::Context;
-use wardstone_core::primitive::hash::*;
 use wardstone_core::standard::bsi::Bsi;
 use wardstone_core::standard::cnsa::Cnsa;
 use wardstone_core::standard::Standard;
@@ -48,38 +48,35 @@ pub enum Guide {
 }
 
 impl Guide {
-  fn validate_hash_function(
-    &self,
-    ctx: &Context,
-    hash: &Hash,
-  ) -> Result<&'static Hash, &'static Hash> {
+  fn validate_hash_function(&self, ctx: Context, hash: &HashFunc) -> Result<HashFunc, HashFunc> {
+    let hash = hash.func;
     match self {
-      Self::Bsi => Bsi::validate_hash(ctx, hash),
-      Self::Cnsa => Cnsa::validate_hash(ctx, hash),
+      Self::Bsi => Bsi::validate_hash(ctx, hash)
+        .map(Into::into)
+        .map_err(Into::into),
+      Self::Cnsa => Cnsa::validate_hash(ctx, hash)
+        .map(Into::into)
+        .map_err(Into::into),
     }
   }
 
   fn validate_signature_algorithm(
     &self,
-    ctx: &Context,
+    ctx: Context,
     algorithm: &Asymmetric,
   ) -> Result<Asymmetric, Asymmetric> {
     match self {
       Self::Bsi => match algorithm {
-        Asymmetric::Ecc(instance) => Bsi::validate_ecc(ctx, instance)
+        Asymmetric::Ecc { algorithm, .. } => Bsi::validate_ecc(ctx, *algorithm)
           .map(Into::into)
           .map_err(Into::into),
-        Asymmetric::Ifc(instance) => Bsi::validate_ifc(ctx, instance)
-          .map(Into::into)
-          .map_err(Into::into),
+        Asymmetric::Ifc { .. } => todo!(),
       },
       Self::Cnsa => match algorithm {
-        Asymmetric::Ecc(instance) => Cnsa::validate_ecc(ctx, instance)
+        Asymmetric::Ecc { algorithm, .. } => Cnsa::validate_ecc(ctx, *algorithm)
           .map(Into::into)
           .map_err(Into::into),
-        Asymmetric::Ifc(instance) => Cnsa::validate_ifc(ctx, instance)
-          .map(Into::into)
-          .map_err(Into::into),
+        Asymmetric::Ifc { .. } => todo!(),
       },
     }
   }
@@ -110,7 +107,7 @@ enum Subcommands {
 }
 
 impl Subcommands {
-  fn x509(ctx: &Context, path: &PathBuf, guide: &Guide, verbose: &bool) -> Status {
+  fn x509(ctx: Context, path: &PathBuf, guide: Guide, verbose: bool) -> Status {
     let certificate = match Certificate::from_pem_file(path) {
       Ok(got) => got,
       Err(err) => {
@@ -122,9 +119,9 @@ impl Subcommands {
     let mut pass = Status::Ok(path.to_path_buf());
 
     if let Some(got) = certificate.extract_hash_function() {
-      match guide.validate_hash_function(ctx, got) {
+      match guide.validate_hash_function(ctx, &got) {
         Ok(want) => {
-          if *verbose {
+          if verbose {
             println!("hash function: got: {}, want: {}", got, want)
           }
         },
@@ -136,9 +133,9 @@ impl Subcommands {
     }
 
     if let Some(got) = certificate.extract_signature_algorithm() {
-      match guide.validate_signature_algorithm(ctx, got) {
+      match guide.validate_signature_algorithm(ctx, &got) {
         Ok(want) => {
-          if *verbose {
+          if verbose {
             println!("signature algorithm: got: {}, want: {}", got, want)
           }
         },
@@ -152,13 +149,13 @@ impl Subcommands {
     pass
   }
 
-  pub fn run(&self, &ctx: &Context) -> Status {
+  pub fn run(&self, ctx: Context) -> Status {
     match self {
       Self::X509 {
         guide,
         path,
         verbose,
-      } => Self::x509(&ctx, path, guide, verbose),
+      } => Self::x509(ctx, path, *guide, *verbose),
     }
   }
 }
@@ -166,5 +163,5 @@ impl Subcommands {
 fn main() -> Status {
   let ctx = Context::default();
   let options = Options::parse();
-  options.subcommands.run(&ctx)
+  options.subcommands.run(ctx)
 }
