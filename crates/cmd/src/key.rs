@@ -24,7 +24,7 @@ impl Certificate {
       .digest
       .long_name()
       .ok()?;
-    HASH_FUNCTIONS.get(name).map(|hash| *hash)
+    HASH_FUNCTIONS.get(name).copied()
   }
 
   pub fn extract_signature_algorithm(&self) -> Option<&Asymmetric> {

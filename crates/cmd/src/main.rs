@@ -67,19 +67,19 @@ impl Guide {
     match self {
       Self::Bsi => match algorithm {
         Asymmetric::Ecc(instance) => Bsi::validate_ecc(ctx, instance)
-          .map(Asymmetric::Ecc)
-          .map_err(Asymmetric::Ecc),
+          .map(Into::into)
+          .map_err(Into::into),
         Asymmetric::Ifc(instance) => Bsi::validate_ifc(ctx, instance)
-          .map(Asymmetric::Ifc)
-          .map_err(Asymmetric::Ifc),
+          .map(Into::into)
+          .map_err(Into::into),
       },
       Self::Cnsa => match algorithm {
         Asymmetric::Ecc(instance) => Cnsa::validate_ecc(ctx, instance)
-          .map(Asymmetric::Ecc)
-          .map_err(Asymmetric::Ecc),
+          .map(Into::into)
+          .map_err(Into::into),
         Asymmetric::Ifc(instance) => Cnsa::validate_ifc(ctx, instance)
-          .map(Asymmetric::Ifc)
-          .map_err(Asymmetric::Ifc),
+          .map(Into::into)
+          .map_err(Into::into),
       },
     }
   }
@@ -114,7 +114,7 @@ impl Subcommands {
     let certificate = match Certificate::from_pem_file(path) {
       Ok(got) => got,
       Err(err) => {
-        eprintln!("{}", err.to_string());
+        eprintln!("{}", err);
         return Status::Fail(path.to_path_buf());
       },
     };
