@@ -1,3 +1,5 @@
+//! Create X.509 certificate representations and perform actions on
+//! them.
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -7,7 +9,7 @@ use openssl::x509::X509;
 
 use crate::key::Error;
 use crate::primitive::asymmetric::Asymmetric;
-use crate::primitive::hash::HashFunc;
+use crate::primitive::hash_func::HashFunc;
 
 /// Represents a TLS certificate.
 #[derive(Debug)]

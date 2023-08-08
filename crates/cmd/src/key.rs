@@ -1,7 +1,10 @@
+//! Key types supported by the application.
 use std::{fmt, io};
 
 pub mod certificate;
 
+/// Represents an error that could arise as a result of reading a key or
+/// parsing it's contents.
 #[derive(Debug)]
 pub enum Error {
   Io(io::Error),

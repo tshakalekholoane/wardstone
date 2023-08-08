@@ -1,19 +1,24 @@
+//! A hash function primitive.
 use std::fmt::{Display, Formatter, Result};
 
 use bimap::BiMap;
 use once_cell::sync::Lazy;
 use wardstone_core::primitive::hash::*;
 
-pub static HASH_REPR: Lazy<BiMap<Hash, &str>> = Lazy::new(|| {
+static HASH_REPR: Lazy<BiMap<Hash, &str>> = Lazy::new(|| {
   let mut m = BiMap::new();
   m.insert(SHA256, "sha256");
   m
 });
 
+/// Represents a hash function.
+///
+/// The translation is done via a lookup table that maps OpenSSL string
+/// representations and their equivalents in the core crate.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct HashFunc {
   pub func: Hash,
-  name: String,
+  pub name: String,
 }
 
 impl Display for HashFunc {
