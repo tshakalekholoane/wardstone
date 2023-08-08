@@ -1,3 +1,4 @@
+//! An asymmetric key primitive.
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter, Result};
 
@@ -99,6 +100,10 @@ pub static IFC_REPR: Lazy<HashMap<Ifc, &str>> = Lazy::new(|| {
   m
 });
 
+/// Represents an asymmetric key primitive.
+///
+/// The translation is done via a lookup tables that map OpenSSL string
+/// representations and their equivalents in the core crate.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum Asymmetric {
   Ecc { algorithm: Ecc, name: String },
