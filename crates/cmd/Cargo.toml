@@ -25,5 +25,5 @@ categories = [
 bimap = "0.6.3"
 clap = { version = "4.3.16", features = ["derive"] }
 once_cell = "1.18.0"
-openssl = "0.10.55"
 wardstone_core = { path = "../core" }
+x509-parser = "0.15.1"
