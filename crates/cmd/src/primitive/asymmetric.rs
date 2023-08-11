@@ -131,7 +131,9 @@ impl From<&str> for Asymmetric {
 
 impl From<Ecc> for Asymmetric {
   fn from(algorithm: Ecc) -> Self {
-    let name = ECC_REPR.get_by_left(&algorithm).unwrap_or(&"UNRECOGNISED");
+    let name = ECC_REPR
+      .get_by_left(&algorithm)
+      .unwrap_or(&"unrecognised, please file an issue");
     Self::Ecc {
       algorithm,
       name: name.to_string(),
@@ -141,7 +143,9 @@ impl From<Ecc> for Asymmetric {
 
 impl From<Ifc> for Asymmetric {
   fn from(algorithm: Ifc) -> Self {
-    let name = IFC_REPR.get(&algorithm).unwrap_or(&"UNRECOGNISED");
+    let name = IFC_REPR
+      .get(&algorithm)
+      .unwrap_or(&"unrecognised, please file an issue");
     Self::Ifc {
       algorithm,
       name: name.to_string(),

@@ -8,6 +8,8 @@ use wardstone_core::primitive::hash::*;
 static HASH_REPR: Lazy<BiMap<Hash, &str>> = Lazy::new(|| {
   let mut m = BiMap::new();
   m.insert(SHA256, "sha256");
+  m.insert(SHA384, "sha384");
+  m.insert(SHA512, "sha512");
   m
 });
 
@@ -30,7 +32,9 @@ impl Display for HashFunc {
 
 impl From<Hash> for HashFunc {
   fn from(func: Hash) -> Self {
-    let name = HASH_REPR.get_by_left(&func).unwrap_or(&"UNRECOGNISED");
+    let name = HASH_REPR
+      .get_by_left(&func)
+      .unwrap_or(&"unrecognised, please file an issue");
     Self {
       func,
       name: name.to_string(),

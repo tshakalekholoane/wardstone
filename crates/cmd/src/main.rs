@@ -44,6 +44,8 @@ impl fmt::Display for Status {
 pub enum Guide {
   /// The BSI TR-02102 series of technical guidelines.
   Bsi,
+  /// The Commercial National Security Algorithm Suites, CNSA 1.0 and
+  /// CNSA 2.0.
   Cnsa,
 }
 
@@ -108,7 +110,7 @@ enum Subcommands {
 
 impl Subcommands {
   fn x509(ctx: Context, path: &PathBuf, guide: Guide, verbose: bool) -> Status {
-    let certificate = match Certificate::from_pem_file(path) {
+    let certificate = match Certificate::from_file(path) {
       Ok(got) => got,
       Err(err) => {
         eprintln!("{}", err);
@@ -118,8 +120,8 @@ impl Subcommands {
 
     let mut pass = Status::Ok(path.to_path_buf());
 
-    if let Some(got) = certificate.extract_hash_function() {
-      match guide.validate_hash_function(ctx, &got) {
+    if let Some(got) = certificate.hash_function() {
+      match guide.validate_hash_function(ctx, got) {
         Ok(want) => {
           if verbose {
             println!("hash function: got: {}, want: {}", got, want)
@@ -132,18 +134,17 @@ impl Subcommands {
       }
     }
 
-    if let Some(got) = certificate.extract_signature_algorithm() {
-      match guide.validate_signature_algorithm(ctx, &got) {
-        Ok(want) => {
-          if verbose {
-            println!("signature algorithm: got: {}, want: {}", got, want)
-          }
-        },
-        Err(want) => {
-          pass = Status::Fail(path.to_path_buf());
-          eprintln!("signature algorithm: got: {}, want: {}", got, want);
-        },
-      }
+    let got = certificate.signature_algorithm();
+    match guide.validate_signature_algorithm(ctx, got) {
+      Ok(want) => {
+        if verbose {
+          println!("signature algorithm: got: {}, want: {}", got, want)
+        }
+      },
+      Err(want) => {
+        pass = Status::Fail(path.to_path_buf());
+        eprintln!("signature algorithm: got: {}, want: {}", got, want);
+      },
     }
 
     pass
