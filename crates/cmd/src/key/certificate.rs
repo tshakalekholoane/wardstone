@@ -157,9 +157,7 @@ impl Certificate {
         let signature_algorithm = ELLIPTIC_CURVES.get(&oid).cloned().ok_or(Error::Unrecognised(oid))?;
         Ok(Self { hash_function, signature_algorithm })
       },
-      _ => {
-        Err(Error::Unrecognised(oid))
-      },
+      _ => Err(Error::Unrecognised(oid)),
     }
   }
 }
