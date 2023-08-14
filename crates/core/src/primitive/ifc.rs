@@ -1,4 +1,9 @@
 //! Integer factorisation primitive and some common instances.
+use std::collections::HashMap;
+use std::fmt::{Display, Formatter, Result};
+
+use once_cell::sync::Lazy;
+
 use crate::primitive::{Primitive, Security};
 
 /// Represents an integer factorisation cryptography primitive the most
@@ -14,6 +19,23 @@ pub struct Ifc {
 impl Ifc {
   pub const fn new(id: u16, k: u16) -> Self {
     Self { id, k }
+  }
+}
+
+// The name is kept in a lookup table instead of being embedded in the
+// type because sharing strings across language boundaries is a bit
+// dicey.
+static REPR: Lazy<HashMap<Ifc, &str>> = Lazy::new(|| {
+  let mut m = HashMap::new();
+  m.insert(IFC_1024, "ifc1024");
+  m
+});
+
+impl Display for Ifc {
+  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    let unrecognised = "unrecognised";
+    let name = REPR.get(self).unwrap_or(&unrecognised);
+    write!(f, "{name}")
   }
 }
 

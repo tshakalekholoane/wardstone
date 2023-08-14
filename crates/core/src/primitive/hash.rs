@@ -1,4 +1,9 @@
 //! Hash function primitive and some common instances.
+use std::collections::HashMap;
+use std::fmt::{Display, Formatter, Result};
+
+use once_cell::sync::Lazy;
+
 use crate::primitive::{Primitive, Security};
 
 /// Represents a hash or hash-based function cryptographic primitive
@@ -28,6 +33,25 @@ impl Primitive for Hash {
   /// just L (see page 7 of NIST SP-800-107).
   fn security(&self) -> Security {
     self.n >> 1
+  }
+}
+
+// The name is kept in a lookup table instead of being embedded in the
+// type because sharing strings across language boundaries is a bit
+// dicey.
+static REPR: Lazy<HashMap<Hash, &str>> = Lazy::new(|| {
+  let mut m = HashMap::new();
+  m.insert(SHA256, "sha256");
+  m.insert(SHA384, "sha384");
+  m.insert(SHA512, "sha512");
+  m
+});
+
+impl Display for Hash {
+  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    let unrecognised = "unrecognised";
+    let name = REPR.get(self).unwrap_or(&unrecognised);
+    write!(f, "{name}")
   }
 }
 

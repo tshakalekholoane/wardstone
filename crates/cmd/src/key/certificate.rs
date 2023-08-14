@@ -6,14 +6,13 @@ use std::io::Read;
 use std::path::PathBuf;
 
 use once_cell::sync::Lazy;
-use wardstone_core::primitive::ecc::{BRAINPOOLP160R1, ED25519, ED448};
-use wardstone_core::primitive::hash::SHA256;
+use wardstone_core::primitive::ecc::*;
+use wardstone_core::primitive::hash::*;
 use x509_parser::pem;
 use x509_parser::prelude::{FromDer, X509Certificate};
 
 use crate::key::Error;
 use crate::primitive::asymmetric::Asymmetric;
-use crate::primitive::hash_func::HashFunc;
 
 static ELLIPTIC_CURVES: Lazy<HashMap<String, Asymmetric>> = Lazy::new(|| {
   let mut m = HashMap::new();
@@ -24,7 +23,7 @@ static ELLIPTIC_CURVES: Lazy<HashMap<String, Asymmetric>> = Lazy::new(|| {
 /// Represents a TLS certificate.
 #[derive(Debug)]
 pub struct Certificate {
-  hash_function: Option<HashFunc>,
+  hash_function: Option<Hash>,
   signature_algorithm: Asymmetric,
 }
 
@@ -33,12 +32,12 @@ impl Certificate {
     !matches!((data[0], data[1]), (0x30, 0x81..=0x83))
   }
 
-  pub fn hash_function(&self) -> &Option<HashFunc> {
-    &self.hash_function
+  pub fn hash_function(&self) -> Option<Hash> {
+    self.hash_function
   }
 
-  pub fn signature_algorithm(&self) -> &Asymmetric {
-    &self.signature_algorithm
+  pub fn signature_algorithm(&self) -> Asymmetric {
+    self.signature_algorithm
   }
 
   pub fn from_file(path: &PathBuf) -> Result<Certificate, Error> {
@@ -68,7 +67,7 @@ impl Certificate {
         signature_algorithm: ED448.into(),
       }),
       "1.2.840.10045.4.3.2" /* edsa-with-SHA256(2) */ => {
-        let hash_function = Some(SHA256.into());
+        let hash_function = Some(SHA256);
         let parameters = tbs_certificate
           .subject_pki
           .algorithm
