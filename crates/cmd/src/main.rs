@@ -17,7 +17,7 @@ pub enum Status {
 }
 
 impl Termination for Status {
-  fn report(self) -> std::process::ExitCode {
+  fn report(self) -> ExitCode {
     match self {
       Self::Ok(_) => {
         println!("{}", &self);
