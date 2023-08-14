@@ -5,8 +5,8 @@ use std::process::{ExitCode, Termination};
 use clap::{Parser, Subcommand, ValueEnum};
 use wardstone::key::certificate::Certificate;
 use wardstone::primitive::asymmetric::Asymmetric;
-use wardstone::primitive::hash_func::HashFunc;
 use wardstone_core::context::Context;
+use wardstone_core::primitive::hash::Hash;
 use wardstone_core::standard::bsi::Bsi;
 use wardstone_core::standard::cnsa::Cnsa;
 use wardstone_core::standard::Standard;
@@ -40,6 +40,10 @@ impl fmt::Display for Status {
   }
 }
 
+// Having this type in the core crate would reduce the amount of case
+// analysis done to find the function to execute but this would run
+// counter to the ability of users to create their own first-class
+// guides/standards.
 #[derive(Clone, Copy, Debug, ValueEnum)]
 pub enum Guide {
   /// The BSI TR-02102 series of technical guidelines.
@@ -50,35 +54,30 @@ pub enum Guide {
 }
 
 impl Guide {
-  fn validate_hash_function(&self, ctx: Context, hash: &HashFunc) -> Result<HashFunc, HashFunc> {
-    let hash = hash.func;
+  fn validate_hash_function(&self, ctx: Context, hash: Hash) -> Result<Hash, Hash> {
     match self {
-      Self::Bsi => Bsi::validate_hash(ctx, hash)
-        .map(Into::into)
-        .map_err(Into::into),
-      Self::Cnsa => Cnsa::validate_hash(ctx, hash)
-        .map(Into::into)
-        .map_err(Into::into),
+      Self::Bsi => Bsi::validate_hash(ctx, hash),
+      Self::Cnsa => Cnsa::validate_hash(ctx, hash),
     }
   }
 
   fn validate_signature_algorithm(
     &self,
     ctx: Context,
-    algorithm: &Asymmetric,
+    asymmetric: Asymmetric,
   ) -> Result<Asymmetric, Asymmetric> {
     match self {
-      Self::Bsi => match algorithm {
-        Asymmetric::Ecc { algorithm, .. } => Bsi::validate_ecc(ctx, *algorithm)
+      Self::Bsi => match asymmetric {
+        Asymmetric::Ecc(ecc) => Bsi::validate_ecc(ctx, ecc)
           .map(Into::into)
           .map_err(Into::into),
-        Asymmetric::Ifc { .. } => todo!(),
+        Asymmetric::Ifc(_) => todo!(),
       },
-      Self::Cnsa => match algorithm {
-        Asymmetric::Ecc { algorithm, .. } => Cnsa::validate_ecc(ctx, *algorithm)
+      Self::Cnsa => match asymmetric {
+        Asymmetric::Ecc(ecc) => Cnsa::validate_ecc(ctx, ecc)
           .map(Into::into)
           .map_err(Into::into),
-        Asymmetric::Ifc { .. } => todo!(),
+        Asymmetric::Ifc(_) => todo!(),
       },
     }
   }
