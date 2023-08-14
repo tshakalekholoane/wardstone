@@ -27,7 +27,7 @@ impl fmt::Display for Error {
       },
       Error::ParsePEM(_) => write!(f, "Cannot parse PEM file."),
       Error::ParseX509(_) => write!(f, "Cannot parse X.509 certificate."),
-      Error::Unrecognised(oid) => write!(f, "Unrecognised key: {}. Please file an issue", oid),
+      Error::Unrecognised(oid) => write!(f, "Unrecognised key: {}. Please file an issue.", oid),
     }
   }
 }
