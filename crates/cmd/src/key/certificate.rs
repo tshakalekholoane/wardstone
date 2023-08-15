@@ -8,7 +8,9 @@ use std::path::PathBuf;
 use once_cell::sync::Lazy;
 use wardstone_core::primitive::ecc::*;
 use wardstone_core::primitive::hash::*;
+use wardstone_core::primitive::ifc::*;
 use x509_parser::pem;
+use x509_parser::prelude::TbsCertificate;
 use x509_parser::prelude::{FromDer, X509Certificate};
 
 use crate::key::Error;
@@ -112,6 +114,76 @@ impl Certificate {
     !matches!((data[0], data[1]), (0x30, 0x81..=0x83))
   }
 
+  // ecdsa-with-SHA256(2).
+  fn edsa_with_sha256(tbs_certificate: &TbsCertificate) -> Result<Certificate, Error> {
+    let hash_function = Some(SHA256);
+    let parameters = tbs_certificate
+      .subject_pki
+      .algorithm
+      .parameters
+      .as_ref()
+      .expect("elliptic curve should specify curve");
+    let oid = parameters
+      .clone()
+      .oid()
+      .expect("elliptic curve should have identifier")
+      .to_id_string();
+    let signature_algorithm = ASYMMETRIC
+      .get(&oid.as_str())
+      .cloned()
+      .ok_or(Error::Unrecognised(oid))?;
+    let certificate = Self {
+      hash_function,
+      signature_algorithm,
+    };
+    Ok(certificate)
+  }
+
+  // sha256WithRSAEncryption(11).
+  fn sha256_with_rsa_encryption(tbs_certificate: &TbsCertificate) -> Result<Certificate, Error> {
+    let hash_function = Some(SHA256);
+    let k = tbs_certificate
+      .subject_pki
+      .parsed()
+      .expect("should parse rsa public key")
+      .key_size();
+    let signature_algorithm = match k {
+      1024 => IFC_1024.into(),
+      1280 => IFC_1280.into(),
+      1536 => IFC_1536.into(),
+      2048 => IFC_2048.into(),
+      3072 => IFC_3072.into(),
+      4096 => IFC_4096.into(),
+      7680 => IFC_7680.into(),
+      8192 => IFC_8192.into(),
+      15360 => IFC_15360.into(),
+      _ => Ifc::new(65525, k as u16).into(),
+    };
+    let certificate = Self {
+      hash_function,
+      signature_algorithm,
+    };
+    Ok(certificate)
+  }
+
+  // id-Ed25519(112) or id-EdDSA25519.
+  fn id_ed25519() -> Result<Certificate, Error> {
+    let certificate = Self {
+      hash_function: None,
+      signature_algorithm: ED25519.into(),
+    };
+    Ok(certificate)
+  }
+
+  // id-Ed448(113) or id-EdDSA448.
+  fn id_ed448() -> Result<Certificate, Error> {
+    let certificate = Self {
+      hash_function: None,
+      signature_algorithm: ED448.into(),
+    };
+    Ok(certificate)
+  }
+
   pub fn hash_function(&self) -> Option<Hash> {
     self.hash_function
   }
@@ -138,25 +210,10 @@ impl Certificate {
 
     let oid = tbs_certificate.signature.oid().to_id_string();
     match oid.as_str() {
-      "1.3.101.112" /* id-Ed25519(112) or id-EdDSA25519 */=> Ok(Self {
-        hash_function: None,
-        signature_algorithm: ED25519.into(),
-      }),
-      "1.3.101.113" /* id-Ed448(113) or id-EdDSA448 */ => Ok(Self {
-        hash_function: None,
-        signature_algorithm: ED448.into(),
-      }),
-      "1.2.840.10045.4.3.2" /* edsa-with-SHA256(2) */ => {
-        let hash_function = Some(SHA256);
-        let parameters = tbs_certificate
-          .subject_pki
-          .algorithm
-          .parameters
-          .expect("elliptic curve should specify curve");
-        let oid = parameters.oid().expect("elliptic curve should have identifier").to_id_string();
-        let signature_algorithm = ASYMMETRIC.get(&oid.as_str()).cloned().ok_or(Error::Unrecognised(oid))?;
-        Ok(Self { hash_function, signature_algorithm })
-      },
+      "1.2.840.10045.4.3.2" => Self::edsa_with_sha256(&tbs_certificate),
+      "1.2.840.113549.1.1.11" => Self::sha256_with_rsa_encryption(&tbs_certificate),
+      "1.3.101.112" => Self::id_ed25519(),
+      "1.3.101.113" => Self::id_ed448(),
       _ => Err(Error::Unrecognised(oid)),
     }
   }

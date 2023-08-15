@@ -71,13 +71,17 @@ impl Guide {
         Asymmetric::Ecc(ecc) => Bsi::validate_ecc(ctx, ecc)
           .map(Into::into)
           .map_err(Into::into),
-        Asymmetric::Ifc(_) => todo!(),
+        Asymmetric::Ifc(ifc) => Bsi::validate_ifc(ctx, ifc)
+          .map(Into::into)
+          .map_err(Into::into),
       },
       Self::Cnsa => match asymmetric {
         Asymmetric::Ecc(ecc) => Cnsa::validate_ecc(ctx, ecc)
           .map(Into::into)
           .map_err(Into::into),
-        Asymmetric::Ifc(_) => todo!(),
+        Asymmetric::Ifc(ifc) => Cnsa::validate_ifc(ctx, ifc)
+          .map(Into::into)
+          .map_err(Into::into),
       },
     }
   }
