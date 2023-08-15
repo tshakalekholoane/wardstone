@@ -41,9 +41,32 @@ impl Primitive for Hash {
 // dicey.
 static REPR: Lazy<HashMap<Hash, &str>> = Lazy::new(|| {
   let mut m = HashMap::new();
+  m.insert(BLAKE_224, "blake224");
+  m.insert(BLAKE_256, "blake256");
+  m.insert(BLAKE_384, "blake384");
+  m.insert(BLAKE_512, "blake512");
+  m.insert(BLAKE2B_256, "blake2b256");
+  m.insert(BLAKE2B_384, "blake2b384");
+  m.insert(BLAKE2B_512, "blake2b512");
+  m.insert(BLAKE2S_256, "blake2s256");
+  m.insert(BLAKE3, "blake3");
+  m.insert(MD4, "md4");
+  m.insert(MD5, "md5");
+  m.insert(RIPEMD160, "ripemd160");
+  m.insert(SHA1, "sha1");
+  m.insert(SHA224, "sha224");
   m.insert(SHA256, "sha256");
   m.insert(SHA384, "sha384");
   m.insert(SHA512, "sha512");
+  m.insert(SHA3_224, "sha3_224");
+  m.insert(SHA3_256, "sha3_256");
+  m.insert(SHA3_384, "sha3_384");
+  m.insert(SHA3_512, "sha3_512");
+  m.insert(SHA512_224, "sha512/224");
+  m.insert(SHA512_256, "sha512/256");
+  m.insert(SHAKE128, "shake128");
+  m.insert(SHAKE256, "shake256");
+  m.insert(WHIRLPOOL, "whirlpool");
   m
 });
 
