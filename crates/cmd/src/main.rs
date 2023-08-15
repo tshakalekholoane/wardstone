@@ -9,6 +9,11 @@ use wardstone_core::context::Context;
 use wardstone_core::primitive::hash::Hash;
 use wardstone_core::standard::bsi::Bsi;
 use wardstone_core::standard::cnsa::Cnsa;
+use wardstone_core::standard::ecrypt::Ecrypt;
+use wardstone_core::standard::lenstra::Lenstra;
+use wardstone_core::standard::nist::Nist;
+use wardstone_core::standard::testing::strong::Strong;
+use wardstone_core::standard::testing::weak::Weak;
 use wardstone_core::standard::Standard;
 
 pub enum Status {
@@ -46,11 +51,24 @@ impl fmt::Display for Status {
 // guides/standards.
 #[derive(Clone, Copy, Debug, ValueEnum)]
 pub enum Guide {
-  /// The BSI TR-02102 series of technical guidelines.
+  /// BSI TR-02102 series of technical guidelines.
   Bsi,
-  /// The Commercial National Security Algorithm Suites, CNSA 1.0 and
+  /// Commercial National Security Algorithm Suites, CNSA 1.0 and
   /// CNSA 2.0.
   Cnsa,
+  /// ECRYPT-CSA D5.4 Algorithms, Key Size and Protocols Report.
+  Ecrypt,
+  /// Key Lengths, Arjen K. Lenstra, The Handbook of Information
+  /// Security, 06/2004.
+  Lenstra,
+  /// NIST Special Publication 800-57 Part 1 Revision 5 standard.
+  Nist,
+  /// Mock standard with a minimum security requirement of at least
+  /// 256-bits.
+  Strong,
+  /// Mock standard with a minimum security requirement of at least
+  /// 64-bits.
+  Weak,
 }
 
 impl Guide {
@@ -58,6 +76,11 @@ impl Guide {
     match self {
       Self::Bsi => Bsi::validate_hash(ctx, hash),
       Self::Cnsa => Cnsa::validate_hash(ctx, hash),
+      Self::Ecrypt => Ecrypt::validate_hash(ctx, hash),
+      Self::Lenstra => Ecrypt::validate_hash(ctx, hash),
+      Self::Nist => Nist::validate_hash(ctx, hash),
+      Self::Strong => Strong::validate_hash(ctx, hash),
+      Self::Weak => Weak::validate_hash(ctx, hash),
     }
   }
 
@@ -80,6 +103,46 @@ impl Guide {
           .map(Into::into)
           .map_err(Into::into),
         Asymmetric::Ifc(ifc) => Cnsa::validate_ifc(ctx, ifc)
+          .map(Into::into)
+          .map_err(Into::into),
+      },
+      Self::Ecrypt => match asymmetric {
+        Asymmetric::Ecc(ecc) => Ecrypt::validate_ecc(ctx, ecc)
+          .map(Into::into)
+          .map_err(Into::into),
+        Asymmetric::Ifc(ifc) => Ecrypt::validate_ifc(ctx, ifc)
+          .map(Into::into)
+          .map_err(Into::into),
+      },
+      Self::Lenstra => match asymmetric {
+        Asymmetric::Ecc(ecc) => Lenstra::validate_ecc(ctx, ecc)
+          .map(Into::into)
+          .map_err(Into::into),
+        Asymmetric::Ifc(ifc) => Lenstra::validate_ifc(ctx, ifc)
+          .map(Into::into)
+          .map_err(Into::into),
+      },
+      Self::Nist => match asymmetric {
+        Asymmetric::Ecc(ecc) => Nist::validate_ecc(ctx, ecc)
+          .map(Into::into)
+          .map_err(Into::into),
+        Asymmetric::Ifc(ifc) => Nist::validate_ifc(ctx, ifc)
+          .map(Into::into)
+          .map_err(Into::into),
+      },
+      Self::Strong => match asymmetric {
+        Asymmetric::Ecc(ecc) => Strong::validate_ecc(ctx, ecc)
+          .map(Into::into)
+          .map_err(Into::into),
+        Asymmetric::Ifc(ifc) => Strong::validate_ifc(ctx, ifc)
+          .map(Into::into)
+          .map_err(Into::into),
+      },
+      Self::Weak => match asymmetric {
+        Asymmetric::Ecc(ecc) => Weak::validate_ecc(ctx, ecc)
+          .map(Into::into)
+          .map_err(Into::into),
+        Asymmetric::Ifc(ifc) => Weak::validate_ifc(ctx, ifc)
           .map(Into::into)
           .map_err(Into::into),
       },
