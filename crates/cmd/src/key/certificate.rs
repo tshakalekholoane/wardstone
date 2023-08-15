@@ -212,14 +212,26 @@ impl Certificate {
 
     let oid = tbs_certificate.signature.oid().to_id_string();
     match oid.as_str() {
+      "1.2.840.10045.4.1" => Self::edsa_with_sha(&tbs_certificate, SHA1),
+      "1.2.840.10045.4.3.1" => Self::edsa_with_sha(&tbs_certificate, SHA224),
       "1.2.840.10045.4.3.2" => Self::edsa_with_sha(&tbs_certificate, SHA256),
       "1.2.840.10045.4.3.3" => Self::edsa_with_sha(&tbs_certificate, SHA384),
-      "1.2.840.113549.1.1.5" => Self::with_rsa_encryption(&tbs_certificate, SHA1),
+      "1.2.840.10045.4.3.4" => Self::edsa_with_sha(&tbs_certificate, SHA512),
+      "1.2.840.113549.1.1.10" => todo!(),
       "1.2.840.113549.1.1.11" => Self::with_rsa_encryption(&tbs_certificate, SHA256),
       "1.2.840.113549.1.1.12" => Self::with_rsa_encryption(&tbs_certificate, SHA384),
       "1.2.840.113549.1.1.13" => Self::with_rsa_encryption(&tbs_certificate, SHA512),
+      "1.2.840.113549.1.1.14" => Self::with_rsa_encryption(&tbs_certificate, SHA224),
+      "1.2.840.113549.1.1.15" => Self::with_rsa_encryption(&tbs_certificate, SHA512_224),
+      "1.2.840.113549.1.1.16" => Self::with_rsa_encryption(&tbs_certificate, SHA512_256),
+      "1.2.840.113549.1.1.3" => Self::with_rsa_encryption(&tbs_certificate, MD4),
+      "1.2.840.113549.1.1.4" => Self::with_rsa_encryption(&tbs_certificate, MD5),
+      "1.2.840.113549.1.1.5" => Self::with_rsa_encryption(&tbs_certificate, SHA1),
       "1.3.101.112" => Self::id_ed25519(),
       "1.3.101.113" => Self::id_ed448(),
+      "2.16.840.1.101.3.4.3.10" => Self::edsa_with_sha(&tbs_certificate, SHA3_256),
+      "2.16.840.1.101.3.4.3.11" => Self::edsa_with_sha(&tbs_certificate, SHA3_384),
+      "2.16.840.1.101.3.4.3.12" => Self::edsa_with_sha(&tbs_certificate, SHA3_512),
       _ => Err(Error::Unrecognised(oid)),
     }
   }
