@@ -114,9 +114,9 @@ impl Certificate {
     !matches!((data[0], data[1]), (0x30, 0x81..=0x83))
   }
 
-  // ecdsa-with-SHA256(2).
-  fn edsa_with_sha256(tbs_certificate: &TbsCertificate) -> Result<Certificate, Error> {
-    let hash_function = Some(SHA256);
+  // ecdsa-with-SHA{256,384}.
+  fn edsa_with_sha(tbs_certificate: &TbsCertificate, sha: Hash) -> Result<Certificate, Error> {
+    let hash_function = Some(sha);
     let parameters = tbs_certificate
       .subject_pki
       .algorithm
@@ -139,9 +139,12 @@ impl Certificate {
     Ok(certificate)
   }
 
-  // sha256WithRSAEncryption(11).
-  fn sha256_with_rsa_encryption(tbs_certificate: &TbsCertificate) -> Result<Certificate, Error> {
-    let hash_function = Some(SHA256);
+  // sha{1,256,384,512}WithRSAEncryption.
+  fn with_rsa_encryption(
+    tbs_certificate: &TbsCertificate,
+    sha: Hash,
+  ) -> Result<Certificate, Error> {
+    let hash_function = Some(sha);
     let k = tbs_certificate
       .subject_pki
       .parsed()
@@ -166,7 +169,7 @@ impl Certificate {
     Ok(certificate)
   }
 
-  // id-Ed25519(112) or id-EdDSA25519.
+  // id-Ed25519 or id-EdDSA25519.
   fn id_ed25519() -> Result<Certificate, Error> {
     let certificate = Self {
       hash_function: None,
@@ -175,7 +178,7 @@ impl Certificate {
     Ok(certificate)
   }
 
-  // id-Ed448(113) or id-EdDSA448.
+  // id-Ed448 or id-EdDSA448.
   fn id_ed448() -> Result<Certificate, Error> {
     let certificate = Self {
       hash_function: None,
@@ -210,8 +213,12 @@ impl Certificate {
 
     let oid = tbs_certificate.signature.oid().to_id_string();
     match oid.as_str() {
-      "1.2.840.10045.4.3.2" => Self::edsa_with_sha256(&tbs_certificate),
-      "1.2.840.113549.1.1.11" => Self::sha256_with_rsa_encryption(&tbs_certificate),
+      "1.2.840.10045.4.3.2" => Self::edsa_with_sha(&tbs_certificate, SHA256),
+      "1.2.840.10045.4.3.3" => Self::edsa_with_sha(&tbs_certificate, SHA384),
+      "1.2.840.113549.1.1.5" => Self::with_rsa_encryption(&tbs_certificate, SHA1),
+      "1.2.840.113549.1.1.11" => Self::with_rsa_encryption(&tbs_certificate, SHA256),
+      "1.2.840.113549.1.1.12" => Self::with_rsa_encryption(&tbs_certificate, SHA384),
+      "1.2.840.113549.1.1.13" => Self::with_rsa_encryption(&tbs_certificate, SHA512),
       "1.3.101.112" => Self::id_ed25519(),
       "1.3.101.113" => Self::id_ed448(),
       _ => Err(Error::Unrecognised(oid)),
