@@ -26,26 +26,6 @@ class Opts:
     pkeyopt: str
 
 
-def _dh_opts():
-    names = (
-        "dh_1024_160",
-        "dh_2048_224",
-        "dh_2048_256",
-        "ffdhe2048",
-        "ffdhe3072",
-        "ffdhe4096",
-        "ffdhe6144",
-        "ffdhe8192",
-        "modp_1536",
-        "modp_2048",
-        "modp_3072",
-        "modp_4096",
-        "modp_6144",
-        "modp_8192",
-    )
-    return (Opts("dh", f"ffc_{name}", f"group:{name}") for name in names)
-
-
 def _dsa_opts():
     bits = ((1024, 160), (2048, 224), (3072, 256))
     return (
@@ -64,7 +44,7 @@ def _ec_opts():
 
 
 def _edwards_opts():
-    names = ("ed25519", "ed448", "x25519", "x448")
+    names = ("ed25519", "ed448")
     return (Opts(name, f"ecc_{name}", "") for name in names)
 
 
@@ -180,7 +160,6 @@ async def main():
     for dir in dirs:
         os.makedirs(dir, exist_ok=True)
     opts = itertools.chain(
-        _dh_opts(),
         _dsa_opts(),
         _ec_opts(),
         _edwards_opts(),
