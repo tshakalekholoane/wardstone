@@ -113,7 +113,6 @@ impl Certificate {
     !matches!((data[0], data[1]), (0x30, 0x81..=0x83))
   }
 
-  // ecdsa-with-SHA{256,384}.
   fn edsa_with_sha(tbs_certificate: &TbsCertificate, sha: Hash) -> Result<Certificate, Error> {
     let hash_function = Some(sha);
     let parameters = tbs_certificate
@@ -138,7 +137,22 @@ impl Certificate {
     Ok(certificate)
   }
 
-  // sha{1,256,384,512}WithRSAEncryption.
+  fn id_ed25519() -> Result<Certificate, Error> {
+    let certificate = Self {
+      hash_function: None,
+      signature_algorithm: ED25519.into(),
+    };
+    Ok(certificate)
+  }
+
+  fn id_ed448() -> Result<Certificate, Error> {
+    let certificate = Self {
+      hash_function: None,
+      signature_algorithm: ED448.into(),
+    };
+    Ok(certificate)
+  }
+
   fn with_rsa_encryption(
     tbs_certificate: &TbsCertificate,
     sha: Hash,
@@ -164,24 +178,6 @@ impl Certificate {
     let certificate = Self {
       hash_function,
       signature_algorithm,
-    };
-    Ok(certificate)
-  }
-
-  // id-Ed25519 or id-EdDSA25519.
-  fn id_ed25519() -> Result<Certificate, Error> {
-    let certificate = Self {
-      hash_function: None,
-      signature_algorithm: ED25519.into(),
-    };
-    Ok(certificate)
-  }
-
-  // id-Ed448 or id-EdDSA448.
-  fn id_ed448() -> Result<Certificate, Error> {
-    let certificate = Self {
-      hash_function: None,
-      signature_algorithm: ED448.into(),
     };
     Ok(certificate)
   }
@@ -217,7 +213,6 @@ impl Certificate {
       "1.2.840.10045.4.3.2" => Self::edsa_with_sha(&tbs_certificate, SHA256),
       "1.2.840.10045.4.3.3" => Self::edsa_with_sha(&tbs_certificate, SHA384),
       "1.2.840.10045.4.3.4" => Self::edsa_with_sha(&tbs_certificate, SHA512),
-      "1.2.840.113549.1.1.10" => todo!(),
       "1.2.840.113549.1.1.11" => Self::with_rsa_encryption(&tbs_certificate, SHA256),
       "1.2.840.113549.1.1.12" => Self::with_rsa_encryption(&tbs_certificate, SHA384),
       "1.2.840.113549.1.1.13" => Self::with_rsa_encryption(&tbs_certificate, SHA512),
