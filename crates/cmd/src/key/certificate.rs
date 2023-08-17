@@ -6,6 +6,7 @@ use std::io::Read;
 use std::path::PathBuf;
 
 use once_cell::sync::Lazy;
+use openssl::x509::X509;
 use wardstone_core::primitive::ecc::*;
 use wardstone_core::primitive::hash::*;
 use wardstone_core::primitive::ifc::*;
@@ -153,6 +154,36 @@ impl Certificate {
     Ok(certificate)
   }
 
+  fn rsassa_pss(data: &[u8]) -> Result<Certificate, Error> {
+    // The x509_parser crate cannot seem to read rsassa-pss keys so
+    // resort to openssl for that. But even that cannot seem to
+    // extract the hash function so a lower level interface may be
+    // required.
+    let certificate = if Self::is_likely_pem(data) {
+      X509::from_pem(data)?
+    } else {
+      X509::from_der(data)?
+    };
+    let public_key = certificate.public_key()?;
+    let k = public_key.bits();
+    let signature_algorithm = match k {
+      1024 => RSA_PSS_1024.into(),
+      1536 => RSA_PSS_1536.into(),
+      2048 => RSA_PSS_2048.into(),
+      3072 => RSA_PSS_3072.into(),
+      4096 => RSA_PSS_4096.into(),
+      7680 => RSA_PSS_7680.into(),
+      8192 => RSA_PSS_8192.into(),
+      15360 => RSA_PSS_15360.into(),
+      _ => Ifc::new(ID_RSA_PSS, k as u16).into(),
+    };
+    let certificate = Self {
+      hash_function: None,
+      signature_algorithm,
+    };
+    Ok(certificate)
+  }
+
   fn with_rsa_encryption(
     tbs_certificate: &TbsCertificate,
     sha: Hash,
@@ -213,6 +244,7 @@ impl Certificate {
       "1.2.840.10045.4.3.2" => Self::edsa_with_sha(&tbs_certificate, SHA256),
       "1.2.840.10045.4.3.3" => Self::edsa_with_sha(&tbs_certificate, SHA384),
       "1.2.840.10045.4.3.4" => Self::edsa_with_sha(&tbs_certificate, SHA512),
+      "1.2.840.113549.1.1.10" => Self::rsassa_pss(&data),
       "1.2.840.113549.1.1.11" => Self::with_rsa_encryption(&tbs_certificate, SHA256),
       "1.2.840.113549.1.1.12" => Self::with_rsa_encryption(&tbs_certificate, SHA384),
       "1.2.840.113549.1.1.13" => Self::with_rsa_encryption(&tbs_certificate, SHA512),
