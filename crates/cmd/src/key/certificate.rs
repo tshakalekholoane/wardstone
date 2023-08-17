@@ -195,16 +195,15 @@ impl Certificate {
       .expect("should parse rsa public key")
       .key_size();
     let signature_algorithm = match k {
-      1024 => IFC_1024.into(),
-      1280 => IFC_1280.into(),
-      1536 => IFC_1536.into(),
-      2048 => IFC_2048.into(),
-      3072 => IFC_3072.into(),
-      4096 => IFC_4096.into(),
-      7680 => IFC_7680.into(),
-      8192 => IFC_8192.into(),
-      15360 => IFC_15360.into(),
-      _ => Ifc::new(65525, k as u16).into(),
+      1024 => RSA_PKCS1_1024.into(),
+      1536 => RSA_PKCS1_1536.into(),
+      2048 => RSA_PKCS1_2048.into(),
+      3072 => RSA_PKCS1_3072.into(),
+      4096 => RSA_PKCS1_4096.into(),
+      7680 => RSA_PKCS1_7680.into(),
+      8192 => RSA_PKCS1_8192.into(),
+      15360 => RSA_PKCS1_15360.into(),
+      _ => Ifc::new(ID_RSA_PKCS1, k as u16).into(),
     };
     let certificate = Self {
       hash_function,

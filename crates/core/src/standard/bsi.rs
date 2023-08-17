@@ -20,9 +20,9 @@ const CUTOFF_YEAR_RSA: u16 = 2023; // See p. 17.
 
 static SPECIFIED_CURVES: Lazy<HashSet<Ecc>> = Lazy::new(|| {
   let mut s = HashSet::new();
-  s.insert(P256);
-  s.insert(P384);
-  s.insert(P521);
+  s.insert(SECP256R1);
+  s.insert(SECP384R1);
+  s.insert(SECP521R1);
   s.insert(BRAINPOOLP256R1);
   s.insert(BRAINPOOLP320R1);
   s.insert(BRAINPOOLP384R1);
@@ -275,34 +275,33 @@ impl Standard for Bsi {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ifc::IFC_2048;
+  /// use wardstone_core::primitive::ifc::RSA_PSS_2048;
   /// use wardstone_core::standard::bsi::Bsi;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// assert_eq!(Bsi::validate_ifc(ctx, rsa_2048), Ok(rsa_2048));
+  /// assert_eq!(Bsi::validate_ifc(ctx, RSA_PSS_2048), Ok(RSA_PSS_2048));
   /// ```
   fn validate_ifc(ctx: Context, key: Ifc) -> Result<Ifc, Ifc> {
     let security = ctx.security().max(key.security());
     match security {
       ..=111 => {
         if ctx.year() > CUTOFF_YEAR_RSA {
-          Err(IFC_3072)
+          Err(RSA_PSS_3072)
         } else {
-          Err(IFC_2048)
+          Err(RSA_PSS_2048)
         }
       },
       112..=127 => {
         if ctx.year() > CUTOFF_YEAR_RSA {
-          Err(IFC_3072)
+          Err(RSA_PSS_3072)
         } else {
-          Ok(IFC_2048)
+          Ok(RSA_PSS_2048)
         }
       },
-      128..=191 => Ok(IFC_3072),
-      192..=255 => Ok(IFC_7680),
-      256.. => Ok(IFC_15360),
+      128..=191 => Ok(RSA_PSS_3072),
+      192..=255 => Ok(RSA_PSS_7680),
+      256.. => Ok(RSA_PSS_15360),
     }
   }
 
@@ -371,11 +370,11 @@ mod tests {
   test_ffc!(ffc_7680_384, Bsi, FFC_7680_384, Ok(FFC_7680_384));
   test_ffc!(ffc_15360_512, Bsi, FFC_15360_512, Ok(FFC_15360_512));
 
-  test_ifc!(ifc_1024, Bsi, IFC_1024, Err(IFC_2048));
-  test_ifc!(ifc_2048, Bsi, IFC_2048, Ok(IFC_2048));
-  test_ifc!(ifc_3072, Bsi, IFC_3072, Ok(IFC_3072));
-  test_ifc!(ifc_7680, Bsi, IFC_7680, Ok(IFC_7680));
-  test_ifc!(ifc_15360, Bsi, IFC_15360, Ok(IFC_15360));
+  test_ifc!(ifc_1024, Bsi, RSA_PSS_1024, Err(RSA_PSS_2048));
+  test_ifc!(ifc_2048, Bsi, RSA_PSS_2048, Ok(RSA_PSS_2048));
+  test_ifc!(ifc_3072, Bsi, RSA_PSS_3072, Ok(RSA_PSS_3072));
+  test_ifc!(ifc_7680, Bsi, RSA_PSS_7680, Ok(RSA_PSS_7680));
+  test_ifc!(ifc_15360, Bsi, RSA_PSS_15360, Ok(RSA_PSS_15360));
 
   test_hash!(
     blake2b_256_collision_resistance,

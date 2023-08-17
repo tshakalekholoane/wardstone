@@ -136,16 +136,18 @@ impl Standard for Strong {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ifc::{IFC_2048, IFC_NOT_SUPPORTED};
+  /// use wardstone_core::primitive::ifc::{IFC_NOT_ALLOWED, RSA_PSS_2048};
   /// use wardstone_core::standard::testing::strong::Strong;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// assert_eq!(Strong::validate_ifc(ctx, rsa_2048), Err(IFC_NOT_SUPPORTED));
+  /// assert_eq!(
+  ///   Strong::validate_ifc(ctx, RSA_PSS_2048),
+  ///   Err(IFC_NOT_ALLOWED)
+  /// );
   /// ```
   fn validate_ifc(_ctx: Context, _key: Ifc) -> Result<Ifc, Ifc> {
-    Err(IFC_NOT_SUPPORTED)
+    Err(IFC_NOT_ALLOWED)
   }
 
   /// Validates a symmetric key primitive.
@@ -228,15 +230,15 @@ mod tests {
   test_ffc!(ffc_7680_384, Strong, FFC_7680_384, Err(FFC_NOT_SUPPORTED));
   test_ffc!(ffc_15360_512, Strong, FFC_15360_512, Err(FFC_NOT_SUPPORTED));
 
-  test_ifc!(ifc_1024, Strong, IFC_1024, Err(IFC_NOT_SUPPORTED));
-  test_ifc!(ifc_1280, Strong, IFC_1280, Err(IFC_NOT_SUPPORTED));
-  test_ifc!(ifc_1536, Strong, IFC_1536, Err(IFC_NOT_SUPPORTED));
-  test_ifc!(ifc_2048, Strong, IFC_2048, Err(IFC_NOT_SUPPORTED));
-  test_ifc!(ifc_3072, Strong, IFC_3072, Err(IFC_NOT_SUPPORTED));
-  test_ifc!(ifc_4096, Strong, IFC_4096, Err(IFC_NOT_SUPPORTED));
-  test_ifc!(ifc_7680, Strong, IFC_7680, Err(IFC_NOT_SUPPORTED));
-  test_ifc!(ifc_8192, Strong, IFC_8192, Err(IFC_NOT_SUPPORTED));
-  test_ifc!(ifc_15360, Strong, IFC_15360, Err(IFC_NOT_SUPPORTED));
+  test_ifc!(ifc_1024, Strong, RSA_PSS_1024, Err(IFC_NOT_ALLOWED));
+  test_ifc!(ifc_1280, Strong, RSA_PSS_1280, Err(IFC_NOT_ALLOWED));
+  test_ifc!(ifc_1536, Strong, RSA_PSS_1536, Err(IFC_NOT_ALLOWED));
+  test_ifc!(ifc_2048, Strong, RSA_PSS_2048, Err(IFC_NOT_ALLOWED));
+  test_ifc!(ifc_3072, Strong, RSA_PSS_3072, Err(IFC_NOT_ALLOWED));
+  test_ifc!(ifc_4096, Strong, RSA_PSS_4096, Err(IFC_NOT_ALLOWED));
+  test_ifc!(ifc_7680, Strong, RSA_PSS_7680, Err(IFC_NOT_ALLOWED));
+  test_ifc!(ifc_8192, Strong, RSA_PSS_8192, Err(IFC_NOT_ALLOWED));
+  test_ifc!(ifc_15360, Strong, RSA_PSS_15360, Err(IFC_NOT_ALLOWED));
 
   test_hash!(blake_224, Strong, BLAKE_224, Err(SHA512));
   test_hash!(blake_256, Strong, BLAKE_256, Err(SHA512));

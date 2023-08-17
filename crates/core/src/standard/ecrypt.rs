@@ -234,29 +234,27 @@ impl Standard for Ecrypt {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ifc::{IFC_2048, IFC_3072};
+  /// use wardstone_core::primitive::ifc::RSA_PSS_3072;
   /// use wardstone_core::standard::ecrypt::Ecrypt;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// let rsa_3072 = IFC_3072;
-  /// assert_eq!(Ecrypt::validate_ifc(ctx, rsa_2048), Ok(rsa_3072));
+  /// assert_eq!(Ecrypt::validate_ifc(ctx, RSA_PSS_3072), Ok(RSA_PSS_3072));
   /// ```
   fn validate_ifc(ctx: Context, key: Ifc) -> Result<Ifc, Ifc> {
     let security = ctx.security().max(key.security());
     match security {
-      ..=79 => Err(IFC_3072),
+      ..=79 => Err(RSA_PSS_3072),
       80..=127 => {
         if ctx.year() > CUTOFF_YEAR {
-          Err(IFC_3072)
+          Err(RSA_PSS_3072)
         } else {
-          Ok(IFC_3072)
+          Ok(RSA_PSS_3072)
         }
       },
-      128..=191 => Ok(IFC_3072),
-      192..=255 => Ok(IFC_7680),
-      256.. => Ok(IFC_15360),
+      128..=191 => Ok(RSA_PSS_3072),
+      192..=255 => Ok(RSA_PSS_7680),
+      256.. => Ok(RSA_PSS_15360),
     }
   }
 
@@ -357,11 +355,11 @@ mod tests {
   test_hash!(shake256, Ecrypt, SHAKE256, Ok(SHA256));
   test_hash!(whirlpool, Ecrypt, WHIRLPOOL, Ok(SHA512));
 
-  test_ifc!(ifc_1024, Ecrypt, IFC_1024, Ok(IFC_3072));
-  test_ifc!(ifc_2048, Ecrypt, IFC_2048, Ok(IFC_3072));
-  test_ifc!(ifc_3072, Ecrypt, IFC_3072, Ok(IFC_3072));
-  test_ifc!(ifc_7680, Ecrypt, IFC_7680, Ok(IFC_7680));
-  test_ifc!(ifc_15360, Ecrypt, IFC_15360, Ok(IFC_15360));
+  test_ifc!(ifc_1024, Ecrypt, RSA_PSS_1024, Ok(RSA_PSS_3072));
+  test_ifc!(ifc_2048, Ecrypt, RSA_PSS_2048, Ok(RSA_PSS_3072));
+  test_ifc!(ifc_3072, Ecrypt, RSA_PSS_3072, Ok(RSA_PSS_3072));
+  test_ifc!(ifc_7680, Ecrypt, RSA_PSS_7680, Ok(RSA_PSS_7680));
+  test_ifc!(ifc_15360, Ecrypt, RSA_PSS_15360, Ok(RSA_PSS_15360));
 
   test_symmetric!(aes128, Ecrypt, AES128, Ok(AES128));
   test_symmetric!(aes192, Ecrypt, AES192, Ok(AES192));
