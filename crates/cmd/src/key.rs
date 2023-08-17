@@ -2,6 +2,7 @@
 use std::fmt;
 use std::io::{self};
 
+use openssl::error::ErrorStack;
 use x509_parser::nom::Err as NomError;
 use x509_parser::prelude::{PEMError, X509Error};
 
@@ -13,7 +14,8 @@ pub mod certificate;
 pub enum Error {
   Io(io::Error),
   ParsePEM(NomError<PEMError>),
-  ParseX509(NomError<X509Error>),
+  ParseX509(ErrorStack),
+  ParseX509Certificate(NomError<X509Error>),
   Unrecognised(String),
 }
 
@@ -26,7 +28,9 @@ impl fmt::Display for Error {
         _ => write!(f, "Unexpected error. Please file an issue."),
       },
       Error::ParsePEM(_) => write!(f, "Cannot parse PEM file."),
-      Error::ParseX509(_) => write!(f, "Cannot parse X.509 certificate."),
+      Error::ParseX509Certificate(_) | Error::ParseX509(_) => {
+        write!(f, "Cannot parse X.509 certificate.")
+      },
       Error::Unrecognised(oid) => write!(f, "Unrecognised key: {}. Please file an issue.", oid),
     }
   }
@@ -44,8 +48,14 @@ impl From<NomError<PEMError>> for Error {
   }
 }
 
+impl From<ErrorStack> for Error {
+  fn from(err: ErrorStack) -> Self {
+    Self::ParseX509(err)
+  }
+}
+
 impl From<NomError<X509Error>> for Error {
   fn from(err: NomError<X509Error>) -> Self {
-    Self::ParseX509(err)
+    Self::ParseX509Certificate(err)
   }
 }
