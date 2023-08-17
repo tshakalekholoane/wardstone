@@ -165,26 +165,24 @@ impl Standard for Cnsa {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ifc::{IFC_2048, IFC_3072};
+  /// use wardstone_core::primitive::ifc::{RSA_PSS_2048, RSA_PSS_3072};
   /// use wardstone_core::standard::cnsa::Cnsa;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// let rsa_3072 = IFC_3072;
-  /// assert_eq!(Cnsa::validate_ifc(ctx, rsa_2048), Err(rsa_3072));
+  /// assert_eq!(Cnsa::validate_ifc(ctx, RSA_PSS_2048), Err(RSA_PSS_3072));
   /// ```
   fn validate_ifc(ctx: Context, key: Ifc) -> Result<Ifc, Ifc> {
     if ctx.year() > CUTOFF_YEAR {
-      return Err(IFC_NOT_SUPPORTED);
+      return Err(IFC_NOT_ALLOWED);
     }
 
     let security = ctx.security().max(key.security());
     match security {
-      ..=127 => Err(IFC_3072),
-      128..=191 => Ok(IFC_3072),
-      192..=255 => Ok(IFC_7680),
-      256.. => Ok(IFC_15360),
+      ..=127 => Err(RSA_PSS_3072),
+      128..=191 => Ok(RSA_PSS_3072),
+      192..=255 => Ok(RSA_PSS_7680),
+      256.. => Ok(RSA_PSS_15360),
     }
   }
 
@@ -266,11 +264,11 @@ mod tests {
   test_ffc!(ffc_7680_384, Cnsa, FFC_7680_384, Err(FFC_NOT_SUPPORTED));
   test_ffc!(ffc_15360_512, Cnsa, FFC_15360_512, Err(FFC_NOT_SUPPORTED));
 
-  test_ifc!(ifc_1024, Cnsa, IFC_1024, Err(IFC_3072));
-  test_ifc!(ifc_2048, Cnsa, IFC_2048, Err(IFC_3072));
-  test_ifc!(ifc_3072, Cnsa, IFC_3072, Ok(IFC_3072));
-  test_ifc!(ifc_7680, Cnsa, IFC_7680, Ok(IFC_7680));
-  test_ifc!(ifc_15360, Cnsa, IFC_15360, Ok(IFC_15360));
+  test_ifc!(ifc_1024, Cnsa, RSA_PSS_1024, Err(RSA_PSS_3072));
+  test_ifc!(ifc_2048, Cnsa, RSA_PSS_2048, Err(RSA_PSS_3072));
+  test_ifc!(ifc_3072, Cnsa, RSA_PSS_3072, Ok(RSA_PSS_3072));
+  test_ifc!(ifc_7680, Cnsa, RSA_PSS_7680, Ok(RSA_PSS_7680));
+  test_ifc!(ifc_15360, Cnsa, RSA_PSS_15360, Ok(RSA_PSS_15360));
 
   test_symmetric!(two_key_tdea, Cnsa, TDEA2, Err(AES256));
   test_symmetric!(three_key_tdea, Cnsa, TDEA3, Err(AES256));

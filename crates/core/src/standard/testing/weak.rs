@@ -159,23 +159,22 @@ impl Standard for Weak {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ifc::IFC_2048;
+  /// use wardstone_core::primitive::ifc::RSA_PSS_2048;
   /// use wardstone_core::standard::testing::weak::Weak;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// assert_eq!(Weak::validate_ifc(ctx, rsa_2048), Ok(rsa_2048));
+  /// assert_eq!(Weak::validate_ifc(ctx, RSA_PSS_2048), Ok(RSA_PSS_2048));
   /// ```
   fn validate_ifc(ctx: Context, key: Ifc) -> Result<Ifc, Ifc> {
     let security = ctx.security().max(key.security());
     match security {
-      ..=63 => Err(IFC_1024),
-      64..=80 => Ok(IFC_1024),
-      81..=112 => Ok(IFC_2048),
-      113..=128 => Ok(IFC_3072),
-      129..=192 => Ok(IFC_7680),
-      193.. => Ok(IFC_15360),
+      ..=63 => Err(RSA_PSS_1024),
+      64..=80 => Ok(RSA_PSS_1024),
+      81..=112 => Ok(RSA_PSS_2048),
+      113..=128 => Ok(RSA_PSS_3072),
+      129..=192 => Ok(RSA_PSS_7680),
+      193.. => Ok(RSA_PSS_15360),
     }
   }
 
@@ -240,15 +239,15 @@ mod tests {
   test_ffc!(ffc_7680_384, Weak, FFC_7680_384, Ok(FFC_7680_384));
   test_ffc!(ffc_15360_512, Weak, FFC_15360_512, Ok(FFC_15360_512));
 
-  test_ifc!(ifc_1024, Weak, IFC_1024, Ok(IFC_1024));
-  test_ifc!(ifc_1280, Weak, IFC_1280, Ok(IFC_1024));
-  test_ifc!(ifc_1536, Weak, IFC_1536, Ok(IFC_1024));
-  test_ifc!(ifc_2048, Weak, IFC_2048, Ok(IFC_2048));
-  test_ifc!(ifc_3072, Weak, IFC_3072, Ok(IFC_3072));
-  test_ifc!(ifc_4096, Weak, IFC_4096, Ok(IFC_3072));
-  test_ifc!(ifc_7680, Weak, IFC_7680, Ok(IFC_7680));
-  test_ifc!(ifc_8192, Weak, IFC_8192, Ok(IFC_7680));
-  test_ifc!(ifc_15360, Weak, IFC_15360, Ok(IFC_15360));
+  test_ifc!(ifc_1024, Weak, RSA_PSS_1024, Ok(RSA_PSS_1024));
+  test_ifc!(ifc_1280, Weak, RSA_PSS_1280, Ok(RSA_PSS_1024));
+  test_ifc!(ifc_1536, Weak, RSA_PSS_1536, Ok(RSA_PSS_1024));
+  test_ifc!(ifc_2048, Weak, RSA_PSS_2048, Ok(RSA_PSS_2048));
+  test_ifc!(ifc_3072, Weak, RSA_PSS_3072, Ok(RSA_PSS_3072));
+  test_ifc!(ifc_4096, Weak, RSA_PSS_4096, Ok(RSA_PSS_3072));
+  test_ifc!(ifc_7680, Weak, RSA_PSS_7680, Ok(RSA_PSS_7680));
+  test_ifc!(ifc_8192, Weak, RSA_PSS_8192, Ok(RSA_PSS_7680));
+  test_ifc!(ifc_15360, Weak, RSA_PSS_15360, Ok(RSA_PSS_15360));
 
   test_hash!(blake_224, Weak, BLAKE_224, Ok(SHA224));
   test_hash!(blake_256, Weak, BLAKE_256, Ok(BLAKE3));

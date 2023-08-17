@@ -238,37 +238,36 @@ impl Standard for Lenstra {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ifc::IFC_2048;
+  /// use wardstone_core::primitive::ifc::RSA_PSS_2048;
   /// use wardstone_core::standard::lenstra::Lenstra;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let rsa_2048 = IFC_2048;
-  /// assert_eq!(Lenstra::validate_ifc(ctx, rsa_2048), Ok(rsa_2048));
+  /// assert_eq!(Lenstra::validate_ifc(ctx, RSA_PSS_2048), Ok(RSA_PSS_2048));
   /// ```
   fn validate_ifc(ctx: Context, key: Ifc) -> Result<Ifc, Ifc> {
     // Per Table 4 on page 25.
     let (implied_year, implied_security) = match key.k {
-    ..=1023 => (u16::MIN, u16::MIN),
-    1024 => (2006, 72),
-    1025..=1280 => (2014, 78),
-    1281..=1536 => (2020, 82),
-    1537..=2048 => (2030, 88),
-    2049..=3072 => (2046, 99),
-    3073..=4096 => (2060, 108),
-    4097.. /* =8192 */ => (2100, 135),
-  };
+      ..=1023 => (u16::MIN, u16::MIN),
+      1024 => (2006, 72),
+      1025..=1280 => (2014, 78),
+      1281..=1536 => (2020, 82),
+      1537..=2048 => (2030, 88),
+      2049..=3072 => (2046, 99),
+      3073..=4096 => (2060, 108),
+      4097.. => (2100, 135),
+    };
 
     let year = implied_year.max(ctx.year());
     let (security_range, recommendation) = match year {
-    ..=2006 => (0..=72, IFC_1024),
-    2007..=2014 => (73..=78, IFC_1280),
-    2015..=2020 => (79..=82, IFC_1536),
-    2021..=2030 => (83..=88, IFC_2048),
-    2031..=2046 => (89..=99, IFC_3072),
-    2047..=2060 => (100..=108, IFC_4096),
-    2061.. /* =2100 */ => (109..=135 /* technically u16::MAX */, IFC_8192),
-  };
+      ..=2006 => (0..=72, RSA_PSS_1024),
+      2007..=2014 => (73..=78, RSA_PSS_1280),
+      2015..=2020 => (79..=82, RSA_PSS_1536),
+      2021..=2030 => (83..=88, RSA_PSS_2048),
+      2031..=2046 => (89..=99, RSA_PSS_3072),
+      2047..=2060 => (100..=108, RSA_PSS_4096),
+      2061.. => (109..=135, RSA_PSS_8192),
+    };
 
     let security = ctx.security().max(implied_security);
     if !security_range.contains(&security) {
@@ -353,15 +352,15 @@ mod tests {
   test_ffc!(ffc_7680_384, Lenstra, FFC_7680_384, Ok(FFC_7680_384));
   test_ffc!(ffc_15360_512, Lenstra, FFC_15360_512, Ok(FFC_15360_512));
 
-  test_ifc!(ifc_1024, Lenstra, IFC_1024, Err(IFC_2048));
-  test_ifc!(ifc_1280, Lenstra, IFC_1280, Err(IFC_2048));
-  test_ifc!(ifc_1536, Lenstra, IFC_1536, Err(IFC_2048));
-  test_ifc!(ifc_2048, Lenstra, IFC_2048, Ok(IFC_2048));
-  test_ifc!(ifc_3072, Lenstra, IFC_3072, Ok(IFC_3072));
-  test_ifc!(ifc_4096, Lenstra, IFC_4096, Ok(IFC_4096));
-  test_ifc!(ifc_7680, Lenstra, IFC_7680, Ok(IFC_8192));
-  test_ifc!(ifc_8192, Lenstra, IFC_8192, Ok(IFC_8192));
-  test_ifc!(ifc_15360, Lenstra, IFC_15360, Ok(IFC_8192));
+  test_ifc!(ifc_1024, Lenstra, RSA_PSS_1024, Err(RSA_PSS_2048));
+  test_ifc!(ifc_1280, Lenstra, RSA_PSS_1280, Err(RSA_PSS_2048));
+  test_ifc!(ifc_1536, Lenstra, RSA_PSS_1536, Err(RSA_PSS_2048));
+  test_ifc!(ifc_2048, Lenstra, RSA_PSS_2048, Ok(RSA_PSS_2048));
+  test_ifc!(ifc_3072, Lenstra, RSA_PSS_3072, Ok(RSA_PSS_3072));
+  test_ifc!(ifc_4096, Lenstra, RSA_PSS_4096, Ok(RSA_PSS_4096));
+  test_ifc!(ifc_7680, Lenstra, RSA_PSS_7680, Ok(RSA_PSS_8192));
+  test_ifc!(ifc_8192, Lenstra, RSA_PSS_8192, Ok(RSA_PSS_8192));
+  test_ifc!(ifc_15360, Lenstra, RSA_PSS_15360, Ok(RSA_PSS_8192));
 
   test_hash!(blake_224, Lenstra, BLAKE_224, Err(SHA256));
   test_hash!(blake_256, Lenstra, BLAKE_256, Err(SHA256));

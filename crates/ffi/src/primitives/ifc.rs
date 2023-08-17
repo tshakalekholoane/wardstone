@@ -2,51 +2,88 @@
 //! of commonly used instances.
 use wardstone_core::primitive::ifc::*;
 
-/// Generic instance that represents a choice of k = 1024 for an integer
-/// factorisation cryptography primitive.
+/// An identifier for custom RSA with PKCS #1 v1.5 padding keys.
+///
+/// This for use in creating custom keys in that can be used in
+/// standards that make a distinction between RSA padding schemes.
 #[no_mangle]
-pub static WS_IFC_1024: Ifc = IFC_1024;
+pub static WS_ID_RSA_PKCS1: u16 = ID_RSA_PKCS1;
 
-/// Generic instance that represents a choice of k = 1280 for an integer
-/// factorisation cryptography primitive.
+/// An identifier for custom RSA with PSS encoding keys.
+///
+/// This for use in creating custom keys in that can be used in
+/// standards that make a distinction between RSA padding schemes.
 #[no_mangle]
-pub static WS_IFC_1280: Ifc = IFC_1280;
+pub static WS_ID_RSA_PSS: u16 = ID_RSA_PSS;
 
-/// Generic instance that represents a choice of k = 1536 for an integer
-/// factorisation cryptography primitive.
+/// 1024-bit RSA with PKCS #1 v1.5 padding as defined in RFC 8446.
 #[no_mangle]
-pub static WS_IFC_1536: Ifc = IFC_1536;
+pub static WS_RSA_PKCS1_1024: Ifc = RSA_PKCS1_1024;
 
-/// Generic instance that represents a choice of k = 2048 for an integer
-/// factorisation cryptography primitive.
+/// 1536-bit RSA with PKCS #1 v1.5 padding as defined in RFC 8446.
 #[no_mangle]
-pub static WS_IFC_2048: Ifc = IFC_2048;
+pub static WS_RSA_PKCS1_1536: Ifc = RSA_PKCS1_1536;
 
-/// Generic instance that represents a choice of k = 3072 for an integer
-/// factorisation cryptography primitive.
+/// 2048-bit RSA with PKCS #1 v1.5 padding as defined in RFC 8446.
 #[no_mangle]
-pub static WS_IFC_3072: Ifc = IFC_3072;
+pub static WS_RSA_PKCS1_2048: Ifc = RSA_PKCS1_2048;
 
-/// Generic instance that represents a choice of k = 4096 for an integer
-/// factorisation cryptography primitive.
+/// 3072-bit RSA with PKCS #1 v1.5 padding as defined in RFC 8446.
 #[no_mangle]
-pub static WS_IFC_4096: Ifc = IFC_4096;
+pub static WS_RSA_PKCS1_3072: Ifc = RSA_PKCS1_3072;
 
-/// Generic instance that represents a choice of k = 7680 for an integer
-/// factorisation cryptography primitive.
+/// 4096-bit RSA with PKCS #1 v1.5 padding as defined in RFC 8446.
 #[no_mangle]
-pub static WS_IFC_7680: Ifc = IFC_7680;
+pub static WS_RSA_PKCS1_4096: Ifc = RSA_PKCS1_4096;
 
-/// Generic instance that represents a choice of k = 8192 for an integer
-/// factorisation cryptography primitive.
+/// 7680-bit RSA with PKCS #1 v1.5 padding as defined in RFC 8446.
 #[no_mangle]
-pub static WS_IFC_8192: Ifc = IFC_8192;
+pub static WS_RSA_PKCS1_7680: Ifc = RSA_PKCS1_7680;
 
-/// Generic instance that represents a choice of k = 15360 for an
-/// integer factorisation cryptography primitive.
+/// 8192-bit RSA with PKCS #1 v1.5 padding as defined in RFC 8446.
 #[no_mangle]
-pub static WS_IFC_15360: Ifc = IFC_15360;
+pub static WS_RSA_PKCS1_8192: Ifc = RSA_PKCS1_8192;
 
-/// Placeholder for use in where this primitive is not supported.
+/// 15360-bit RSA with PKCS #1 v1.5 padding as defined in RFC 8446.
 #[no_mangle]
-pub static WS_IFC_NOT_SUPPORTED: Ifc = IFC_NOT_SUPPORTED;
+pub static WS_RSA_PKCS1_15360: Ifc = RSA_PKCS1_15360;
+
+/// 1024-bit RSA with PSS encoding as defined in RFC 8446.
+#[no_mangle]
+pub static WS_RSA_PSS_1024: Ifc = RSA_PSS_1024;
+
+/// 1280-bit RSA with PSS encoding as defined in RFC 8446.
+#[no_mangle]
+pub static WS_RSA_PSS_1280: Ifc = RSA_PSS_1280;
+
+/// 1536-bit RSA with PSS encoding as defined in RFC 8446.
+#[no_mangle]
+pub static WS_RSA_PSS_1536: Ifc = RSA_PSS_1536;
+
+/// 2048-bit RSA with PSS encoding as defined in RFC 8446..
+#[no_mangle]
+pub static WS_RSA_PSS_2048: Ifc = RSA_PSS_2048;
+
+/// 3072-bit RSA with PSS encoding as defined in RFC 8446.
+#[no_mangle]
+pub static WS_RSA_PSS_3072: Ifc = RSA_PSS_3072;
+
+/// 4096-bit RSA with PSS encoding as defined in RFC 8446.
+#[no_mangle]
+pub static WS_RSA_PSS_4096: Ifc = RSA_PSS_4096;
+
+/// 7680-bit RSA with PSS encoding as defined in RFC 8446.
+#[no_mangle]
+pub static WS_RSA_PSS_7680: Ifc = RSA_PSS_7680;
+
+/// 7680-bit RSA with PSS encoding as defined in RFC 8446.
+#[no_mangle]
+pub static WS_RSA_PSS_8192: Ifc = RSA_PSS_8192;
+
+/// 15360-bit RSA with PSS encoding as defined in RFC 8446.
+#[no_mangle]
+pub static WS_RSA_PSS_15360: Ifc = RSA_PSS_15360;
+
+/// Placeholder for use in where this primitive is not allowed.
+#[no_mangle]
+pub static WS_IFC_NOT_ALLOWED: Ifc = IFC_NOT_ALLOWED;
