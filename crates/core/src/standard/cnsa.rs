@@ -60,7 +60,7 @@ impl Standard for Cnsa {
   /// ```
   fn validate_ecc(ctx: Context, key: Ecc) -> Result<Ecc, Ecc> {
     if ctx.year() > CUTOFF_YEAR {
-      return Err(ECC_NOT_SUPPORTED);
+      return Err(ECC_NOT_ALLOWED);
     }
 
     if key == P384 {
