@@ -58,6 +58,7 @@ pub static REPR: Lazy<HashMap<Ecc, &str>> = Lazy::new(|| {
   m.insert(C2TNB239V3, "c2tnb239v3");
   m.insert(C2TNB359V1, "c2tnb359v1");
   m.insert(C2TNB431R1, "c2tnb431r1");
+  m.insert(ECC_NOT_ALLOWED, "not allowed");
   m.insert(ED25519, "ed25519");
   m.insert(ED448, "ed448");
   m.insert(PRIME192V1, "prime192v1");
@@ -725,6 +726,7 @@ pub static ECC_384: Ecc = Ecc::new(65533, 384);
 #[no_mangle]
 pub static ECC_512: Ecc = Ecc::new(65534, 512);
 
-/// Placeholder for use in where this primitive is not supported.
+/// Placeholder for use in where this primitive or the security level it
+/// implies is not allowed.
 #[no_mangle]
-pub static ECC_NOT_SUPPORTED: Ecc = Ecc::new(u16::MAX, u16::MAX);
+pub static ECC_NOT_ALLOWED: Ecc = Ecc::new(u16::MAX, u16::MAX);

@@ -93,10 +93,10 @@ impl Standard for Lenstra {
     let implied_security = ctx.security().max(key.security());
     let min_security = match Lenstra::calculate_security(ctx.year()) {
       Ok(security) => security,
-      Err(_) => return Err(ECC_NOT_SUPPORTED),
+      Err(_) => return Err(ECC_NOT_ALLOWED),
     };
     let recommendation = match implied_security.max(min_security) {
-      ..=111 => ECC_NOT_SUPPORTED,
+      ..=111 => ECC_NOT_ALLOWED,
       112 => ECC_224,
       113..=128 => ECC_256,
       129..=192 => ECC_384,

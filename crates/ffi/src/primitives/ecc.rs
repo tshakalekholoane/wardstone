@@ -581,6 +581,7 @@ pub static WS_ECC_384: Ecc = ECC_384;
 #[no_mangle]
 pub static WS_ECC_512: Ecc = ECC_512;
 
-/// Placeholder for use in where this primitive is not supported.
+/// Placeholder for use in where this primitive or the security level it
+/// implies is not allowed.
 #[no_mangle]
-pub static WS_ECC_NOT_SUPPORTED: Ecc = ECC_NOT_SUPPORTED;
+pub static WS_ECC_NOT_ALLOWED: Ecc = ECC_NOT_ALLOWED;
