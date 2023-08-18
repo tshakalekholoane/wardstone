@@ -15,3 +15,13 @@ Options:
   -h, --help     Print help
   -V, --version  Print version
 ```
+
+## Installation
+
+### Building from Source
+
+This can be done using `cargo` and the resulting binary will be located in the root directory's `target/release/` folder.
+
+```shell
+cargo build --release 
+```
