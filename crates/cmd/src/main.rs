@@ -1,8 +1,7 @@
-use std::fmt;
-use std::path::PathBuf;
-use std::process::{ExitCode, Termination};
-
+mod report;
 use clap::{Parser, Subcommand, ValueEnum};
+use report::{BadPath, CheckedPath, GoodPath, Report};
+use std::path::PathBuf;
 use wardstone::key::certificate::Certificate;
 use wardstone::primitive::asymmetric::Asymmetric;
 use wardstone_core::context::Context;
@@ -15,35 +14,6 @@ use wardstone_core::standard::nist::Nist;
 use wardstone_core::standard::testing::strong::Strong;
 use wardstone_core::standard::testing::weak::Weak;
 use wardstone_core::standard::Standard;
-
-pub enum Status {
-  Ok(PathBuf),
-  Fail(PathBuf),
-}
-
-impl Termination for Status {
-  fn report(self) -> ExitCode {
-    match self {
-      Self::Ok(_) => {
-        println!("{}", &self);
-        ExitCode::SUCCESS
-      },
-      Self::Fail(_) => {
-        eprintln!("{}", &self);
-        ExitCode::FAILURE
-      },
-    }
-  }
-}
-
-impl fmt::Display for Status {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match &self {
-      Self::Ok(path) => write!(f, "ok: {}", path.display()),
-      Self::Fail(path) => write!(f, "fail: {}", path.display()),
-    }
-  }
-}
 
 // Having this type in the core crate would reduce the amount of case
 // analysis done to find the function to execute but this would run
@@ -150,6 +120,13 @@ impl Guide {
   }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum Verbosity {
+  Quiet,
+  Normal,
+  Verbose,
+}
+
 /// Assess cryptographic keys for compliance.
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -166,68 +143,80 @@ enum Subcommands {
     #[arg(short, long, value_enum)]
     guide: Guide,
     /// The certificate as a DER or PEM encoded file.
-    #[arg(short, long)]
-    path: PathBuf,
+    paths: Vec<PathBuf>,
     /// Verbose output.
-    #[arg(short, long)]
+    #[arg(short, long, conflicts_with = "quiet")]
     verbose: bool,
+    /// quiet output: Hide all but errors/failed paths.
+    #[arg(short, long, conflicts_with = "verbose")]
+    quiet: bool,
   },
 }
 
 impl Subcommands {
-  fn x509(ctx: Context, path: &PathBuf, guide: Guide, verbose: bool) -> Status {
-    let certificate = match Certificate::from_file(path) {
-      Ok(got) => got,
-      Err(err) => {
-        eprintln!("{}", err);
-        return Status::Fail(path.to_path_buf());
-      },
-    };
+  fn x509(ctx: Context, paths: &Vec<PathBuf>, guide: Guide, verbosity: Verbosity) -> Report {
+    let mut report = Report::new();
+    for path in paths {
+      let mut checked = CheckedPath::new(path.to_path_buf());
+      let certificate = match Certificate::from_file(path) {
+        Ok(cert) => cert,
+        Err(err) => {
+          checked.push(Err(BadPath::ReadError(err)));
+          continue;
+        },
+      };
 
-    let mut pass = Status::Ok(path.to_path_buf());
+      if let Some(got) = certificate.hash_function() {
+        match guide.validate_hash_function(ctx, got) {
+          Ok(want) => {
+            if verbosity == Verbosity::Verbose {
+              checked.push(Ok(GoodPath::Hash(got, want)))
+            }
+          },
+          Err(want) => checked.push(Err(BadPath::MismatchedHash(got, want))),
+        }
+      }
 
-    if let Some(got) = certificate.hash_function() {
-      match guide.validate_hash_function(ctx, got) {
+      let got = certificate.signature_algorithm();
+      match guide.validate_signature_algorithm(ctx, got) {
         Ok(want) => {
-          if verbose {
-            println!("hash function: got: {}, want: {}", got, want)
+          if verbosity == Verbosity::Verbose {
+            checked.push(Ok(GoodPath::SigAlg(got, want)))
           }
         },
-        Err(want) => {
-          pass = Status::Fail(path.to_path_buf());
-          eprintln!("hash function: got: {}, want: {}", got, want);
-        },
+        Err(want) => checked.push(Err(BadPath::MismatchedSigAlg(got, want))),
+      }
+
+      // Skip it, if we are in quiet-mode and the path passed every test.
+      if verbosity != Verbosity::Quiet || checked.is_err() {
+        report.push(checked);
       }
     }
-
-    let got = certificate.signature_algorithm();
-    match guide.validate_signature_algorithm(ctx, got) {
-      Ok(want) => {
-        if verbose {
-          println!("signature algorithm: got: {}, want: {}", got, want)
-        }
-      },
-      Err(want) => {
-        pass = Status::Fail(path.to_path_buf());
-        eprintln!("signature algorithm: got: {}, want: {}", got, want);
-      },
-    }
-
-    pass
+    report
   }
 
-  pub fn run(&self, ctx: Context) -> Status {
+  pub fn run(&self, ctx: Context) -> Report {
     match self {
       Self::X509 {
         guide,
-        path,
+        paths,
         verbose,
-      } => Self::x509(ctx, path, *guide, *verbose),
+        quiet,
+      } => {
+        let verbosity = if *quiet {
+          Verbosity::Quiet
+        } else if *verbose {
+          Verbosity::Verbose
+        } else {
+          Verbosity::Normal
+        };
+        Self::x509(ctx, paths, *guide, verbosity)
+      },
     }
   }
 }
 
-fn main() -> Status {
+fn main() -> Report {
   let ctx = Context::default();
   let options = Options::parse();
   options.subcommands.run(ctx)
