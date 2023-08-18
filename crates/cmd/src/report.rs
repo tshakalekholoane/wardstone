@@ -1,4 +1,3 @@
-use std::fmt;
 use std::path::PathBuf;
 use std::process::{ExitCode, Termination};
 
@@ -6,47 +5,47 @@ use wardstone::key;
 use wardstone::primitive::asymmetric::Asymmetric;
 use wardstone_core::primitive::hash::Hash;
 
+use crate::Verbosity;
+
 const INDENT: &str = "         ";
 
-pub enum GoodPath {
+pub(crate) enum GoodPath {
   Hash(Hash, Hash),
   SigAlg(Asymmetric, Asymmetric),
 }
 
-impl fmt::Display for GoodPath {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      GoodPath::Hash(got, want) => {
-        write!(f, "{INDENT}OK hash function(got: {got}, want: {want})")
-      },
-      GoodPath::SigAlg(got, want) => {
-        write!(
-          f,
-          "{INDENT}OK signature algorithm(got: {got}, want: {want})"
-        )
+impl GoodPath {
+  fn display(&self, form: ReportFormat) -> String {
+    match form {
+      ReportFormat::HumanReadable => match self {
+        GoodPath::Hash(got, want) => {
+          format!("{INDENT}OK hash function(got: {got}, want: {want})")
+        },
+        GoodPath::SigAlg(got, want) => {
+          format!("{INDENT}OK signature algorithm(got: {got}, want: {want})")
+        },
       },
     }
   }
 }
 
-pub enum BadPath {
+pub(crate) enum BadPath {
   ReadError(key::Error),
   MismatchedHash(Hash, Hash),
   MismatchedSigAlg(Asymmetric, Asymmetric),
 }
 
-impl fmt::Display for BadPath {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      BadPath::ReadError(e) => write!(f, "{e}"),
-      BadPath::MismatchedHash(got, want) => {
-        write!(f, "{INDENT}FAILED hash function(got: {got}, want: {want})")
-      },
-      BadPath::MismatchedSigAlg(got, want) => {
-        write!(
-          f,
-          "{INDENT}FAILED signature algorithm(got: {got}, want: {want})"
-        )
+impl BadPath {
+  fn display(&self, form: ReportFormat) -> String {
+    match form {
+      ReportFormat::HumanReadable => match self {
+        BadPath::ReadError(e) => format!("{e}"),
+        BadPath::MismatchedHash(got, want) => {
+          format!("{INDENT}FAILED hash function(got: {got}, want: {want})")
+        },
+        BadPath::MismatchedSigAlg(got, want) => {
+          format!("{INDENT}FAILED signature algorithm(got: {got}, want: {want})")
+        },
       },
     }
   }
@@ -54,84 +53,104 @@ impl fmt::Display for BadPath {
 
 type CheckResult = Result<GoodPath, BadPath>;
 
-pub struct CheckedPath {
+pub(crate) struct CheckedPath {
   path: PathBuf,
   results: Vec<CheckResult>,
 }
 
 impl CheckedPath {
-  pub fn new(path: PathBuf) -> Self {
+  pub(crate) fn new(path: PathBuf) -> Self {
     Self {
       path,
       results: vec![],
     }
   }
 
-  pub fn push(&mut self, res: CheckResult) {
+  pub(crate) fn push(&mut self, res: CheckResult) {
     self.results.push(res)
   }
 
-  pub fn is_err(&self) -> bool {
+  pub(crate) fn is_err(&self) -> bool {
     self.results.iter().any(|r| r.is_err())
   }
 }
 
-impl fmt::Display for CheckedPath {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl CheckedPath {
+  fn display(&self, form: ReportFormat, verbosity: Verbosity) -> String {
     let mut results = vec![];
     let mut is_err = false;
     for r in &self.results {
       match r {
         Ok(r) => {
-          let report = format!("{r}"); // May be empty, depending on verbosity
-          if !report.is_empty() {
-            results.push(report);
+          if verbosity == Verbosity::Verbose {
+            results.push(r.display(form));
           }
         },
         Err(r) => {
           is_err = true;
-          results.push(format!("{r}"));
+          results.push(r.display(form));
         },
       }
     }
 
-    if is_err {
-      write!(f, "[FAIL]: ")?;
-    } else {
-      write!(f, "[PASS]: ")?;
+    let mut f = String::new();
+    match form {
+      ReportFormat::HumanReadable => {
+        if is_err {
+          f += "[FAIL]: ";
+        } else {
+          f += "[PASS]: ";
+        }
+        f += &format!("{}", self.path.display());
+        if !results.is_empty() {
+          f += "\n";
+          f += &results.join("\n");
+        }
+      },
     }
-    write!(f, "{}", self.path.display())?;
-    if !results.is_empty() {
-      writeln!(f)?;
-      write!(f, "{}", results.join("\n"))?;
-    }
-    Ok(())
+    f
   }
 }
 
-pub struct Report(Vec<CheckedPath>);
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) enum ReportFormat {
+  HumanReadable,
+  // JSON,
+}
+
+pub(crate) struct Report {
+  results: Vec<CheckedPath>,
+  verbosity: Verbosity,
+  form: ReportFormat,
+}
 
 impl Report {
-  pub fn new() -> Self {
-    Self(Vec::new())
+  pub(crate) fn new(form: ReportFormat, verbosity: Verbosity) -> Self {
+    Self {
+      results: Vec::new(),
+      verbosity,
+      form,
+    }
   }
 
-  pub fn push(&mut self, path: CheckedPath) {
-    self.0.push(path);
+  pub(crate) fn push(&mut self, path: CheckedPath) {
+    self.results.push(path);
   }
 }
 
 impl Termination for Report {
   fn report(self) -> ExitCode {
     // Sort by result-state
-    let (failed, ok): (Vec<_>, Vec<_>) = self.0.iter().partition(|r| r.is_err());
+    let (failed, ok): (Vec<_>, Vec<_>) = self.results.iter().partition(|r| r.is_err());
 
-    for res in ok {
-      println!("{res}");
+    if self.verbosity != Verbosity::Quiet {
+      for res in ok {
+        println!("{}", res.display(self.form, self.verbosity));
+      }
     }
 
     for res in &failed {
-      eprintln!("{res}");
+      eprintln!("{}", res.display(self.form, self.verbosity));
     }
 
     if failed.is_empty() {

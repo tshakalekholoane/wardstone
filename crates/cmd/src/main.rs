@@ -1,6 +1,6 @@
 mod report;
 use clap::{Parser, Subcommand, ValueEnum};
-use report::{BadPath, CheckedPath, GoodPath, Report};
+use report::{BadPath, CheckedPath, GoodPath, Report, ReportFormat};
 use std::path::PathBuf;
 use wardstone::key::certificate::Certificate;
 use wardstone::primitive::asymmetric::Asymmetric;
@@ -121,7 +121,7 @@ impl Guide {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-enum Verbosity {
+pub(crate) enum Verbosity {
   Quiet,
   Normal,
   Verbose,
@@ -155,7 +155,7 @@ enum Subcommands {
 
 impl Subcommands {
   fn x509(ctx: Context, paths: &Vec<PathBuf>, guide: Guide, verbosity: Verbosity) -> Report {
-    let mut report = Report::new();
+    let mut report = Report::new(ReportFormat::HumanReadable, verbosity);
     for path in paths {
       let mut checked = CheckedPath::new(path.to_path_buf());
       let certificate = match Certificate::from_file(path) {
@@ -168,29 +168,18 @@ impl Subcommands {
 
       if let Some(got) = certificate.hash_function() {
         match guide.validate_hash_function(ctx, got) {
-          Ok(want) => {
-            if verbosity == Verbosity::Verbose {
-              checked.push(Ok(GoodPath::Hash(got, want)))
-            }
-          },
+          Ok(want) => checked.push(Ok(GoodPath::Hash(got, want))),
           Err(want) => checked.push(Err(BadPath::MismatchedHash(got, want))),
         }
       }
 
       let got = certificate.signature_algorithm();
       match guide.validate_signature_algorithm(ctx, got) {
-        Ok(want) => {
-          if verbosity == Verbosity::Verbose {
-            checked.push(Ok(GoodPath::SigAlg(got, want)))
-          }
-        },
+        Ok(want) => checked.push(Ok(GoodPath::SigAlg(got, want))),
         Err(want) => checked.push(Err(BadPath::MismatchedSigAlg(got, want))),
       }
 
-      // Skip it, if we are in quiet-mode and the path passed every test.
-      if verbosity != Verbosity::Quiet || checked.is_err() {
-        report.push(checked);
-      }
+      report.push(checked);
     }
     report
   }
