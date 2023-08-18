@@ -25,7 +25,7 @@ impl GoodPath {
           format!("{INDENT}OK signature algorithm(got: {got}, want: {want})")
         },
       },
-      ReportFormat::JSON => match self {
+      ReportFormat::Json => match self {
         GoodPath::Hash(got, want) => {
           format!(r#""hash_function": {{ "passed": true, "got": "{got}", "want": "{want}" }}"#)
         },
@@ -57,7 +57,7 @@ impl BadPath {
           format!("{INDENT}FAILED signature algorithm(got: {got}, want: {want})")
         },
       },
-      ReportFormat::JSON => match self {
+      ReportFormat::Json => match self {
         BadPath::ReadError(e) => format!(r#"{INDENT}"error": "{e}""#),
         BadPath::MismatchedHash(got, want) => {
           format!(r#""hash_function": {{ "passed": false, "got": "{got}", "want": "{want}" }}"#)
@@ -127,7 +127,7 @@ impl CheckedPath {
           f += &results.join("\n");
         }
       },
-      ReportFormat::JSON => {
+      ReportFormat::Json => {
         let path = format!(r#""path": "{}""#, self.path.display());
         let status = format!(r#""passed": {:?}"#, !is_err);
         results.insert(0, path);
@@ -144,7 +144,7 @@ pub(crate) enum ReportFormat {
   /// Output in human readable format
   Human,
   /// Output in JSON format
-  JSON,
+  Json,
 }
 
 pub(crate) struct Report {
@@ -184,7 +184,7 @@ impl Termination for Report {
           eprintln!("{}", res.display(self.format, self.verbosity));
         }
       },
-      ReportFormat::JSON => {
+      ReportFormat::Json => {
         if self.verbosity == Verbosity::Quiet {
           ok.clear()
         };
