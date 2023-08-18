@@ -24,4 +24,4 @@ int main(void) {
 }
 ```
 
-See the [`examples`](/examples/ffi/) directory for more details about how to compile and run this.
+See the [`examples`](/examples/ffi/) directory for more details about how to compile and run this code.
