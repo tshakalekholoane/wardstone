@@ -147,15 +147,25 @@ enum Subcommands {
     /// Verbose output.
     #[arg(short, long, conflicts_with = "quiet")]
     verbose: bool,
-    /// quiet output: Hide all but errors/failed paths.
+    /// Quiet output: Hide all but errors/failed paths.
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
+
+    #[arg(short, long, value_enum, default_value_t=ReportFormat::Human)]
+    /// Which format the output will be in
+    format: ReportFormat,
   },
 }
 
 impl Subcommands {
-  fn x509(ctx: Context, paths: &Vec<PathBuf>, guide: Guide, verbosity: Verbosity) -> Report {
-    let mut report = Report::new(ReportFormat::HumanReadable, verbosity);
+  fn x509(
+    ctx: Context,
+    paths: &Vec<PathBuf>,
+    guide: Guide,
+    format: ReportFormat,
+    verbosity: Verbosity,
+  ) -> Report {
+    let mut report = Report::new(format, verbosity);
     for path in paths {
       let mut checked = CheckedPath::new(path.to_path_buf());
       let certificate = match Certificate::from_file(path) {
@@ -191,6 +201,7 @@ impl Subcommands {
         paths,
         verbose,
         quiet,
+        format,
       } => {
         let verbosity = if *quiet {
           Verbosity::Quiet
@@ -199,7 +210,7 @@ impl Subcommands {
         } else {
           Verbosity::Normal
         };
-        Self::x509(ctx, paths, *guide, verbosity)
+        Self::x509(ctx, paths, *guide, *format, verbosity)
       },
     }
   }
