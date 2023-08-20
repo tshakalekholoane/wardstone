@@ -9,27 +9,28 @@ use crate::Verbosity;
 
 const INDENT: &str = "         ";
 
-pub(crate) enum GoodPath {
+#[derive(Debug)]
+pub(crate) enum PassedAudit {
   Hash(Hash, Hash),
   SigAlg(Asymmetric, Asymmetric),
 }
 
-impl GoodPath {
+impl PassedAudit {
   fn display(&self, format: ReportFormat) -> String {
     match format {
       ReportFormat::Human => match self {
-        GoodPath::Hash(got, want) => {
+        PassedAudit::Hash(got, want) => {
           format!("{INDENT}OK hash function(got: {got}, want: {want})")
         },
-        GoodPath::SigAlg(got, want) => {
+        PassedAudit::SigAlg(got, want) => {
           format!("{INDENT}OK signature algorithm(got: {got}, want: {want})")
         },
       },
       ReportFormat::Json => match self {
-        GoodPath::Hash(got, want) => {
+        PassedAudit::Hash(got, want) => {
           format!(r#""hash_function": {{ "passed": true, "got": "{got}", "want": "{want}" }}"#)
         },
-        GoodPath::SigAlg(got, want) => {
+        PassedAudit::SigAlg(got, want) => {
           format!(
             r#""signature_algorithm": {{ "passed": true, "got": "{got}", "want": "{want}" }}"#
           )
@@ -39,30 +40,31 @@ impl GoodPath {
   }
 }
 
-pub(crate) enum BadPath {
+#[derive(Debug)]
+pub(crate) enum FailedAudit {
   ReadError(key::Error),
-  MismatchedHash(Hash, Hash),
-  MismatchedSigAlg(Asymmetric, Asymmetric),
+  NoncompliantHash(Hash, Hash),
+  NoncompliantSignatureAlg(Asymmetric, Asymmetric),
 }
 
-impl BadPath {
+impl FailedAudit {
   fn display(&self, form: ReportFormat) -> String {
     match form {
       ReportFormat::Human => match self {
-        BadPath::ReadError(e) => format!("{e}"),
-        BadPath::MismatchedHash(got, want) => {
+        FailedAudit::ReadError(e) => format!("{e}"),
+        FailedAudit::NoncompliantHash(got, want) => {
           format!("{INDENT}FAILED hash function(got: {got}, want: {want})")
         },
-        BadPath::MismatchedSigAlg(got, want) => {
+        FailedAudit::NoncompliantSignatureAlg(got, want) => {
           format!("{INDENT}FAILED signature algorithm(got: {got}, want: {want})")
         },
       },
       ReportFormat::Json => match self {
-        BadPath::ReadError(e) => format!(r#"{INDENT}"error": "{e}""#),
-        BadPath::MismatchedHash(got, want) => {
+        FailedAudit::ReadError(e) => format!(r#"{INDENT}"error": "{e}""#),
+        FailedAudit::NoncompliantHash(got, want) => {
           format!(r#""hash_function": {{ "passed": false, "got": "{got}", "want": "{want}" }}"#)
         },
-        BadPath::MismatchedSigAlg(got, want) => {
+        FailedAudit::NoncompliantSignatureAlg(got, want) => {
           format!(
             r#""signature_algorithm": {{ "passed": false, "got": "{got}", "want": "{want}" }}"#
           )
@@ -72,14 +74,15 @@ impl BadPath {
   }
 }
 
-type CheckResult = Result<GoodPath, BadPath>;
+type AuditResult = Result<PassedAudit, FailedAudit>;
 
-pub(crate) struct CheckedPath {
+#[derive(Debug)]
+pub(crate) struct Audit {
   path: PathBuf,
-  results: Vec<CheckResult>,
+  results: Vec<AuditResult>,
 }
 
-impl CheckedPath {
+impl Audit {
   pub(crate) fn new(path: PathBuf) -> Self {
     Self {
       path,
@@ -87,7 +90,7 @@ impl CheckedPath {
     }
   }
 
-  pub(crate) fn push(&mut self, res: CheckResult) {
+  pub(crate) fn push(&mut self, res: AuditResult) {
     self.results.push(res)
   }
 
@@ -96,14 +99,14 @@ impl CheckedPath {
   }
 }
 
-impl CheckedPath {
+impl Audit {
   fn display(&self, format: ReportFormat, verbosity: Verbosity) -> String {
     let mut results = vec![];
     let mut is_err = false;
     for r in &self.results {
       match r {
         Ok(r) => {
-          if verbosity == Verbosity::Verbose {
+          if verbosity.is_verbose() {
             results.push(r.display(format));
           }
         },
@@ -147,8 +150,9 @@ pub(crate) enum ReportFormat {
   Json,
 }
 
+#[derive(Debug)]
 pub(crate) struct Report {
-  results: Vec<CheckedPath>,
+  results: Vec<Audit>,
   verbosity: Verbosity,
   format: ReportFormat,
 }
@@ -162,7 +166,7 @@ impl Report {
     }
   }
 
-  pub(crate) fn push(&mut self, path: CheckedPath) {
+  pub(crate) fn push(&mut self, path: Audit) {
     self.results.push(path);
   }
 }
@@ -174,7 +178,7 @@ impl Termination for Report {
 
     match self.format {
       ReportFormat::Human => {
-        if self.verbosity != Verbosity::Quiet {
+        if !self.verbosity.is_quiet() {
           for res in ok {
             println!("{}", res.display(self.format, self.verbosity));
           }
@@ -185,7 +189,7 @@ impl Termination for Report {
         }
       },
       ReportFormat::Json => {
-        if self.verbosity == Verbosity::Quiet {
+        if self.verbosity.is_quiet() {
           ok.clear()
         };
         let json: Vec<_> = ok

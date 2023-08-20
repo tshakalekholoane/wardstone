@@ -1,6 +1,6 @@
 mod report;
 use clap::{Parser, Subcommand, ValueEnum};
-use report::{BadPath, CheckedPath, GoodPath, Report, ReportFormat};
+use report::{Audit, FailedAudit, PassedAudit, Report, ReportFormat};
 use std::path::PathBuf;
 use wardstone::key::certificate::Certificate;
 use wardstone::primitive::asymmetric::Asymmetric;
@@ -127,6 +127,16 @@ pub(crate) enum Verbosity {
   Verbose,
 }
 
+impl Verbosity {
+  pub(crate) fn is_quiet(&self) -> bool {
+    self == &Verbosity::Quiet
+  }
+
+  pub(crate) fn is_verbose(&self) -> bool {
+    self == &Verbosity::Verbose
+  }
+}
+
 /// Assess cryptographic keys for compliance.
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -137,12 +147,13 @@ struct Options {
 
 #[derive(Subcommand)]
 enum Subcommands {
-  /// Check an X.509 public key certificate for compliance.
+  /// Check X.509 public key certificates for compliance.
   X509 {
     /// Guide to assess the certificate against.
     #[arg(short, long, value_enum)]
     guide: Guide,
-    /// The certificate as a DER or PEM encoded file.
+    /// The certificates as DER or PEM encoded files.
+    #[clap(value_name = "FILE")]
     paths: Vec<PathBuf>,
     /// Verbose output.
     #[arg(short, long, conflicts_with = "quiet")]
@@ -167,26 +178,26 @@ impl Subcommands {
   ) -> Report {
     let mut report = Report::new(format, verbosity);
     for path in paths {
-      let mut checked = CheckedPath::new(path.to_path_buf());
+      let mut checked = Audit::new(path.to_path_buf());
       let certificate = match Certificate::from_file(path) {
         Ok(cert) => cert,
         Err(err) => {
-          checked.push(Err(BadPath::ReadError(err)));
+          checked.push(Err(FailedAudit::ReadError(err)));
           continue;
         },
       };
 
       if let Some(got) = certificate.hash_function() {
         match guide.validate_hash_function(ctx, got) {
-          Ok(want) => checked.push(Ok(GoodPath::Hash(got, want))),
-          Err(want) => checked.push(Err(BadPath::MismatchedHash(got, want))),
+          Ok(want) => checked.push(Ok(PassedAudit::Hash(got, want))),
+          Err(want) => checked.push(Err(FailedAudit::NoncompliantHash(got, want))),
         }
       }
 
       let got = certificate.signature_algorithm();
       match guide.validate_signature_algorithm(ctx, got) {
-        Ok(want) => checked.push(Ok(GoodPath::SigAlg(got, want))),
-        Err(want) => checked.push(Err(BadPath::MismatchedSigAlg(got, want))),
+        Ok(want) => checked.push(Ok(PassedAudit::SigAlg(got, want))),
+        Err(want) => checked.push(Err(FailedAudit::NoncompliantSignatureAlg(got, want))),
       }
 
       report.push(checked);
