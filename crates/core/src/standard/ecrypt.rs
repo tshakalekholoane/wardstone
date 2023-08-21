@@ -136,29 +136,29 @@ impl Standard for Ecrypt {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ffc::{FFC_2048_224, FFC_3072_256};
+  /// use wardstone_core::primitive::ffc::{DSA_2048_224, DSA_3072_256};
   /// use wardstone_core::standard::ecrypt::Ecrypt;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_2048 = FFC_2048_224;
-  /// let dsa_3072 = FFC_3072_256;
+  /// let dsa_2048 = DSA_2048_224;
+  /// let dsa_3072 = DSA_3072_256;
   /// assert_eq!(Ecrypt::validate_ffc(ctx, dsa_2048), Ok(dsa_3072));
   /// ```
   fn validate_ffc(ctx: Context, key: Ffc) -> Result<Ffc, Ffc> {
     let security = ctx.security().max(key.security());
     match security {
-      ..=79 => Err(FFC_3072_256),
+      ..=79 => Err(DSA_3072_256),
       80..=127 => {
         if ctx.year() > CUTOFF_YEAR {
-          Err(FFC_3072_256)
+          Err(DSA_3072_256)
         } else {
-          Ok(FFC_3072_256)
+          Ok(DSA_3072_256)
         }
       },
-      128 => Ok(FFC_3072_256),
-      129..=192 => Ok(FFC_7680_384),
-      193.. => Ok(FFC_15360_512),
+      128 => Ok(DSA_3072_256),
+      129..=192 => Ok(DSA_7680_384),
+      193.. => Ok(DSA_15360_512),
     }
   }
 
@@ -323,11 +323,11 @@ mod tests {
   test_ecc!(brainpoolp512r1, Ecrypt, BRAINPOOLP512R1, Ok(ECC_512));
   test_ecc!(secp256k1, Ecrypt, SECP256K1, Ok(ECC_256));
 
-  test_ffc!(ffc_1024_160, Ecrypt, FFC_1024_160, Ok(FFC_3072_256));
-  test_ffc!(ffc_2048_224, Ecrypt, FFC_2048_224, Ok(FFC_3072_256));
-  test_ffc!(ffc_3072_256, Ecrypt, FFC_3072_256, Ok(FFC_3072_256));
-  test_ffc!(ffc_7680_384, Ecrypt, FFC_7680_384, Ok(FFC_7680_384));
-  test_ffc!(ffc_15360_512, Ecrypt, FFC_15360_512, Ok(FFC_15360_512));
+  test_ffc!(ffc_1024_160, Ecrypt, DSA_1024_160, Ok(DSA_3072_256));
+  test_ffc!(ffc_2048_224, Ecrypt, DSA_2048_224, Ok(DSA_3072_256));
+  test_ffc!(ffc_3072_256, Ecrypt, DSA_3072_256, Ok(DSA_3072_256));
+  test_ffc!(ffc_7680_384, Ecrypt, DSA_7680_384, Ok(DSA_7680_384));
+  test_ffc!(ffc_15360_512, Ecrypt, DSA_15360_512, Ok(DSA_15360_512));
 
   test_hash!(blake_224, Ecrypt, BLAKE_224, Ok(SHA256));
   test_hash!(blake_256, Ecrypt, BLAKE_256, Ok(SHA256));
