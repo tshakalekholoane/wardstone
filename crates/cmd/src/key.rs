@@ -1,6 +1,7 @@
 //! Key types supported by the application.
 use std::{fmt, io};
 
+use openssh_keys::errors::OpenSSHKeyError;
 use openssl::error::ErrorStack;
 use wardstone_core::primitive::hash::Hash;
 use x509_parser::nom::Err as NomError;
@@ -9,6 +10,7 @@ use x509_parser::prelude::{PEMError, X509Error};
 use crate::primitive::asymmetric::Asymmetric;
 
 pub mod certificate;
+pub mod ssh;
 
 /// Represents a cryptographic key.
 pub trait Key {
@@ -22,6 +24,7 @@ pub trait Key {
 pub enum Error {
   Io(io::Error),
   ParsePEM(NomError<PEMError>),
+  ParseSsh(OpenSSHKeyError),
   ParseX509(ErrorStack),
   ParseX509Certificate(NomError<X509Error>),
   Unrecognised(String),
@@ -36,6 +39,7 @@ impl fmt::Display for Error {
         _ => write!(f, "Unexpected error. Please file an issue."),
       },
       Error::ParsePEM(_) => write!(f, "Cannot parse PEM file."),
+      Error::ParseSsh(_) => write!(f, "Cannot parse SSH public key."),
       Error::ParseX509Certificate(_) | Error::ParseX509(_) => {
         write!(f, "Cannot parse X.509 certificate.")
       },
@@ -65,5 +69,11 @@ impl From<ErrorStack> for Error {
 impl From<NomError<X509Error>> for Error {
   fn from(err: NomError<X509Error>) -> Self {
     Self::ParseX509Certificate(err)
+  }
+}
+
+impl From<OpenSSHKeyError> for Error {
+  fn from(err: OpenSSHKeyError) -> Self {
+    Self::ParseSsh(err)
   }
 }
