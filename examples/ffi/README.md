@@ -15,7 +15,7 @@ The static library and associated header file will be placed in the `target` dir
 Finally, compile the C example and run it using the following commands in the current directory. This assumes you are on a Unix system.
 
 ```bash
-cc -I ../../target/ ./main.c ../../target/release/libwardstone_ffi.a
+cc -I ../../target/ ./main.c ../../target/release/libwardstone.a
 ./a.out
 ```
 
