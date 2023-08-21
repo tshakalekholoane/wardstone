@@ -1,4 +1,3 @@
-use clap::ValueEnum;
 use std::path::PathBuf;
 use std::process::{ExitCode, Termination};
 use wardstone::key;
@@ -142,7 +141,7 @@ impl Audit {
   }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, ValueEnum)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub(crate) enum ReportFormat {
   /// Output in human readable format
   Human,

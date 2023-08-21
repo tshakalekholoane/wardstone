@@ -161,10 +161,9 @@ enum Subcommands {
     /// Quiet output: Hide all but errors/failed paths.
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
-
-    #[arg(short, long, value_enum, default_value_t=ReportFormat::Human)]
-    /// Which format the output will be in
-    format: ReportFormat,
+    #[arg(long)]
+    /// Use JSON-format for output
+    json: bool,
   },
 }
 
@@ -212,7 +211,7 @@ impl Subcommands {
         paths,
         verbose,
         quiet,
-        format,
+        json,
       } => {
         let verbosity = if *quiet {
           Verbosity::Quiet
@@ -221,7 +220,12 @@ impl Subcommands {
         } else {
           Verbosity::Normal
         };
-        Self::x509(ctx, paths, *guide, *format, verbosity)
+        let format = if *json {
+          ReportFormat::Json
+        } else {
+          ReportFormat::Human
+        };
+        Self::x509(ctx, paths, *guide, format, verbosity)
       },
     }
   }
