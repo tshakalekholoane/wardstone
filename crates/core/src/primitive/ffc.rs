@@ -1,4 +1,6 @@
 //! Finite field primitive and some common instances.
+use std::fmt::{Display, Formatter, Result};
+
 use crate::primitive::{Primitive, Security};
 
 /// Represents a finite field cryptography primitive used to implement
@@ -38,6 +40,16 @@ impl Ffc {
     Self { id, l, n }
   }
 }
+
+impl Display for Ffc {
+  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    write!(f, "dsa_{}_{}", self.l, self.n)
+  }
+}
+
+/// An identifier for custom DSA keys.
+#[no_mangle]
+pub static ID_DSA: u16 = 65534;
 
 /// Generic instance that represents a choice of L = 1024 and N = 160
 /// for a finite field cryptography primitive.
