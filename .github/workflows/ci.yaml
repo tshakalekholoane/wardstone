@@ -63,13 +63,13 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Generate header and build dynamic library
+      - name: Generate header and build static library
         run: cargo build --release --all-features
 
       - name: Build FFI example
         working-directory: ./examples/ffi/
         run: |
-          cc -I ../../target/ ./main.c ../../target/release/libwardstone_ffi.a \
+          cc -I ../../target/ ./main.c ../../target/release/libwardstone.a \
             -o ../../target/release/ffi_example
 
       - name: Run FFI example
