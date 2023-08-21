@@ -1,12 +1,20 @@
 //! Key types supported by the application.
-use std::fmt;
-use std::io::{self};
+use std::{fmt, io};
 
 use openssl::error::ErrorStack;
+use wardstone_core::primitive::hash::Hash;
 use x509_parser::nom::Err as NomError;
 use x509_parser::prelude::{PEMError, X509Error};
 
+use crate::primitive::asymmetric::Asymmetric;
+
 pub mod certificate;
+
+/// Represents a cryptographic key.
+pub trait Key {
+  fn hash_function(&self) -> Option<Hash>;
+  fn signature_algorithm(&self) -> Asymmetric;
+}
 
 /// Represents an error that could arise as a result of reading a key or
 /// parsing it's contents.
