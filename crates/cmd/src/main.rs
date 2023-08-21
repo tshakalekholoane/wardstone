@@ -4,6 +4,7 @@ use std::process::{ExitCode, Termination};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use wardstone::key::certificate::Certificate;
+use wardstone::key::Key;
 use wardstone::primitive::asymmetric::Asymmetric;
 use wardstone_core::context::Context;
 use wardstone_core::primitive::hash::Hash;

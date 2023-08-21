@@ -13,7 +13,7 @@ use wardstone_core::primitive::ifc::*;
 use x509_parser::pem;
 use x509_parser::prelude::{FromDer, TbsCertificate, X509Certificate};
 
-use crate::key::Error;
+use crate::key::{Error, Key};
 use crate::primitive::asymmetric::Asymmetric;
 
 static ASYMMETRIC: Lazy<HashMap<&str, Asymmetric>> = Lazy::new(|| {
@@ -212,14 +212,6 @@ impl Certificate {
     Ok(certificate)
   }
 
-  pub fn hash_function(&self) -> Option<Hash> {
-    self.hash_function
-  }
-
-  pub fn signature_algorithm(&self) -> Asymmetric {
-    self.signature_algorithm
-  }
-
   pub fn from_file(path: &PathBuf) -> Result<Certificate, Error> {
     let mut file = File::open(path)?;
     let mut data = Vec::new();
@@ -260,5 +252,15 @@ impl Certificate {
       "2.16.840.1.101.3.4.3.12" => Self::edsa_with_sha(&tbs_certificate, SHA3_512),
       _ => Err(Error::Unrecognised(oid)),
     }
+  }
+}
+
+impl Key for Certificate {
+  fn hash_function(&self) -> Option<Hash> {
+    self.hash_function
+  }
+
+  fn signature_algorithm(&self) -> Asymmetric {
+    self.signature_algorithm
   }
 }
