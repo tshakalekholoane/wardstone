@@ -98,12 +98,18 @@ impl Guide {
         Asymmetric::Ifc(ifc) => Bsi::validate_ifc(ctx, ifc)
           .map(Into::into)
           .map_err(Into::into),
+        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
+          .map(Into::into)
+          .map_err(Into::into),
       },
       Self::Cnsa => match asymmetric {
         Asymmetric::Ecc(ecc) => Cnsa::validate_ecc(ctx, ecc)
           .map(Into::into)
           .map_err(Into::into),
         Asymmetric::Ifc(ifc) => Cnsa::validate_ifc(ctx, ifc)
+          .map(Into::into)
+          .map_err(Into::into),
+        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
           .map(Into::into)
           .map_err(Into::into),
       },
@@ -114,12 +120,18 @@ impl Guide {
         Asymmetric::Ifc(ifc) => Ecrypt::validate_ifc(ctx, ifc)
           .map(Into::into)
           .map_err(Into::into),
+        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
+          .map(Into::into)
+          .map_err(Into::into),
       },
       Self::Lenstra => match asymmetric {
         Asymmetric::Ecc(ecc) => Lenstra::validate_ecc(ctx, ecc)
           .map(Into::into)
           .map_err(Into::into),
         Asymmetric::Ifc(ifc) => Lenstra::validate_ifc(ctx, ifc)
+          .map(Into::into)
+          .map_err(Into::into),
+        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
           .map(Into::into)
           .map_err(Into::into),
       },
@@ -130,6 +142,9 @@ impl Guide {
         Asymmetric::Ifc(ifc) => Nist::validate_ifc(ctx, ifc)
           .map(Into::into)
           .map_err(Into::into),
+        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
+          .map(Into::into)
+          .map_err(Into::into),
       },
       Self::Strong => match asymmetric {
         Asymmetric::Ecc(ecc) => Strong::validate_ecc(ctx, ecc)
@@ -138,12 +153,18 @@ impl Guide {
         Asymmetric::Ifc(ifc) => Strong::validate_ifc(ctx, ifc)
           .map(Into::into)
           .map_err(Into::into),
+        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
+          .map(Into::into)
+          .map_err(Into::into),
       },
       Self::Weak => match asymmetric {
         Asymmetric::Ecc(ecc) => Weak::validate_ecc(ctx, ecc)
           .map(Into::into)
           .map_err(Into::into),
         Asymmetric::Ifc(ifc) => Weak::validate_ifc(ctx, ifc)
+          .map(Into::into)
+          .map_err(Into::into),
+        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
           .map(Into::into)
           .map_err(Into::into),
       },
