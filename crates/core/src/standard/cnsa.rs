@@ -91,12 +91,12 @@ impl Standard for Cnsa {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ffc::{FFC_7680_384, FFC_NOT_SUPPORTED};
+  /// use wardstone_core::primitive::ffc::{DSA_7680_384, FFC_NOT_SUPPORTED};
   /// use wardstone_core::standard::cnsa::Cnsa;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_7680 = FFC_7680_384;
+  /// let dsa_7680 = DSA_7680_384;
   /// assert_eq!(Cnsa::validate_ffc(ctx, dsa_7680), Err(FFC_NOT_SUPPORTED));
   /// ```
   fn validate_ffc(_ctx: Context, _key: Ffc) -> Result<Ffc, Ffc> {
@@ -258,11 +258,11 @@ mod tests {
   test_hash!(shake128, Cnsa, SHAKE128, Err(SHA384));
   test_hash!(shake256, Cnsa, SHAKE256, Err(SHA384));
 
-  test_ffc!(ffc_1024_160, Cnsa, FFC_1024_160, Err(FFC_NOT_SUPPORTED));
-  test_ffc!(ffc_2048_224, Cnsa, FFC_2048_224, Err(FFC_NOT_SUPPORTED));
-  test_ffc!(ffc_3072_256, Cnsa, FFC_3072_256, Err(FFC_NOT_SUPPORTED));
-  test_ffc!(ffc_7680_384, Cnsa, FFC_7680_384, Err(FFC_NOT_SUPPORTED));
-  test_ffc!(ffc_15360_512, Cnsa, FFC_15360_512, Err(FFC_NOT_SUPPORTED));
+  test_ffc!(ffc_1024_160, Cnsa, DSA_1024_160, Err(FFC_NOT_SUPPORTED));
+  test_ffc!(ffc_2048_224, Cnsa, DSA_2048_224, Err(FFC_NOT_SUPPORTED));
+  test_ffc!(ffc_3072_256, Cnsa, DSA_3072_256, Err(FFC_NOT_SUPPORTED));
+  test_ffc!(ffc_7680_384, Cnsa, DSA_7680_384, Err(FFC_NOT_SUPPORTED));
+  test_ffc!(ffc_15360_512, Cnsa, DSA_15360_512, Err(FFC_NOT_SUPPORTED));
 
   test_ifc!(ifc_1024, Cnsa, RSA_PSS_1024, Err(RSA_PSS_3072));
   test_ifc!(ifc_2048, Cnsa, RSA_PSS_2048, Err(RSA_PSS_3072));

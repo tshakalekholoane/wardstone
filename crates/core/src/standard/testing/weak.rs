@@ -76,23 +76,23 @@ impl Standard for Weak {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ffc::{FFC_2048_224, FFC_3072_256};
+  /// use wardstone_core::primitive::ffc::{DSA_2048_224, DSA_3072_256};
   /// use wardstone_core::standard::testing::weak::Weak;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_2048 = FFC_2048_224;
+  /// let dsa_2048 = DSA_2048_224;
   /// assert_eq!(Weak::validate_ffc(ctx, dsa_2048), Ok(dsa_2048));
   /// ```
   fn validate_ffc(ctx: Context, key: Ffc) -> Result<Ffc, Ffc> {
     let security = ctx.security().max(key.security());
     match security {
-      ..=63 => Err(FFC_1024_160),
-      64..=80 => Ok(FFC_1024_160),
-      81..=112 => Ok(FFC_2048_224),
-      113..=128 => Ok(FFC_3072_256),
-      129..=192 => Ok(FFC_7680_384),
-      193.. => Ok(FFC_15360_512),
+      ..=63 => Err(DSA_1024_160),
+      64..=80 => Ok(DSA_1024_160),
+      81..=112 => Ok(DSA_2048_224),
+      113..=128 => Ok(DSA_3072_256),
+      129..=192 => Ok(DSA_7680_384),
+      193.. => Ok(DSA_15360_512),
     }
   }
 
@@ -233,11 +233,11 @@ mod tests {
   test_ecc!(brainpoolp512r1, Weak, BRAINPOOLP512R1, Ok(BRAINPOOLP512R1));
   test_ecc!(secp256k1, Weak, SECP256K1, Ok(ED25519));
 
-  test_ffc!(ffc_1024_160, Weak, FFC_1024_160, Ok(FFC_1024_160));
-  test_ffc!(ffc_2048_224, Weak, FFC_2048_224, Ok(FFC_2048_224));
-  test_ffc!(ffc_3072_256, Weak, FFC_3072_256, Ok(FFC_3072_256));
-  test_ffc!(ffc_7680_384, Weak, FFC_7680_384, Ok(FFC_7680_384));
-  test_ffc!(ffc_15360_512, Weak, FFC_15360_512, Ok(FFC_15360_512));
+  test_ffc!(ffc_1024_160, Weak, DSA_1024_160, Ok(DSA_1024_160));
+  test_ffc!(ffc_2048_224, Weak, DSA_2048_224, Ok(DSA_2048_224));
+  test_ffc!(ffc_3072_256, Weak, DSA_3072_256, Ok(DSA_3072_256));
+  test_ffc!(ffc_7680_384, Weak, DSA_7680_384, Ok(DSA_7680_384));
+  test_ffc!(ffc_15360_512, Weak, DSA_15360_512, Ok(DSA_15360_512));
 
   test_ifc!(ifc_1024, Weak, RSA_PSS_1024, Ok(RSA_PSS_1024));
   test_ifc!(ifc_1280, Weak, RSA_PSS_1280, Ok(RSA_PSS_1024));

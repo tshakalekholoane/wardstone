@@ -127,12 +127,12 @@ impl Standard for Lenstra {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ffc::FFC_3072_256;
+  /// use wardstone_core::primitive::ffc::DSA_3072_256;
   /// use wardstone_core::standard::lenstra::Lenstra;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_3072 = FFC_3072_256;
+  /// let dsa_3072 = DSA_3072_256;
   /// assert_eq!(Lenstra::validate_ffc(ctx, dsa_3072), Ok(dsa_3072));
   /// ```
   fn validate_ffc(ctx: Context, key: Ffc) -> Result<Ffc, Ffc> {
@@ -143,11 +143,11 @@ impl Standard for Lenstra {
     };
     let recommendation = match implied_security.max(min_security) {
       ..=79 => FFC_NOT_SUPPORTED,
-      80 => FFC_1024_160,
-      81..=112 => FFC_2048_224,
-      113..=128 => FFC_3072_256,
-      129..=192 => FFC_7680_384,
-      193.. => FFC_15360_512,
+      80 => DSA_1024_160,
+      81..=112 => DSA_2048_224,
+      113..=128 => DSA_3072_256,
+      129..=192 => DSA_7680_384,
+      193.. => DSA_15360_512,
     };
     if implied_security < min_security {
       Err(recommendation)
@@ -346,11 +346,11 @@ mod tests {
   test_ecc!(brainpoolp512r1, Lenstra, BRAINPOOLP512R1, Ok(ECC_512));
   test_ecc!(secp256k1, Lenstra, SECP256K1, Ok(ECC_256));
 
-  test_ffc!(ffc_1024_160, Lenstra, FFC_1024_160, Err(FFC_2048_224));
-  test_ffc!(ffc_2048_224, Lenstra, FFC_2048_224, Ok(FFC_2048_224));
-  test_ffc!(ffc_3072_256, Lenstra, FFC_3072_256, Ok(FFC_3072_256));
-  test_ffc!(ffc_7680_384, Lenstra, FFC_7680_384, Ok(FFC_7680_384));
-  test_ffc!(ffc_15360_512, Lenstra, FFC_15360_512, Ok(FFC_15360_512));
+  test_ffc!(ffc_1024_160, Lenstra, DSA_1024_160, Err(DSA_2048_224));
+  test_ffc!(ffc_2048_224, Lenstra, DSA_2048_224, Ok(DSA_2048_224));
+  test_ffc!(ffc_3072_256, Lenstra, DSA_3072_256, Ok(DSA_3072_256));
+  test_ffc!(ffc_7680_384, Lenstra, DSA_7680_384, Ok(DSA_7680_384));
+  test_ffc!(ffc_15360_512, Lenstra, DSA_15360_512, Ok(DSA_15360_512));
 
   test_ifc!(ifc_1024, Lenstra, RSA_PSS_1024, Err(RSA_PSS_2048));
   test_ifc!(ifc_1280, Lenstra, RSA_PSS_1280, Err(RSA_PSS_2048));

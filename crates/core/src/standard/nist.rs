@@ -216,12 +216,12 @@ impl Standard for Nist {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ffc::FFC_2048_224;
+  /// use wardstone_core::primitive::ffc::DSA_2048_224;
   /// use wardstone_core::standard::nist::Nist;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_2048 = FFC_2048_224;
+  /// let dsa_2048 = DSA_2048_224;
   /// assert_eq!(Nist::validate_ffc(ctx, dsa_2048), Ok(dsa_2048));
   /// ```
   fn validate_ffc(ctx: Context, key: Ffc) -> Result<Ffc, Ffc> {
@@ -233,21 +233,21 @@ impl Standard for Nist {
     match security {
       80 => {
         if ctx.year() > CUTOFF_YEAR {
-          Err(FFC_3072_256)
+          Err(DSA_3072_256)
         } else {
-          Err(FFC_2048_224)
+          Err(DSA_2048_224)
         }
       },
       112 => {
         if ctx.year() > CUTOFF_YEAR {
-          Err(FFC_3072_256)
+          Err(DSA_3072_256)
         } else {
-          Ok(FFC_2048_224)
+          Ok(DSA_2048_224)
         }
       },
-      128 => Ok(FFC_3072_256),
-      192 => Ok(FFC_7680_384),
-      256 => Ok(FFC_15360_512),
+      128 => Ok(DSA_3072_256),
+      192 => Ok(DSA_7680_384),
+      256 => Ok(DSA_15360_512),
       _ => Err(FFC_NOT_SUPPORTED),
     }
   }
@@ -438,11 +438,11 @@ mod tests {
   test_ecc!(brainpoolp512r1, Nist, BRAINPOOLP512R1, Ok(P521));
   test_ecc!(secp256k1, Nist, SECP256K1, Ok(P256));
 
-  test_ffc!(ffc_1024_160, Nist, FFC_1024_160, Err(FFC_2048_224));
-  test_ffc!(ffc_2048_224, Nist, FFC_2048_224, Ok(FFC_2048_224));
-  test_ffc!(ffc_3072_256, Nist, FFC_3072_256, Ok(FFC_3072_256));
-  test_ffc!(ffc_7680_384, Nist, FFC_7680_384, Ok(FFC_7680_384));
-  test_ffc!(ffc_15360_512, Nist, FFC_15360_512, Ok(FFC_15360_512));
+  test_ffc!(ffc_1024_160, Nist, DSA_1024_160, Err(DSA_2048_224));
+  test_ffc!(ffc_2048_224, Nist, DSA_2048_224, Ok(DSA_2048_224));
+  test_ffc!(ffc_3072_256, Nist, DSA_3072_256, Ok(DSA_3072_256));
+  test_ffc!(ffc_7680_384, Nist, DSA_7680_384, Ok(DSA_7680_384));
+  test_ffc!(ffc_15360_512, Nist, DSA_15360_512, Ok(DSA_15360_512));
 
   test_ifc!(ifc_1024, Nist, RSA_PSS_1024, Err(RSA_PSS_2048));
   test_ifc!(ifc_2048, Nist, RSA_PSS_2048, Ok(RSA_PSS_2048));
