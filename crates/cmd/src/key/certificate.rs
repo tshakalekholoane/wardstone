@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
-use std::path::PathBuf;
+use std::path::Path;
 
 use once_cell::sync::Lazy;
 use openssl::x509::X509;
@@ -211,8 +211,10 @@ impl Certificate {
     };
     Ok(certificate)
   }
+}
 
-  pub fn from_file(path: &PathBuf) -> Result<Certificate, Error> {
+impl Key for Certificate {
+  fn from_file(path: &Path) -> Result<Certificate, Error> {
     let mut file = File::open(path)?;
     let mut data = Vec::new();
     file.read_to_end(&mut data)?;
@@ -253,9 +255,7 @@ impl Certificate {
       _ => Err(Error::Unrecognised(oid)),
     }
   }
-}
 
-impl Key for Certificate {
   fn hash_function(&self) -> Option<Hash> {
     self.hash_function
   }

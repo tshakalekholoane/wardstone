@@ -1,11 +1,11 @@
 use std::fmt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{ExitCode, Termination};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use wardstone::key::certificate::Certificate;
+use wardstone::key::ssh::Ssh;
 use wardstone::key::Key;
-use wardstone::primitive::asymmetric::Asymmetric;
 use wardstone_core::context::Context;
 use wardstone_core::primitive::asymmetric::Asymmetric;
 use wardstone_core::primitive::hash::Hash;
@@ -89,86 +89,16 @@ impl Guide {
   fn validate_signature_algorithm(
     &self,
     ctx: Context,
-    asymmetric: Asymmetric,
+    key: Asymmetric,
   ) -> Result<Asymmetric, Asymmetric> {
     match self {
-      Self::Bsi => match asymmetric {
-        Asymmetric::Ecc(ecc) => Bsi::validate_ecc(ctx, ecc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ifc(ifc) => Bsi::validate_ifc(ctx, ifc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
-          .map(Into::into)
-          .map_err(Into::into),
-      },
-      Self::Cnsa => match asymmetric {
-        Asymmetric::Ecc(ecc) => Cnsa::validate_ecc(ctx, ecc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ifc(ifc) => Cnsa::validate_ifc(ctx, ifc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
-          .map(Into::into)
-          .map_err(Into::into),
-      },
-      Self::Ecrypt => match asymmetric {
-        Asymmetric::Ecc(ecc) => Ecrypt::validate_ecc(ctx, ecc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ifc(ifc) => Ecrypt::validate_ifc(ctx, ifc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
-          .map(Into::into)
-          .map_err(Into::into),
-      },
-      Self::Lenstra => match asymmetric {
-        Asymmetric::Ecc(ecc) => Lenstra::validate_ecc(ctx, ecc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ifc(ifc) => Lenstra::validate_ifc(ctx, ifc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
-          .map(Into::into)
-          .map_err(Into::into),
-      },
-      Self::Nist => match asymmetric {
-        Asymmetric::Ecc(ecc) => Nist::validate_ecc(ctx, ecc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ifc(ifc) => Nist::validate_ifc(ctx, ifc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
-          .map(Into::into)
-          .map_err(Into::into),
-      },
-      Self::Strong => match asymmetric {
-        Asymmetric::Ecc(ecc) => Strong::validate_ecc(ctx, ecc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ifc(ifc) => Strong::validate_ifc(ctx, ifc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
-          .map(Into::into)
-          .map_err(Into::into),
-      },
-      Self::Weak => match asymmetric {
-        Asymmetric::Ecc(ecc) => Weak::validate_ecc(ctx, ecc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ifc(ifc) => Weak::validate_ifc(ctx, ifc)
-          .map(Into::into)
-          .map_err(Into::into),
-        Asymmetric::Ffc(ffc) => Bsi::validate_ffc(ctx, ffc)
-          .map(Into::into)
-          .map_err(Into::into),
-      },
+      Self::Bsi => Bsi::validate_asymmetric(ctx, key),
+      Self::Cnsa => Cnsa::validate_asymmetric(ctx, key),
+      Self::Ecrypt => Ecrypt::validate_asymmetric(ctx, key),
+      Self::Lenstra => Lenstra::validate_asymmetric(ctx, key),
+      Self::Nist => Nist::validate_asymmetric(ctx, key),
+      Self::Strong => Strong::validate_asymmetric(ctx, key),
+      Self::Weak => Weak::validate_asymmetric(ctx, key),
     }
   }
 }
@@ -183,6 +113,18 @@ struct Options {
 
 #[derive(Subcommand)]
 enum Subcommands {
+  /// Check an SSH public key for compliance.
+  Ssh {
+    /// Guide to assess the key against.
+    #[arg(short, long, value_enum)]
+    guide: Guide,
+    /// The path to the public key file.
+    #[arg(short, long)]
+    path: PathBuf,
+    /// Verbose output.
+    #[arg(short, long)]
+    verbose: bool,
+  },
   /// Check an X.509 public key certificate for compliance.
   X509 {
     /// Guide to assess the certificate against.
@@ -198,8 +140,8 @@ enum Subcommands {
 }
 
 impl Subcommands {
-  fn x509(ctx: Context, path: &PathBuf, guide: Guide, verbose: bool) -> Status {
-    let certificate = match Certificate::from_file(path) {
+  fn audit<T: Key>(ctx: Context, path: &Path, guide: Guide, verbose: bool) -> Status {
+    let key = match T::from_file(path) {
       Ok(got) => got,
       Err(err) => {
         eprintln!("{}", err);
@@ -209,30 +151,30 @@ impl Subcommands {
 
     let mut pass = Status::Ok(path.to_path_buf());
 
-    if let Some(got) = certificate.hash_function() {
+    if let Some(got) = key.hash_function() {
       match guide.validate_hash_function(ctx, got) {
         Ok(want) => {
           if verbose {
-            println!("hash function: got: {}, want: {}", got, want)
+            println!("hash function: got {}, want: {}", got, want)
           }
         },
         Err(want) => {
           pass = Status::Fail(path.to_path_buf());
-          eprintln!("hash function: got: {}, want: {}", got, want);
+          eprintln!("hash function: got {}, want: {}", got, want);
         },
       }
     }
 
-    let got = certificate.signature_algorithm();
+    let got = key.signature_algorithm();
     match guide.validate_signature_algorithm(ctx, got) {
       Ok(want) => {
         if verbose {
-          println!("signature algorithm: got: {}, want: {}", got, want)
+          println!("signature algorithm: got {}, want: {}", got, want)
         }
       },
       Err(want) => {
         pass = Status::Fail(path.to_path_buf());
-        eprintln!("signature algorithm: got: {}, want: {}", got, want);
+        eprintln!("signature algorithm: got {}, want: {}", got, want);
       },
     }
 
@@ -241,11 +183,16 @@ impl Subcommands {
 
   pub fn run(&self, ctx: Context) -> Status {
     match self {
+      Self::Ssh {
+        guide,
+        path,
+        verbose,
+      } => Self::audit::<Ssh>(ctx, path, *guide, *verbose),
       Self::X509 {
         guide,
         path,
         verbose,
-      } => Self::x509(ctx, path, *guide, *verbose),
+      } => Self::audit::<Certificate>(ctx, path, *guide, *verbose),
     }
   }
 }
