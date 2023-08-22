@@ -1,18 +1,31 @@
 //! An asymmetric key primitive.
+//!
+//! This is just a thin wrapper around asymmetric key primitives defined
+//! in other modules that are bridged here to avoid incompatibility with
+//! C/C++.
 use std::fmt::{Display, Formatter, Result};
 
-use wardstone_core::primitive::ecc::Ecc;
-use wardstone_core::primitive::ffc::Ffc;
-use wardstone_core::primitive::ifc::Ifc;
+use crate::primitive::ecc::Ecc;
+use crate::primitive::ffc::Ffc;
+use crate::primitive::ifc::Ifc;
+use crate::primitive::{Primitive, Security};
 
-// Rust enums cannot be easily represented in C so this type only exists
-// in this crate.
 /// Represents an asymmetric key primitive.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Asymmetric {
   Ecc(Ecc),
   Ifc(Ifc),
   Ffc(Ffc),
+}
+
+impl Primitive for Asymmetric {
+  fn security(&self) -> Security {
+    match self {
+      Asymmetric::Ecc(ecc) => ecc.security(),
+      Asymmetric::Ifc(ifc) => ifc.security(),
+      Asymmetric::Ffc(ffc) => ffc.security(),
+    }
+  }
 }
 
 impl Display for Asymmetric {
