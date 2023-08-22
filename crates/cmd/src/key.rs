@@ -1,4 +1,5 @@
 //! Key types supported by the application.
+use std::path::Path;
 use std::{fmt, io};
 
 use openssh_keys::errors::OpenSSHKeyError;
@@ -13,6 +14,9 @@ pub mod ssh;
 
 /// Represents a cryptographic key.
 pub trait Key {
+  fn from_file(path: &Path) -> Result<Self, Error>
+  where
+    Self: Sized;
   fn hash_function(&self) -> Option<Hash>;
   fn signature_algorithm(&self) -> Asymmetric;
 }
