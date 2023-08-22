@@ -8,10 +8,10 @@ use wardstone_core::primitive::ffc::{
   Ffc, DSA_1024_160, DSA_15360_512, DSA_2048_256, DSA_3072_256, DSA_7680_384, ID_DSA,
 };
 use wardstone_core::primitive::hash::{Hash, SHA1};
+use wardstone_core::primitive::asymmetric::Asymmetric;
 use wardstone_core::primitive::ifc::*;
 
 use crate::key::{Error, Key};
-use crate::primitive::asymmetric::Asymmetric;
 
 /// Represents an SSH public key.
 #[derive(Debug)]
