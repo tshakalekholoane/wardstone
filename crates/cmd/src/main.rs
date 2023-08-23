@@ -1,13 +1,10 @@
-mod report;
-use std::fmt;
-use std::path::{Path, PathBuf};
-use std::process::{ExitCode, Termination};
-use clap::{Parser, Subcommand, ValueEnum};
-use report::{Audit, FailedAudit, PassedAudit, Report, ReportFormat};
 use std::path::PathBuf;
+
+use clap::{Parser, Subcommand, ValueEnum};
 use wardstone::key::certificate::Certificate;
 use wardstone::key::ssh::Ssh;
 use wardstone::key::Key;
+use wardstone::report::{Audit, Exit, Report, Verbosity};
 use wardstone_core::context::Context;
 use wardstone_core::primitive::asymmetric::Asymmetric;
 use wardstone_core::primitive::hash::Hash;
@@ -25,7 +22,7 @@ use wardstone_core::standard::Standard;
 // counter to the ability of users to create their own first-class
 // guides/standards.
 #[derive(Clone, Copy, Debug, ValueEnum)]
-pub enum Guide {
+enum Guide {
   /// BSI TR-02102 series of technical guidelines.
   Bsi,
   /// Commercial National Security Algorithm Suites, CNSA 1.0 and
@@ -76,23 +73,6 @@ impl Guide {
   }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub(crate) enum Verbosity {
-  Quiet,
-  Normal,
-  Verbose,
-}
-
-impl Verbosity {
-  pub(crate) fn is_quiet(&self) -> bool {
-    self == &Verbosity::Quiet
-  }
-
-  pub(crate) fn is_verbose(&self) -> bool {
-    self == &Verbosity::Verbose
-  }
-}
-
 /// Assess cryptographic keys for compliance.
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -108,134 +88,98 @@ enum Subcommands {
     /// Guide to assess the key against.
     #[arg(short, long, value_enum)]
     guide: Guide,
-    /// The path to the public key file.
+    /// JSON formatted output.
     #[arg(short, long)]
-    path: PathBuf,
+    json: bool,
+    /// Do not print output.
+    #[arg(short, long, conflicts_with = "verbose")]
+    quiet: bool,
     /// Verbose output.
-    #[arg(short, long)]
+    #[arg(short, long, conflicts_with = "quiet")]
     verbose: bool,
+    /// The paths to the public key file(s).
+    #[clap(value_name = "FILE")]
+    files: Vec<PathBuf>,
   },
   /// Check X.509 public key certificates for compliance.
   X509 {
     /// Guide to assess the certificate against.
     #[arg(short, long, value_enum)]
     guide: Guide,
-    /// The certificates as DER or PEM encoded files.
-    #[clap(value_name = "FILE")]
-    paths: Vec<PathBuf>,
+    /// JSON formatted output.
+    #[arg(short, long)]
+    json: bool,
+    /// Do not print output.
+    #[arg(short, long, conflicts_with = "verbose")]
+    quiet: bool,
     /// Verbose output.
     #[arg(short, long, conflicts_with = "quiet")]
     verbose: bool,
-    /// Quiet output: Hide all but errors/failed paths.
-    #[arg(short, long, conflicts_with = "verbose")]
-    quiet: bool,
-    #[arg(long)]
-    /// Use JSON-format for output
-    json: bool,
+    /// The certificates as DER or PEM encoded files.
+    #[clap(value_name = "FILE")]
+    files: Vec<PathBuf>,
   },
 }
 
 impl Subcommands {
-  fn x509(
+  fn assess<T: Key>(
     ctx: Context,
     paths: &Vec<PathBuf>,
     guide: Guide,
-    format: ReportFormat,
+    json: bool,
     verbosity: Verbosity,
-  ) -> Report {
-    let mut report = Report::new(format, verbosity);
+  ) -> Exit {
+    let mut report = Report::new(verbosity, json);
     for path in paths {
-      let mut checked = Audit::new(path.to_path_buf());
-      let certificate = match Certificate::from_file(path) {
-        Ok(cert) => cert,
-        Err(err) => {
-          checked.push(Err(FailedAudit::ReadError(err)));
-          continue;
-        },
+      let key = match T::from_file(path) {
+        Ok(got) => got,
+        Err(err) => return Exit::Failure(err),
       };
-
-  fn audit<T: Key>(ctx: Context, path: &Path, guide: Guide, verbose: bool) -> Status {
-    let key = match T::from_file(path) {
-      Ok(got) => got,
-      Err(err) => {
-        eprintln!("{}", err);
-        return Status::Fail(path.to_path_buf());
-      },
-    };
-
-
-      if let Some(got) = certificate.hash_function() {
+      let hash_function = key.hash_function();
+      let signature_algorithm = key.signature_algorithm();
+      let mut audit = Audit::new(path, hash_function, signature_algorithm);
+      if let Some(got) = hash_function {
         match guide.validate_hash_function(ctx, got) {
-          Ok(want) => checked.push(Ok(PassedAudit::Hash(got, want))),
-          Err(want) => checked.push(Err(FailedAudit::NoncompliantHash(got, want))),
+          Ok(want) => audit.compliant_hash_function(want),
+          Err(want) => audit.noncompliant_hash_function(want),
         }
       }
-      let got = certificate.signature_algorithm();
-      match guide.validate_signature_algorithm(ctx, got) {
-        Ok(want) => checked.push(Ok(PassedAudit::SigAlg(got, want))),
-        Err(want) => checked.push(Err(FailedAudit::NoncompliantSignatureAlg(got, want))),
-    if let Some(got) = key.hash_function() {
-      match guide.validate_hash_function(ctx, got) {
-        Ok(want) => {
-          if verbose {
-            println!("hash function: got {}, want: {}", got, want)
-          }
-        },
-        Err(want) => {
-          pass = Status::Fail(path.to_path_buf());
-          eprintln!("hash function: got {}, want: {}", got, want);
-        },
+      match guide.validate_signature_algorithm(ctx, signature_algorithm) {
+        Ok(want) => audit.compliant_signature(want),
+        Err(want) => audit.noncompliant_signature(want),
       }
-      report.push(checked);
-    let got = key.signature_algorithm();
-    match guide.validate_signature_algorithm(ctx, got) {
-      Ok(want) => {
-        if verbose {
-          println!("signature algorithm: got {}, want: {}", got, want)
-        }
-      },
-      Err(want) => {
-        pass = Status::Fail(path.to_path_buf());
-        eprintln!("signature algorithm: got {}, want: {}", got, want);
-      },
+      report.push(audit);
     }
-    report
+    Exit::Success(report)
   }
 
-  pub fn run(&self, ctx: Context) -> Report {
+  pub fn run(&self, ctx: Context) -> Exit {
     match self {
       Self::Ssh {
         guide,
-        path,
+        json,
+        quiet,
         verbose,
-      } => Self::audit::<Ssh>(ctx, path, *guide, *verbose),
+        files,
+      } => {
+        let verbosity = Verbosity::from_flags(*verbose, *quiet);
+        Self::assess::<Ssh>(ctx, files, *guide, *json, verbosity)
+      },
       Self::X509 {
         guide,
-        paths,
-        verbose,
-        quiet,
         json,
+        quiet,
+        verbose,
+        files,
       } => {
-        let verbosity = if *quiet {
-          Verbosity::Quiet
-        } else if *verbose {
-          Verbosity::Verbose
-        } else {
-          Verbosity::Normal
-        };
-        let format = if *json {
-          ReportFormat::Json
-        } else {
-          ReportFormat::Human
-        };
-        Self::x509(ctx, paths, *guide, format, verbosity)
+        let verbosity = Verbosity::from_flags(*verbose, *quiet);
+        Self::assess::<Certificate>(ctx, files, *guide, *json, verbosity)
       },
-      } => Self::audit::<Certificate>(ctx, path, *guide, *verbose),
     }
   }
 }
 
-fn main() -> Report {
+fn main() -> Exit {
   let ctx = Context::default();
   let options = Options::parse();
   options.subcommands.run(ctx)

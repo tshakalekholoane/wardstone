@@ -1,5 +1,5 @@
 //! Integer factorisation primitive and some common instances.
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::{self, Display, Formatter};
 
 use crate::primitive::{Primitive, Security};
 
@@ -20,7 +20,7 @@ impl Ifc {
 }
 
 impl Display for Ifc {
-  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+  fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
     if self.id == ID_RSA_PKCS1 || matches!(self.id, 1..=8) {
       write!(f, "rsa_pkcs1_{}", self.k)
     } else if self.id == ID_RSA_PSS || matches!(self.id, 9..=17) {

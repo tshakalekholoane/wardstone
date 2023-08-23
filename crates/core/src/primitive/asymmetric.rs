@@ -3,7 +3,9 @@
 //! This is just a thin wrapper around asymmetric key primitives defined
 //! in other modules that are bridged here to avoid incompatibility with
 //! C/C++.
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::{self, Display, Formatter};
+
+use serde::Serialize;
 
 use crate::primitive::ecc::Ecc;
 use crate::primitive::ffc::Ffc;
@@ -29,7 +31,7 @@ impl Primitive for Asymmetric {
 }
 
 impl Display for Asymmetric {
-  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+  fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
     match self {
       Asymmetric::Ecc(ecc) => ecc.fmt(f),
       Asymmetric::Ifc(ifc) => ifc.fmt(f),
@@ -53,5 +55,15 @@ impl From<Ifc> for Asymmetric {
 impl From<Ffc> for Asymmetric {
   fn from(ffc: Ffc) -> Self {
     Self::Ffc(ffc)
+  }
+}
+
+impl Serialize for Asymmetric {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: serde::Serializer,
+  {
+    let s = format!("{}", self);
+    serializer.serialize_str(&s)
   }
 }
