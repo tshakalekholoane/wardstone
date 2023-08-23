@@ -66,12 +66,12 @@ impl Standard for Strong {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ffc::{FFC_2048_224, FFC_NOT_SUPPORTED};
+  /// use wardstone_core::primitive::ffc::{DSA_2048_224, FFC_NOT_SUPPORTED};
   /// use wardstone_core::standard::testing::strong::Strong;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_2048 = FFC_2048_224;
+  /// let dsa_2048 = DSA_2048_224;
   /// assert_eq!(Strong::validate_ffc(ctx, dsa_2048), Err(FFC_NOT_SUPPORTED));
   /// ```
   fn validate_ffc(_ctx: Context, _key: Ffc) -> Result<Ffc, Ffc> {
@@ -224,11 +224,11 @@ mod tests {
   );
   test_ecc!(secp256k1, Strong, SECP256K1, Err(ECC_NOT_ALLOWED));
 
-  test_ffc!(ffc_1024_160, Strong, FFC_1024_160, Err(FFC_NOT_SUPPORTED));
-  test_ffc!(ffc_2048_224, Strong, FFC_2048_224, Err(FFC_NOT_SUPPORTED));
-  test_ffc!(ffc_3072_256, Strong, FFC_3072_256, Err(FFC_NOT_SUPPORTED));
-  test_ffc!(ffc_7680_384, Strong, FFC_7680_384, Err(FFC_NOT_SUPPORTED));
-  test_ffc!(ffc_15360_512, Strong, FFC_15360_512, Err(FFC_NOT_SUPPORTED));
+  test_ffc!(ffc_1024_160, Strong, DSA_1024_160, Err(FFC_NOT_SUPPORTED));
+  test_ffc!(ffc_2048_224, Strong, DSA_2048_224, Err(FFC_NOT_SUPPORTED));
+  test_ffc!(ffc_3072_256, Strong, DSA_3072_256, Err(FFC_NOT_SUPPORTED));
+  test_ffc!(ffc_7680_384, Strong, DSA_7680_384, Err(FFC_NOT_SUPPORTED));
+  test_ffc!(ffc_15360_512, Strong, DSA_15360_512, Err(FFC_NOT_SUPPORTED));
 
   test_ifc!(ifc_1024, Strong, RSA_PSS_1024, Err(IFC_NOT_ALLOWED));
   test_ifc!(ifc_1280, Strong, RSA_PSS_1280, Err(IFC_NOT_ALLOWED));

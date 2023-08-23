@@ -1,4 +1,6 @@
 //! Finite field primitive and some common instances.
+use std::fmt::{Display, Formatter, Result};
+
 use crate::primitive::{Primitive, Security};
 
 /// Represents a finite field cryptography primitive used to implement
@@ -39,35 +41,45 @@ impl Ffc {
   }
 }
 
+impl Display for Ffc {
+  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    write!(f, "dsa_{}_{}", self.l, self.n)
+  }
+}
+
+/// An identifier for custom DSA keys.
+#[no_mangle]
+pub static ID_DSA: u16 = 65534;
+
 /// Generic instance that represents a choice of L = 1024 and N = 160
 /// for a finite field cryptography primitive.
 #[no_mangle]
-pub static FFC_1024_160: Ffc = Ffc::new(65529, 1024, 160);
+pub static DSA_1024_160: Ffc = Ffc::new(1, 1024, 160);
 
 /// Generic instance that represents a choice of L = 2048 and N = 224
 /// for a finite field cryptography primitive.
 #[no_mangle]
-pub static FFC_2048_224: Ffc = Ffc::new(65530, 2048, 224);
+pub static DSA_2048_224: Ffc = Ffc::new(2, 2048, 224);
 
 /// Generic instance that represents a choice of L = 2048 and N = 256
 /// for a finite field cryptography primitive.
 #[no_mangle]
-pub static FFC_2048_256: Ffc = Ffc::new(65531, 2048, 256);
+pub static DSA_2048_256: Ffc = Ffc::new(3, 2048, 256);
 
 /// Generic instance that represents a choice of L = 3072 and N = 256
 /// for a finite field cryptography primitive.
 #[no_mangle]
-pub static FFC_3072_256: Ffc = Ffc::new(65532, 3072, 256);
+pub static DSA_3072_256: Ffc = Ffc::new(4, 3072, 256);
 
 /// Generic instance that represents a choice of L = 7680 and N = 384
 /// for a finite field cryptography primitive.
 #[no_mangle]
-pub static FFC_7680_384: Ffc = Ffc::new(65533, 7680, 384);
+pub static DSA_7680_384: Ffc = Ffc::new(5, 7680, 384);
 
 /// Generic instance that represents a choice of L = 15360 and N = 512
 /// for a finite field cryptography primitive.
 #[no_mangle]
-pub static FFC_15360_512: Ffc = Ffc::new(65534, 15360, 512);
+pub static DSA_15360_512: Ffc = Ffc::new(6, 15360, 512);
 
 /// Placeholder for use in where this primitive is not supported.
 #[no_mangle]

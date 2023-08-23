@@ -184,23 +184,23 @@ impl Standard for Bsi {
   ///
   /// ```
   /// use wardstone_core::context::Context;
-  /// use wardstone_core::primitive::ffc::{FFC_2048_224, FFC_3072_256};
+  /// use wardstone_core::primitive::ffc::{DSA_2048_224, DSA_3072_256};
   /// use wardstone_core::standard::bsi::Bsi;
   /// use wardstone_core::standard::Standard;
   ///
   /// let ctx = Context::default();
-  /// let dsa_2048 = FFC_2048_224;
-  /// let dsa_3072 = FFC_3072_256;
+  /// let dsa_2048 = DSA_2048_224;
+  /// let dsa_3072 = DSA_3072_256;
   /// assert_eq!(Bsi::validate_ffc(ctx, dsa_2048), Err(dsa_3072));
   /// ```
   fn validate_ffc(ctx: Context, key: Ffc) -> Result<Ffc, Ffc> {
     let security = ctx.security().max(key.security());
     match security {
       // Page 48 says q > 2²⁵⁰.
-      ..=124 => Err(FFC_3072_256),
-      125..=128 => Ok(FFC_3072_256),
-      129..=192 => Ok(FFC_7680_384),
-      193.. => Ok(FFC_15360_512),
+      ..=124 => Err(DSA_3072_256),
+      125..=128 => Ok(DSA_3072_256),
+      129..=192 => Ok(DSA_7680_384),
+      193.. => Ok(DSA_15360_512),
     }
   }
 
@@ -364,11 +364,11 @@ mod tests {
   test_ecc!(brainpoolp512r1, Bsi, BRAINPOOLP512R1, Ok(BRAINPOOLP512R1));
   test_ecc!(secp256k1, Bsi, SECP256K1, Err(BRAINPOOLP256R1));
 
-  test_ffc!(ffc_1024_160, Bsi, FFC_1024_160, Err(FFC_3072_256));
-  test_ffc!(ffc_2048_224, Bsi, FFC_2048_224, Err(FFC_3072_256));
-  test_ffc!(ffc_3072_256, Bsi, FFC_3072_256, Ok(FFC_3072_256));
-  test_ffc!(ffc_7680_384, Bsi, FFC_7680_384, Ok(FFC_7680_384));
-  test_ffc!(ffc_15360_512, Bsi, FFC_15360_512, Ok(FFC_15360_512));
+  test_ffc!(ffc_1024_160, Bsi, DSA_1024_160, Err(DSA_3072_256));
+  test_ffc!(ffc_2048_224, Bsi, DSA_2048_224, Err(DSA_3072_256));
+  test_ffc!(ffc_3072_256, Bsi, DSA_3072_256, Ok(DSA_3072_256));
+  test_ffc!(ffc_7680_384, Bsi, DSA_7680_384, Ok(DSA_7680_384));
+  test_ffc!(ffc_15360_512, Bsi, DSA_15360_512, Ok(DSA_15360_512));
 
   test_ifc!(ifc_1024, Bsi, RSA_PSS_1024, Err(RSA_PSS_2048));
   test_ifc!(ifc_2048, Bsi, RSA_PSS_2048, Ok(RSA_PSS_2048));

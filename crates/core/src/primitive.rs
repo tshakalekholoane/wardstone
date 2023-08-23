@@ -1,4 +1,5 @@
 //! Specifies a cryptographic primitive.
+pub mod asymmetric;
 pub mod ecc;
 pub mod ffc;
 pub mod hash;

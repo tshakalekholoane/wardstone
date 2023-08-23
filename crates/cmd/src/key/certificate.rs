@@ -3,18 +3,18 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
-use std::path::PathBuf;
+use std::path::Path;
 
 use once_cell::sync::Lazy;
 use openssl::x509::X509;
+use wardstone_core::primitive::asymmetric::Asymmetric;
 use wardstone_core::primitive::ecc::*;
 use wardstone_core::primitive::hash::*;
 use wardstone_core::primitive::ifc::*;
 use x509_parser::pem;
 use x509_parser::prelude::{FromDer, TbsCertificate, X509Certificate};
 
-use crate::key::Error;
-use crate::primitive::asymmetric::Asymmetric;
+use crate::key::{Error, Key};
 
 static ASYMMETRIC: Lazy<HashMap<&str, Asymmetric>> = Lazy::new(|| {
   let mut m = HashMap::new();
@@ -211,16 +211,10 @@ impl Certificate {
     };
     Ok(certificate)
   }
+}
 
-  pub fn hash_function(&self) -> Option<Hash> {
-    self.hash_function
-  }
-
-  pub fn signature_algorithm(&self) -> Asymmetric {
-    self.signature_algorithm
-  }
-
-  pub fn from_file(path: &PathBuf) -> Result<Certificate, Error> {
+impl Key for Certificate {
+  fn from_file(path: &Path) -> Result<Certificate, Error> {
     let mut file = File::open(path)?;
     let mut data = Vec::new();
     file.read_to_end(&mut data)?;
@@ -260,5 +254,13 @@ impl Certificate {
       "2.16.840.1.101.3.4.3.12" => Self::edsa_with_sha(&tbs_certificate, SHA3_512),
       _ => Err(Error::Unrecognised(oid)),
     }
+  }
+
+  fn hash_function(&self) -> Option<Hash> {
+    self.hash_function
+  }
+
+  fn signature_algorithm(&self) -> Asymmetric {
+    self.signature_algorithm
   }
 }
