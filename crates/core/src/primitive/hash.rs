@@ -1,8 +1,9 @@
 //! Hash function primitive and some common instances.
 use std::collections::HashMap;
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::{self, Display, Formatter};
 
 use once_cell::sync::Lazy;
+use serde::Serialize;
 
 use crate::primitive::{Primitive, Security};
 
@@ -18,21 +19,6 @@ pub struct Hash {
 impl Hash {
   pub const fn new(id: u16, n: u16) -> Self {
     Self { id, n }
-  }
-}
-
-impl Primitive for Hash {
-  /// Returns the security of a hash function measured as the collision
-  /// resistance strength of a hash function.
-  ///
-  /// For an L-bit hash function, the expected security strength for
-  /// collision resistance is L/2 bits (see page 6 of NIST SP-800-107).
-  ///
-  /// Some applications that use hash functions only require pre-image
-  /// resistance which imposes a less stringent security requirement of
-  /// just L (see page 7 of NIST SP-800-107).
-  fn security(&self) -> Security {
-    self.n >> 1
   }
 }
 
@@ -71,10 +57,35 @@ static REPR: Lazy<HashMap<Hash, &str>> = Lazy::new(|| {
 });
 
 impl Display for Hash {
-  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+  fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
     let unrecognised = "unrecognised";
     let name = REPR.get(self).unwrap_or(&unrecognised);
     write!(f, "{name}")
+  }
+}
+
+impl Primitive for Hash {
+  /// Returns the security of a hash function measured as the collision
+  /// resistance strength of a hash function.
+  ///
+  /// For an L-bit hash function, the expected security strength for
+  /// collision resistance is L/2 bits (see page 6 of NIST SP-800-107).
+  ///
+  /// Some applications that use hash functions only require pre-image
+  /// resistance which imposes a less stringent security requirement of
+  /// just L (see page 7 of NIST SP-800-107).
+  fn security(&self) -> Security {
+    self.n >> 1
+  }
+}
+
+impl Serialize for Hash {
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: serde::Serializer,
+  {
+    let s = format!("{}", self);
+    serializer.serialize_str(&s)
   }
 }
 
