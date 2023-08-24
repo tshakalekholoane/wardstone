@@ -26,9 +26,8 @@ static SPECIFIED_HASH_FUNCTIONS: Lazy<HashSet<Hash>> = Lazy::new(|| {
   s
 });
 
-/// [`Standard`](crate::standard::Standard) implementation of the
-/// Commercial National Security Algorithm Suites, [CNSA 1.0] and
-/// [CNSA 2.0].
+/// [`Standard`] implementation of the Commercial National Security
+/// Algorithm Suites, [CNSA 1.0] and [CNSA 2.0].
 ///
 /// [CNSA 1.0]: https://media.defense.gov/2021/Sep/27/2002862527/-1/-1/0/CNSS%20WORKSHEET.PDF
 /// [CNSA 2.0]: https://media.defense.gov/2022/Sep/07/2003071834/-1/-1/0/CSA_CNSA_2.0_ALGORITHMS_.PDF

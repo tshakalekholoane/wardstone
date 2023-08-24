@@ -65,7 +65,7 @@ static SPECIFIED_SYMMETRIC_KEYS: Lazy<HashSet<Symmetric>> = Lazy::new(|| {
   s
 });
 
-/// [`Standard`](crate::standard::Standard) implementation for the
+/// [`Standard`] implementation for the
 /// [ECRYPT-CSA D5.4 Algorithms, Key Size and Protocols Report].
 ///
 /// [ECRYPT-CSA D5.4 Algorithms, Key Size and Protocols Report]: https://www.ecrypt.eu.org/csa/documents/D5.4-FinalAlgKeySizeProt.pdf

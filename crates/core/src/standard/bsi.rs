@@ -52,7 +52,7 @@ static SPECIFIED_SYMMETRIC_KEYS: Lazy<HashSet<Symmetric>> = Lazy::new(|| {
   s
 });
 
-/// [`Standard`](crate::standard::Standard) implementation for the
+/// [`Standard`] implementation for the
 /// [BSI TR-02102-1 Cryptographic Mechanisms: Recommendations and Key
 /// Lengths] technical guide.
 ///

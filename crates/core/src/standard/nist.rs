@@ -64,8 +64,8 @@ static SPECIFIED_SYMMETRIC_KEYS: Lazy<HashSet<Symmetric>> = Lazy::new(|| {
   s
 });
 
-/// [`Standard`](crate::standard::Standard) implementation of the [NIST
-/// Special Publication 800-57 Part 1 Revision 5 standard].
+/// [`Standard`] implementation of the [NIST Special Publication 800-57
+/// Part 1 Revision 5 standard].
 ///
 /// [NIST Special Publication 800-57 Part 1 Revision 5 standard]: https://doi.org/10.6028/NIST.SP.800-57pt1r5
 pub struct Nist;
