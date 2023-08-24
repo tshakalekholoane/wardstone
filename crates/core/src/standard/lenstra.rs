@@ -45,9 +45,8 @@ static SPECIFIED_SYMMETRIC_KEYS: Lazy<HashSet<Symmetric>> = Lazy::new(|| {
   s
 });
 
-/// [`Standard`](crate::standard::Standard) implementation of the paper
-/// Key Lengths, Arjen K. Lenstra, The Handbook of Information Security,
-/// 06/2004.
+/// [`Standard`] implementation of the paper Key Lengths,
+/// Arjen K. Lenstra, The Handbook of Information Security, 06/2004.
 pub struct Lenstra;
 
 impl Lenstra {

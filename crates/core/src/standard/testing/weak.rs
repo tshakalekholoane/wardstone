@@ -15,9 +15,9 @@ use crate::primitive::symmetric::*;
 use crate::primitive::Primitive;
 use crate::standard::Standard;
 
-/// [`Standard`](crate::standard::Standard) implementation of a mock
-/// standard that is intended to be relatively weak compared to all the
-/// other standards defined in this crate.
+/// [`Standard`] implementation of a mock standard that is intended to
+/// be relatively weak compared to all the other standards defined in
+/// this crate.
 pub struct Weak;
 
 impl Standard for Weak {

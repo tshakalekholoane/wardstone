@@ -22,7 +22,7 @@ pub trait Key {
 }
 
 /// Represents an error that could arise as a result of reading a key or
-/// parsing it's contents.
+/// parsing its contents.
 #[derive(Debug)]
 pub enum Error {
   Io(io::Error),

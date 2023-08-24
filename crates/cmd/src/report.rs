@@ -1,3 +1,4 @@
+//! Compose a single report on the results of multiple audits.
 use std::fmt::{self, Display, Formatter};
 use std::path::{Path, PathBuf};
 use std::process::{ExitCode, Termination};
@@ -9,6 +10,11 @@ use wardstone_core::primitive::hash::Hash;
 
 use crate::key::Error;
 
+/// Represents the exit status of the program.
+///
+/// It implements [`Termination`] such that if any one of the audits
+/// fail or an error occurs, a helpful message is printed and the exit
+/// code is set to [`ExitCode::FAILURE`].
 pub enum Exit {
   Success(Report),
   Failure(Error),
