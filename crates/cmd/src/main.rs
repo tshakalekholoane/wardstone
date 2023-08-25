@@ -8,6 +8,7 @@ use wardstone::report::{Audit, Exit, Report, Verbosity};
 use wardstone_core::context::Context;
 use wardstone_core::primitive::asymmetric::Asymmetric;
 use wardstone_core::primitive::hash::Hash;
+use wardstone_core::primitive::Security;
 use wardstone_core::standard::bsi::Bsi;
 use wardstone_core::standard::cnsa::Cnsa;
 use wardstone_core::standard::ecrypt::Ecrypt;
@@ -94,9 +95,25 @@ enum Subcommands {
     /// Do not print output.
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
+    /// The minimum security level required.
+    ///
+    /// If a sufficiently low value is used then the application will
+    /// default to the minimum security specified by the standard.
+    #[arg(short, long, default_value_t = 0)]
+    security: Security,
     /// Verbose output.
     #[arg(short, long, conflicts_with = "quiet")]
     verbose: bool,
+    /// The year in which a recommendation is expected to be valid.
+    ///
+    /// Note that this does not necessarily mean that a primitive will
+    /// be deemed insecure beyond this point. Indeed, recommendations
+    /// are usually done with a longer horizon in mind. For example,
+    /// setting this value to 2023, one would expect any passing
+    /// primitive to be secure for the next 5 to 7 years,
+    /// conservatively, subject to cryptanalytic developments.
+    #[arg(short, long, default_value_t = 2023)]
+    year: u16,
     /// The paths to the public key file(s).
     #[clap(value_name = "FILE")]
     files: Vec<PathBuf>,
@@ -112,9 +129,25 @@ enum Subcommands {
     /// Do not print output.
     #[arg(short, long, conflicts_with = "verbose")]
     quiet: bool,
+    /// The minimum security level required.
+    ///
+    /// If a sufficiently low value is used then the application will
+    /// default to the minimum security specified by the standard.
+    #[arg(short, long, default_value_t = 0)]
+    security: Security,
     /// Verbose output.
     #[arg(short, long, conflicts_with = "quiet")]
     verbose: bool,
+    /// The year in which a recommendation is expected to be valid.
+    ///
+    /// Note that this does not necessarily mean that a primitive will
+    /// be deemed insecure beyond this point. Indeed, recommendations
+    /// are usually done with a longer horizon in mind. For example,
+    /// setting this value to 2023, one would expect any passing
+    /// primitive to be secure for the next 5 to 7 years,
+    /// conservatively, subject to cryptanalytic developments.
+    #[arg(short, long, default_value_t = 2023)]
+    year: u16,
     /// The certificates as DER or PEM encoded files.
     #[clap(value_name = "FILE")]
     files: Vec<PathBuf>,
@@ -153,7 +186,7 @@ impl Subcommands {
     Exit::Success(report)
   }
 
-  pub fn run(&self, ctx: Context) -> Exit {
+  pub fn run(&self) -> Exit {
     match self {
       Self::Ssh {
         guide,
@@ -161,7 +194,10 @@ impl Subcommands {
         quiet,
         verbose,
         files,
+        security,
+        year,
       } => {
+        let ctx = Context::new(*security, *year);
         let verbosity = Verbosity::from_flags(*verbose, *quiet);
         Self::assess::<Ssh>(ctx, files, *guide, *json, verbosity)
       },
@@ -171,7 +207,10 @@ impl Subcommands {
         quiet,
         verbose,
         files,
+        security,
+        year,
       } => {
+        let ctx = Context::new(*security, *year);
         let verbosity = Verbosity::from_flags(*verbose, *quiet);
         Self::assess::<Certificate>(ctx, files, *guide, *json, verbosity)
       },
@@ -180,7 +219,6 @@ impl Subcommands {
 }
 
 fn main() -> Exit {
-  let ctx = Context::default();
   let options = Options::parse();
-  options.subcommands.run(ctx)
+  options.subcommands.run()
 }

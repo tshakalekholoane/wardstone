@@ -25,11 +25,11 @@ impl Context {
   /// to `0` then it will default to using the minimum security outlined
   /// in the standard. `year` is the year one expects the primitive to
   /// remain secure.
-  pub fn new(security: u16, year: u16) -> Self {
+  pub fn new(security: Security, year: u16) -> Self {
     Self { security, year }
   }
 
-  pub fn security(&self) -> u16 {
+  pub fn security(&self) -> Security {
     self.security
   }
 
