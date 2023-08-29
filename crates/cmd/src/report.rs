@@ -108,11 +108,11 @@ impl Display for Audit {
   fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
     let mut s = String::new();
     if let (Some(got), Some(want)) = (self.got_hash_function, self.want_hash_function) {
-      s.push_str(format!("hash function: got {}, want: {}\n", got, want).as_str());
+      s.push_str(format!("hash function: got {}, want {}\n", got, want).as_str());
     }
     s.push_str(
       format!(
-        "signature algorithm: got {}, want: {}\n",
+        "signature algorithm: got {}, want {}\n",
         self.got_signature, self.want_signature
       )
       .as_str(),

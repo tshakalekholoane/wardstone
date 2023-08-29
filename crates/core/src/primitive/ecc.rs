@@ -28,6 +28,11 @@ impl Ecc {
 pub static REPR: Lazy<HashMap<Ecc, &str>> = Lazy::new(|| {
   let mut m = HashMap::new();
   m.insert(SM2, "SM2");
+  m.insert(B163, "nistb163 or sect163r2");
+  m.insert(B233, "nistb233, sect233r1, or wap-wsg-idm-ecid-wtls11");
+  m.insert(B283, "nistb283 or sect283r1");
+  m.insert(B409, "nistb409 or sect409r1");
+  m.insert(B571, "nistb571 or sect571r1");
   m.insert(BRAINPOOLP160R1, "brainpoolP160r1");
   m.insert(BRAINPOOLP160T1, "brainpoolP160t1");
   m.insert(BRAINPOOLP192R1, "brainpoolP192r1");
@@ -42,7 +47,7 @@ pub static REPR: Lazy<HashMap<Ecc, &str>> = Lazy::new(|| {
   m.insert(BRAINPOOLP384T1, "brainpoolP384t1");
   m.insert(BRAINPOOLP512R1, "brainpoolP512r1");
   m.insert(BRAINPOOLP512T1, "brainpoolP512t1");
-  m.insert(C2PNB163V1, "c2pnb163v1");
+  m.insert(C2PNB163V1, "c2pnb163v1 or wap-wsg-idm-ecid-wtls5");
   m.insert(C2PNB163V2, "c2pnb163v2");
   m.insert(C2PNB163V3, "c2pnb163v3");
   m.insert(C2PNB176V1, "c2pnb176v1");
@@ -61,55 +66,49 @@ pub static REPR: Lazy<HashMap<Ecc, &str>> = Lazy::new(|| {
   m.insert(ECC_NOT_ALLOWED, "not allowed");
   m.insert(ED25519, "ed25519");
   m.insert(ED448, "ed448");
-  m.insert(PRIME192V1, "prime192v1");
+  m.insert(K163, "nistk163, sect163k1, or wap-wsg-idm-ecid-wtls3");
+  m.insert(K233, "nistk233, sect233k1, or wap-wsg-idm-ecid-wtls10");
+  m.insert(K283, "nistk283 or sect283k1");
+  m.insert(K409, "nistk409 or sect409k1");
+  m.insert(K571, "nistk571");
+  m.insert(P192, "nistp192, prime192v1, or secp192r1");
+  m.insert(P224, "nistp224, secp224r1, or wap-wsg-idm-ecid-wtls12");
+  m.insert(P256, "nistp256, prime256v1, or secp256r1");
+  m.insert(P384, "nistp384 or secp384r1");
+  m.insert(P521, "nistp521 or secp521r1");
   m.insert(PRIME192V2, "prime192v2");
   m.insert(PRIME192V3, "prime192v3");
   m.insert(PRIME239V1, "prime239v1");
   m.insert(PRIME239V2, "prime239v2");
   m.insert(PRIME239V3, "prime239v3");
-  m.insert(PRIME256V1, "prime256v1");
-  m.insert(SECP112R1, "secp112r1");
+  m.insert(SECP112R1, "secp112r1 or wap-wsg-idm-ecid-wtls6");
   m.insert(SECP112R2, "secp112r2");
   m.insert(SECP128R1, "secp128r1");
   m.insert(SECP128R2, "secp128r2");
   m.insert(SECP160K1, "secp160k1");
-  m.insert(SECP160R1, "secp160r1");
+  m.insert(SECP160R1, "secp160r1 or wap-wsg-idm-ecid-wtls7");
   m.insert(SECP160R2, "secp160r2");
   m.insert(SECP192K1, "secp192k1");
   m.insert(SECP224K1, "secp224k1");
-  m.insert(SECP224R1, "secp224r1");
   m.insert(SECP256K1, "secp256k1");
-  m.insert(SECP384R1, "secp384r1");
-  m.insert(SECP521R1, "secp521r1");
-  m.insert(SECT113R1, "sect113r1");
+  m.insert(SECT113R1, "sect113r1 or wap-wsg-idm-ecid-wtls4");
   m.insert(SECT113R2, "sect113r2");
   m.insert(SECT131R1, "sect131r1");
   m.insert(SECT131R2, "sect131r2");
-  m.insert(SECT163K1, "sect163k1");
   m.insert(SECT163R1, "sect163r1");
-  m.insert(SECT163R2, "sect163r2");
   m.insert(SECT193R1, "sect193r1");
   m.insert(SECT193R2, "sect193r2");
-  m.insert(SECT233K1, "sect233k1");
-  m.insert(SECT233R1, "sect233r1");
   m.insert(SECT239K1, "sect239k1");
-  m.insert(SECT283K1, "sect283k1");
-  m.insert(SECT283R1, "sect283r1");
-  m.insert(SECT409K1, "sect409k1");
-  m.insert(SECT409R1, "sect409r1");
-  m.insert(SECT571K1, "sect571k1");
-  m.insert(SECT571R1, "sect571r1");
+  m.insert(SM2, "sm2");
   m.insert(WAP_WSG_IDM_ECID_WTLS1, "wap-wsg-idm-ecid-wtls1");
-  m.insert(WAP_WSG_IDM_ECID_WTLS10, "wap-wsg-idm-ecid-wtls10");
-  m.insert(WAP_WSG_IDM_ECID_WTLS11, "wap-wsg-idm-ecid-wtls11");
-  m.insert(WAP_WSG_IDM_ECID_WTLS12, "wap-wsg-idm-ecid-wtls12");
-  m.insert(WAP_WSG_IDM_ECID_WTLS3, "wap-wsg-idm-ecid-wtls3");
-  m.insert(WAP_WSG_IDM_ECID_WTLS4, "wap-wsg-idm-ecid-wtls4");
-  m.insert(WAP_WSG_IDM_ECID_WTLS5, "wap-wsg-idm-ecid-wtls5");
-  m.insert(WAP_WSG_IDM_ECID_WTLS6, "wap-wsg-idm-ecid-wtls6");
-  m.insert(WAP_WSG_IDM_ECID_WTLS7, "wap-wsg-idm-ecid-wtls7");
   m.insert(WAP_WSG_IDM_ECID_WTLS8, "wap-wsg-idm-ecid-wtls8");
   m.insert(WAP_WSG_IDM_ECID_WTLS9, "wap-wsg-idm-ecid-wtls9");
+  m.insert(X25519, "x25519");
+  m.insert(X448, "x448");
+  m.insert(ECC_224, "any approved 224-bit elliptic curve");
+  m.insert(ECC_256, "any approved 256-bit elliptic curve");
+  m.insert(ECC_384, "any approved 384-bit elliptic curve");
+  m.insert(ECC_512, "any approved 512-bit elliptic curve");
   m
 });
 
@@ -317,21 +316,22 @@ pub static ED25519: Ecc = Ecc::new(36, 256);
 pub static ED448: Ecc = Ecc::new(37, 448);
 
 /// Represents the Weierstrass curve K-163 over a prime field. Also
-/// known as wap-wsg-idm-ecid-wtls3.
+/// known as sect163k1 and wap-wsg-idm-ecid-wtls3.
 #[no_mangle]
 pub static K163: Ecc = Ecc::new(38, 192);
 
 /// Represents the Weierstrass curve K-223 over a prime field. Also
-/// known as wap-wsg-idm-ecid-wtls10.
+/// known as sect233k1 and wap-wsg-idm-ecid-wtls10.
 #[no_mangle]
-pub static K233: Ecc = Ecc::new(39, 192);
+pub static K233: Ecc = Ecc::new(39, 223);
 
 /// Represents the Weierstrass curve K-283 over a prime field. Also
 /// known as sect283k1.
 #[no_mangle]
 pub static K283: Ecc = Ecc::new(40, 192);
 
-/// Represents the Weierstrass curve K-409 over a prime field.
+/// Represents the Weierstrass curve K-409 over a prime field. Also
+/// known as sect409k1.
 #[no_mangle]
 pub static K409: Ecc = Ecc::new(41, 409);
 
@@ -350,7 +350,7 @@ pub static P192: Ecc = Ecc::new(43, 192);
 pub static P224: Ecc = Ecc::new(44, 224);
 
 /// Represents the Weierstrass curve P-256 over a prime field. Also
-/// known as secp256r1.
+/// known as prime256v1 and secp256r1.
 #[no_mangle]
 pub static P256: Ecc = Ecc::new(45, 256);
 
@@ -367,7 +367,7 @@ pub static P521: Ecc = Ecc::new(47, 521);
 /// Represents the prime192v1 curve as specified in ANSI x9.62. Also
 /// known as secp192r1 and P-192.
 #[no_mangle]
-pub static PRIME192V1: Ecc = Ecc::new(43 /* P192 */, 192);
+pub static PRIME192V1: Ecc = P192;
 
 /// Represents the prime192v2 curve as specified in ANSI x9.62.
 #[no_mangle]
@@ -392,7 +392,7 @@ pub static PRIME239V3: Ecc = Ecc::new(52, 239);
 /// Represents the prime256v1 curve as specified in ANSI x9.62. Also
 /// known as P-256 and secp256r1.
 #[no_mangle]
-pub static PRIME256V1: Ecc = Ecc::new(45, /* P256 */ 256);
+pub static PRIME256V1: Ecc = P256;
 
 /// Represents the secp112r1 curve as defined in [SEC 2]. Also known
 /// as wap-wsg-idm-ecid-wtls6.
@@ -419,18 +419,18 @@ pub static SECP128R1: Ecc = Ecc::new(55, 128);
 #[no_mangle]
 pub static SECP128R2: Ecc = Ecc::new(56, 128);
 
+/// Represents the secp160k1 curve as defined in [SEC 2].
+///
+/// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
+#[no_mangle]
+pub static SECP160K1: Ecc = Ecc::new(58, 160);
+
 /// Represents the secp160r1 curve as defined in [SEC 2]. Also known as
 /// wap-wsg-idm-ecid-wtls7.
 ///
 /// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
 #[no_mangle]
 pub static SECP160R1: Ecc = Ecc::new(57, 160);
-
-/// Represents the secp160k1 curve as defined in [SEC 2].
-///
-/// [SEC 2]: https://www.secg.org/SEC2-Ver-1.0.pdf
-#[no_mangle]
-pub static SECP160K1: Ecc = Ecc::new(58, 160);
 
 /// Represents the secp160r2 curve as defined in [SEC 2].
 ///
@@ -443,7 +443,7 @@ pub static SECP160R2: Ecc = Ecc::new(59, 160);
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECP192R1: Ecc = Ecc::new(43, /* P192 */ 193);
+pub static SECP192R1: Ecc = P192;
 
 /// Represents the secp192k1 curve as defined in [SEC 2].
 ///
@@ -452,11 +452,11 @@ pub static SECP192R1: Ecc = Ecc::new(43, /* P192 */ 193);
 pub static SECP192K1: Ecc = Ecc::new(60, 192);
 
 /// Represents the secp224r1 curve as defined in [SEC 2]. Also known as
-/// P-224 and wap-wsg-idm-ecid-wtls12.
+/// P-224, secp224r1, and wap-wsg-idm-ecid-wtls12.
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECP224R1: Ecc = Ecc::new(44, /* SECP224R1 */ 224);
+pub static SECP224R1: Ecc = P224;
 
 /// Represents the secp224k1 curve as defined in [SEC 2].
 ///
@@ -475,21 +475,21 @@ pub static SECP256K1: Ecc = Ecc::new(62, 256);
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECP256R1: Ecc = Ecc::new(45, /* P256 */ 256);
+pub static SECP256R1: Ecc = P256;
 
 /// Represents the secp384r1 curve as defined in [SEC 2]. Also known as
 /// P-384.
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECP384R1: Ecc = Ecc::new(46, /* P384 */ 384);
+pub static SECP384R1: Ecc = P384;
 
 /// Represents the secp521r1 curve as defined in [SEC 2]. Also known as
 /// P-521.
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECP521R1: Ecc = Ecc::new(47, /* P521 */ 521);
+pub static SECP521R1: Ecc = P521;
 
 /// Represents the sect113r1 curve as defined in [SEC 2]. Also known as
 /// wap-wsg-idm-ecid-wtls4.
@@ -521,7 +521,7 @@ pub static SECT131R2: Ecc = Ecc::new(66, 131);
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT163K1: Ecc = Ecc::new(38, /* K163 */ 163);
+pub static SECT163K1: Ecc = K163;
 
 /// Represents the sect163r1 curve as defined in [SEC 2].
 ///
@@ -534,7 +534,7 @@ pub static SECT163R1: Ecc = Ecc::new(67, 163);
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT163R2: Ecc = Ecc::new(1, /* B163 */ 163);
+pub static SECT163R2: Ecc = B163;
 
 /// Represents the sect193r1 curve as defined in [SEC 2].
 ///
@@ -553,14 +553,14 @@ pub static SECT193R2: Ecc = Ecc::new(69, 193);
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT233K1: Ecc = Ecc::new(39, /* K233 */ 233);
+pub static SECT233K1: Ecc = K233;
 
 /// Represents the sect233r1 curve as defined in [SEC 2]. Also known as
 /// B-233 and wap-wsg-idm-ecid-wtls11.
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT233R1: Ecc = Ecc::new(2, /* B233 */ 233);
+pub static SECT233R1: Ecc = B233;
 
 /// Represents the sect239k1 curve as defined in [SEC 2].
 ///
@@ -573,42 +573,42 @@ pub static SECT239K1: Ecc = Ecc::new(70, 239);
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT283R1: Ecc = Ecc::new(3, /* B283 */ 283);
+pub static SECT283R1: Ecc = B283;
 
 /// Represents the sect283k1 curve as defined in [SEC 2]. Also known as
 /// K-283.
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT283K1: Ecc = Ecc::new(40, /* K283 */ 283);
+pub static SECT283K1: Ecc = K283;
 
 /// Represents the sect409k1 curve as defined in [SEC 2]. Also known as
 /// K-409.
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT409K1: Ecc = Ecc::new(41, /* K409 */ 409);
+pub static SECT409K1: Ecc = K409;
 
 /// Represents the sect409r1 curve as defined in [SEC 2]. Also known as
 /// B-409.
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT409R1: Ecc = Ecc::new(4, /* B409 */ 409);
+pub static SECT409R1: Ecc = B409;
 
 /// Represents the sect571k1 curve as defined in [SEC 2]. Also known as
 /// K-571.
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT571K1: Ecc = Ecc::new(42, /* K571 */ 571);
+pub static SECT571K1: Ecc = K571;
 
 /// Represents the sect571r1 curve as defined in [SEC 2]. Also known as
 /// B-571.
 ///
 /// [SEC 2]: https://www.secg.org/sec2-v2.pdf
 #[no_mangle]
-pub static SECT571R1: Ecc = Ecc::new(5, /* B571 */ 571);
+pub static SECT571R1: Ecc = B571;
 
 /// Represents the SM2 digital signature algorithm as defined in
 /// draft-shen-sm2-ecdsa-02.
@@ -629,35 +629,35 @@ pub static WAP_WSG_IDM_ECID_WTLS1: Ecc = Ecc::new(72, 113);
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS3: Ecc = Ecc::new(38, /* K163 */ 163);
+pub static WAP_WSG_IDM_ECID_WTLS3: Ecc = K163;
 
 /// Represents the wap-wsg-idm-ecid-wtls4 curve as specified in
 /// [WAP-WTLS curves]. Also known as sect113r1.
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS4: Ecc = Ecc::new(63, /* SECT113R1 */ 113);
+pub static WAP_WSG_IDM_ECID_WTLS4: Ecc = SECT113R1;
 
 /// Represents the wap-wsg-idm-ecid-wtls5 curve as specified in
 /// [WAP-WTLS curves]. Also known as c2pnb163v1.
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS5: Ecc = Ecc::new(30, /* C2PNB163V1 */ 163);
+pub static WAP_WSG_IDM_ECID_WTLS5: Ecc = C2PNB163V1;
 
 /// Represents the wap-wsg-idm-ecid-wtls6 curve as specified in
 /// [WAP-WTLS curves]. Also known as secp112r1.
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS6: Ecc = Ecc::new(53, /* SECP112R1 */ 112);
+pub static WAP_WSG_IDM_ECID_WTLS6: Ecc = SECP112R1;
 
 /// Represents the wap-wsg-idm-ecid-wtls7 curve as specified in
 /// [WAP-WTLS curves]. Also known as secp160r1.
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS7: Ecc = Ecc::new(57, /* SECP160R1 */ 160);
+pub static WAP_WSG_IDM_ECID_WTLS7: Ecc = SECP160R1;
 
 /// Represents the wap-wsg-idm-ecid-wtls8 curve as specified in
 /// [WAP-WTLS curves].
@@ -678,21 +678,21 @@ pub static WAP_WSG_IDM_ECID_WTLS9: Ecc = Ecc::new(74, 160);
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS10: Ecc = Ecc::new(39, /* K233 */ 233);
+pub static WAP_WSG_IDM_ECID_WTLS10: Ecc = K233;
 
 /// Represents the wap-wsg-idm-ecid-wtls11 curve as specified in
 /// [WAP-WTLS curves]. Also known as B-233 and sect233r1.
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS11: Ecc = Ecc::new(2, /* B233 */ 233);
+pub static WAP_WSG_IDM_ECID_WTLS11: Ecc = B233;
 
 /// Represents the wap-wsg-idm-ecid-wtls12 curve as specified in
 /// [WAP-WTLS curves]. Also known as P-224 and secp224r1.
 ///
 /// [WAP-WTLS curves]: https://www.wapforum.org/tech/documents/WAP-199-WTLS-20000218-a.pdf
 #[no_mangle]
-pub static WAP_WSG_IDM_ECID_WTLS12: Ecc = Ecc::new(41, /* P224 */ 224);
+pub static WAP_WSG_IDM_ECID_WTLS12: Ecc = P224;
 
 /// Represents the X25519 algorithm as it appears in [RFC 7748].
 ///
