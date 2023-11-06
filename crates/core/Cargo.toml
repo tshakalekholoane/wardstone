@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 once_cell = "1.18.0"
-serde =  { version = "1.0.189", features = ["derive"] }
+serde =  { version = "1.0.191", features = ["derive"] }
